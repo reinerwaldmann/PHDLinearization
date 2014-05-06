@@ -35,7 +35,7 @@ A=np.zeros (shape=(n,n))
 
 
 if (np.linalg.det (cov_ksi) <0 ):
-    print ("Определитель матрицы меньше 0")
+    print ("Определитель матрицы меньше  0")
     exit (1)
 
 #вычисляем А
