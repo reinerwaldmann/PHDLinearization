@@ -36,7 +36,7 @@ def dispersion (u1, r1, r2, r3, V,  derivatefunc, funct):
 
 
 
-
+  #sssss
     first_member = sqrt ( sum (np.array(deriv[0])* np.array (dispssqrt)))
 
     return first_member
