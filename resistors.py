@@ -1,10 +1,13 @@
 from cmath import sqrt
 import numpy as np
 
+
 import matplotlib.pyplot as plt
 
 import scipy as scp
 import random
+
+import sympy as smp
 
 
 __author__ = 'reiner'
@@ -14,6 +17,7 @@ __author__ = 'reiner'
 def funct(u1, r1, r2, r3):
     return u1* (r2+r3)/(r1+r2+r3), u1* r3/(r1+r2+r3)
 
+#print (smp.diff("u1* (r2+r3)/(r1+r2+r3)", "r2"))
 
 def derivate(u1, r1, r2, r3):
     rsum=(r1+r2+r3)**2
@@ -31,30 +35,33 @@ def derivate(u1, r1, r2, r3):
 #V - corr. matrix
 #считает дисперсию по матожиданию и ковариационной матрице
 #derivatefunc выдаёт производные см выше
-def dispersion (u1, r1, r2, r3, V,  derivatefunc):
+def countDispLinearization (u1, r1, r2, r3, V,  derivatefunc):
     deriv=derivatefunc(u1,r1,r2,r3)
 
     first_memberU2=0
     for i in range (0,3):
-        first_memberU2+=(deriv[0][i]**2)*(V[i,i]**2)
-    first_memberU2=sqrt(first_memberU2)
+        first_memberU2+=(deriv[0][i]**2)*(V[i,i])
 
     first_memberU3=0
     for i in range (0,3):
-        first_memberU3+=(deriv[1][i]**2)*(V[i,i]**2)
-    first_memberU3=sqrt(first_memberU3)
+        first_memberU3+=(deriv[1][i]**2)*(V[i,i])
 
     sumsecMU2=0
     for i in range (0, 3):
         for j in range (0, 3):
-            sumsecMU2+=deriv[0][i]*deriv[0][j]*V[i,i]*V[j,j]*V[i,j]
+            if (i<j):
+                sumsecMU2+=deriv[0][i]*deriv[0][j]*V[i,j]
+
+
+
     sumsecMU3=0
     for i in range (0, 3):
         for j in range (0, 3):
-            sumsecMU3+=deriv[1][i]*deriv[1][j]*V[i,i]*V[j,j]*V[i,j]
+            if (i<j):
+                sumsecMU3+=deriv[1][i]*deriv[1][j]*V[i,j]
 
-    #return first_memberU2+sumsecMU2, first_memberU3+sumsecMU3
-    return first_memberU2, first_memberU3
+    return first_memberU2+sumsecMU2, first_memberU3+sumsecMU3
+    #return first_memberU2, first_memberU3
 
 
 
@@ -115,7 +122,7 @@ def generrandvals (M_ksi, cov_ksi, nvol=1000):
 
 
 #считает дисперсию и матожидание выхода, которые получаются, ежели применить сгенерированные последовательности к функции
-def countDisp (u, rseq1, rseq2, rseq3, func):
+def countDispMonteKarlo (u, rseq1, rseq2, rseq3, func):
     u2list=list()
     u3list=list()
 
@@ -134,10 +141,8 @@ def countDisp (u, rseq1, rseq2, rseq3, func):
 
     return np.mean(u2list), np.var(u2list), np.mean(u3list), np.var(u3list)
 
-def countDisp1 (u, sectuple, func):
-    return countDisp(u, sectuple[0], sectuple[1], sectuple[2], func)
-
-
+def countDispMonteKarlo1 (u, sectuple, func):
+    return countDispMonteKarlo(u, sectuple[0], sectuple[1], sectuple[2], func)
 
 
 
@@ -146,27 +151,28 @@ def test1():
     print ("Monte-Karlo:")
     print ("MU2, DU2, MU3, DU3")
     rndv=generrandvals(M, V, 1000)
-    print (countDisp1(100, rndv ,funct))
+    print (countDispMonteKarlo1(100, rndv ,funct))
     print ("Mean Values as if lin:")
     print (funct(100, M[0], M[1], M[2]))
     print ("Linearization:")
     print ("DU2, DU3")
-    print ( dispersion(100, rndv[4], rndv[5], rndv[6], rndv[3], derivate))
+    print ( countDispLinearization(100, rndv[4], rndv[5], rndv[6], rndv[3], derivate))
     print ("Pretending that model is perfect:")
-    print ( dispersion(100, M[0], M[1], M[2], V, derivate))
+    print ( countDispLinearization(100, M[0], M[1], M[2], V, derivate))
 
 
 #ranges:
-
+#tseq1, tseq2, tseq3, COVTEST, np.mean(tseq1), np.mean(tseq2), np.mean(tseq3)
 
 def test2(iM, iV, nvol):
     rndv=generrandvals(iM, iV, nvol)
-    truedisp=countDisp1(100, rndv ,funct)
-    lineardisp=dispersion(100, rndv[4], rndv[5], rndv[6], rndv[3], derivate)
+    truedisp=countDispMonteKarlo1(100, rndv ,funct)
+#    lineardisp=countDispLinearization(100, rndv[4], rndv[5], rndv[6], rndv[3], derivate)
+    lineardisp=countDispLinearization(100, iM[0], iM[1], iM[2], iV, derivate)
 
-    print ("true", "linear")
-    print (truedisp[1], lineardisp[0])
-    print (truedisp[3], lineardisp[1])
+    print ("true", "linear", "diff")
+    print (truedisp[1], lineardisp[0], 100*(truedisp[1]-lineardisp[0])/truedisp[1], "%" )
+    print (truedisp[3], lineardisp[1], 100*(truedisp[3]-lineardisp[1])/truedisp[3], "%" )
 
 
 
@@ -181,25 +187,34 @@ V1=np.array      ( [[4, 0, 0],
                     [0, 9, 0],
                     [0, 0, 16]])
 
+#V=V1
 
+M=np.array([20,30,400])
 
-M=np.array([20,30,40])
+#test1()
 
-test1()
-
-# for r1 in range (10,20):
-#     for r2 in range (100,110):
-#         for r3 in range (200,210):
-#             M=np.array([r1, r2, r3])
-#             test2(M, V, 1000)
-
+#for x in [100, 1000, 10000, 100000, 1000000]:
+#for x in [100, 1000, 10000]:
+#    test2(M,V,x)
 
 
 
 
 
+#testing sympy
+
+#def funct(u1, r1, r2, r3):
+#    return u1* (r2+r3)/(r1+r2+r3), u1* r3/(r1+r2+r3)
+
+print (smp.diff("u1* (r2+r3)/(r1+r2+r3)", "r2"))
 
 
+
+# for r1 in range (10,15):
+#      for r2 in range (100,200,10):
+#          for r3 in range (200,205):
+#              M=np.array([r1, r2, r3])
+#              test2(M, V, 1000)
 
 
 
