@@ -20,15 +20,24 @@ def funct(u1, r1, r2, r3):
 #print (smp.diff("u1* (r2+r3)/(r1+r2+r3)", "r2"))
 
 def derivate(u1, r1, r2, r3):
-    rsum=(r1+r2+r3)**2
-    du3dr1 = -1*u1*r3/rsum
-    du3dr2 = -1*u1*r3/rsum
-    du3dr3 = (r1+r2)*u1/rsum
+    # rsum=(r1+r2+r3)**2
+    # du3dr1 = -1*u1*r3/rsum
+    # du3dr2 = -1*u1*r3/rsum
+    # du3dr3 = (r1+r2)*u1/rsum
+    #
+    # du2dr1 = -1*u1*r2/rsum+du3dr1
+    # du2dr2 = (r1+r3)*u1/rsum+du3dr2
+    # du2dr3 = -1*u1*r2/rsum+du3dr3
 
-    du2dr1 = -1*u1*r2/rsum+du3dr1
-    du2dr2 = (r1+r3)*u1/rsum+du3dr2
-    du2dr3 = -1*u1*r2/rsum+du3dr3
-    return (du2dr1, du2dr2, du2dr3), (du3dr1, du3dr2, du3dr3)
+     du2dr1 = -u1*(r2 + r3)/(r1 + r2 + r3)**2
+     du2dr2 = -u1*(r2 + r3)/(r1 + r2 + r3)**2 + u1/(r1 + r2 + r3)
+     du2dr3 = -u1*(r2 + r3)/(r1 + r2 + r3)**2 + u1/(r1 + r2 + r3)
+
+     du3dr1 = -r3*u1/(r1 + r2 + r3)**2
+     du3dr2 = -r3*u1/(r1 + r2 + r3)**2
+     du3dr3 = -r3*u1/(r1 + r2 + r3)**2 + u1/(r1 + r2 + r3)
+
+     return (du2dr1, du2dr2, du2dr3), (du3dr1, du3dr2, du3dr3)
 
 
 
@@ -37,34 +46,24 @@ def derivate(u1, r1, r2, r3):
 #derivatefunc выдаёт производные см выше
 def countDispLinearization (u1, r1, r2, r3, V,  derivatefunc):
     deriv=derivatefunc(u1,r1,r2,r3)
-
     first_memberU2=0
     for i in range (0,3):
         first_memberU2+=(deriv[0][i]**2)*(V[i,i])
-
     first_memberU3=0
     for i in range (0,3):
         first_memberU3+=(deriv[1][i]**2)*(V[i,i])
-
     sumsecMU2=0
     for i in range (0, 3):
         for j in range (0, 3):
             if (i<j):
                 sumsecMU2+=deriv[0][i]*deriv[0][j]*V[i,j]
-
-
-
     sumsecMU3=0
     for i in range (0, 3):
         for j in range (0, 3):
             if (i<j):
                 sumsecMU3+=deriv[1][i]*deriv[1][j]*V[i,j]
-
     return first_memberU2+sumsecMU2, first_memberU3+sumsecMU3
     #return first_memberU2, first_memberU3
-
-
-
 
 #генерирует список случайных чисел м=0 д=1
 def generlist (n):
@@ -175,10 +174,6 @@ def test2(iM, iV, nvol):
     print (truedisp[3], lineardisp[1], 100*(truedisp[3]-lineardisp[1])/truedisp[3], "%" )
 
 
-
-
-
-
 V=np.array       ( [[4, 2, 3],
                     [2, 9, 6],
                     [3, 6, 16]])
@@ -188,14 +183,11 @@ V1=np.array      ( [[4, 0, 0],
                     [0, 0, 16]])
 
 #V=V1
-
 M=np.array([20,30,400])
-
 #test1()
-
 #for x in [100, 1000, 10000, 100000, 1000000]:
-#for x in [100, 1000, 10000]:
-#    test2(M,V,x)
+for x in [100, 1000, 10000]:
+    test2(M,V,x)
 
 
 
@@ -206,7 +198,23 @@ M=np.array([20,30,400])
 #def funct(u1, r1, r2, r3):
 #    return u1* (r2+r3)/(r1+r2+r3), u1* r3/(r1+r2+r3)
 
-print (smp.diff("u1* (r2+r3)/(r1+r2+r3)", "r2"))
+#print (smp.diff("u1* (r2+r3)/(r1+r2+r3)", "r2"))
+#return u1* (r2+r3)/(r1+r2+r3), u1* r3/(r1+r2+r3)
+#
+# f1="u1* (r2+r3)/(r1+r2+r3)"
+# f2="u1* r3/(r1+r2+r3)"
+# r1="r1"
+# r2="r2"
+# r3="r3"
+#
+# print (smp.diff (f1, r1 )    )
+# print (smp.diff (f1, r2 )    )
+# print (smp.diff (f1, r3 )    )
+#
+# print (smp.diff (f2, r1 )    )
+# print (smp.diff (f2, r2 )    )
+# print (smp.diff (f2, r3 )    )
+#
 
 
 
