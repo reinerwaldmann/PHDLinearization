@@ -192,7 +192,7 @@ def countDispLinearizationAcc (u1, r1, r2, r3, V, funcstr):
 
 
     for i in range (0, 3):
-        secMember+= (derivate1(u1,r1,r2,r3,2)[0][i]**2) * (V[i,i]**2)
+         secMember+= (derivate1(u1,r1,r2,r3,2)[0][i]**2) * (V[i,i]**2)
     secMember*=1/2
 
 
@@ -200,9 +200,9 @@ def countDispLinearizationAcc (u1, r1, r2, r3, V, funcstr):
 
     thirdMember=0
     for i in range (0,3):
-        for j in range (0,3):
-            if (i<j):
-                thirdMember+=(derivateCross(funcstr, listvars[i], listvars[j], arginitseq)**2)*V[i,i]*V[j,j]
+         for j in range (0,3):
+             if (i<j):
+                 thirdMember+=(derivateCross(funcstr, listvars[i], listvars[j], arginitseq)**2)*V[i,i]*V[j,j]
 
 
     return dispLin1+secMember+thirdMember
@@ -256,11 +256,11 @@ def test2(iM, iV, nvol):
     diff2=100*(truedisp[3]-lineardisp[1])/truedisp[3]
 
 
-    #dacc=countDispLinearizationAcc(100, iM[0], iM[1], iM[2], iV, func1)
-    #diffdacc=100*(truedisp[1]-dacc)/truedisp[1]
+    dacc=countDispLinearizationAcc(100, iM[0], iM[1], iM[2], iV, func1)
+    diffdacc=100*(truedisp[1]-dacc)/truedisp[1]
 
-    print (truedisp[1], lineardisp[0], "%5.2f"%diff1, "%")
-
+    #print (truedisp[1], lineardisp[0], "%5.2f"%diff1, "%")
+    #print (truedisp[1], lineardisp[0], "%5.2f"%diff1, "%", dacc, diffdacc, "%")
 
 
 
