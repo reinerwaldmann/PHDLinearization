@@ -12,7 +12,7 @@ import sympy as smp
 __author__ = 'reiner'
 
 
-def derivsym (funcstr, argseq):
+def derivsym (funcstr, argseq, n=1):
     """
     funcstr - строка, являющая собою функцию
     argseq - последовательность из аргументов, заданных как строки
@@ -20,17 +20,17 @@ def derivsym (funcstr, argseq):
 
     res=list()
     for arg in argseq:
-        res.append(str(smp.diff(funcstr,arg)))
+        res.append(str(smp.diff(funcstr,arg, n)))
 
     return res
 
 
-def evalderivsymv (funcstr, argseq, arginitseq ):
+def evalderivsymv (funcstr, argseq, arginitseq, n=1):
     """
     arginitseq - locals
     derivseq - gave by derivssym func
     """
-    derivseq=derivsym (funcstr, argseq)
+    derivseq=derivsym (funcstr, argseq, n)
     return list (map (lambda x: eval(x,arginitseq) , derivseq))
 
 
@@ -163,14 +163,71 @@ def countDispMonteKarlo1 (u, sectuple, func):
     return countDispMonteKarlo(u, sectuple[0], sectuple[1], sectuple[2], func)
 
 
+
+def derivate1 (u1, r1, r2, r3, n=1):
+    arginitseq={"u1":u1, "r1":r1, "r2":r2, "r3":r3}
+    return evalderivsymv(func1, argseq, arginitseq), evalderivsymv(func2, argseq, arginitseq)
+
+
+#несколько функций для уточнения линеаризации:
+#1. Вторая производная
+# def derivate1 (u1, r1, r2, r3, n=1): вот здесь n=2
+
+#2. Перекрестная (?) производная
+
+def  derivateCross (funcstr, var1, var2, varvalsdict):
+    der1=str(smp.diff(funcstr,var1))
+    def2=str(smp.diff(der1, var2))
+    return eval (def2, varvalsdict)
+
+
+
+def countDispLinearizationAcc (u1, r1, r2, r3, V, funcstr):
+
+
+    arginitseq={"u1":u1, "r1":r1, "r2":r2, "r3":r3}
+    listvars=["r1", "r2", "r3"]
+    dispLin1=countDispLinearization (u1, r1, r2, r3, V,  derivate1) [0]
+    secMember=0
+
+
+    for i in range (0, 3):
+        secMember+= (derivate1(u1,r1,r2,r3,2)[0][i]**2) * (V[i,i]**2)
+    secMember*=1/2
+
+
+
+
+    thirdMember=0
+    for i in range (0,3):
+        for j in range (0,3):
+            if (i<j):
+                thirdMember+=(derivateCross(funcstr, listvars[i], listvars[j], arginitseq)**2)*V[i,i]*V[j,j]
+
+
+    return dispLin1+secMember+thirdMember
+
+
+
+
+
+
+
+
+
+V=np.array       ( [[4, 2, 3],
+                    [2, 9, 6],
+                    [3, 6, 16]])
+
+V1=np.array      ( [[4, 0, 0],
+                    [0, 9, 0],
+                    [0, 0, 16]])
+
+#V=V1
+M=np.array([20,30,400])
 func1 = "u1* (r2+r3)/(r1+r2+r3)"
 func2= "u1* r3/(r1+r2+r3)"
 argseq=["r1", "r2", "r3" ]
-
-
-def derivate1 (u1, r1, r2, r3):
-    arginitseq={"u1":u1, "r1":r1, "r2":r2, "r3":r3}
-    return evalderivsymv(func1, argseq, arginitseq), evalderivsymv(func2, argseq, arginitseq)
 
 
 def test1():
@@ -197,27 +254,20 @@ def test2(iM, iV, nvol):
     print ("true", "linear", "diff")
     diff1=100*(truedisp[1]-lineardisp[0])/truedisp[1]
     diff2=100*(truedisp[3]-lineardisp[1])/truedisp[3]
-    print (truedisp[1], lineardisp[0], "%5.2f"%diff1, "%" )
+
+
+    #dacc=countDispLinearizationAcc(100, iM[0], iM[1], iM[2], iV, func1)
+    #diffdacc=100*(truedisp[1]-dacc)/truedisp[1]
+
+    print (truedisp[1], lineardisp[0], "%5.2f"%diff1, "%")
+
+
+
+
     print (truedisp[3], lineardisp[1], "%5.2f"%diff2, "%" )
 
 
-V=np.array       ( [[4, 2, 3],
-                    [2, 9, 6],
-                    [3, 6, 16]])
 
-V1=np.array      ( [[4, 0, 0],
-                    [0, 9, 0],
-                    [0, 0, 16]])
-
-#V=V1
-
-M=np.array([20,30,400])
-
-#test1()
-
-#for x in [100, 1000, 10000, 100000, 1000000]:
-#for x in [100, 1000, 10000]:
-#    test2(M,V,x)
 
 print ("Матожидание 10 30 400")
 test2(M,V,100000)
@@ -227,12 +277,12 @@ test2(M,V,100000)
 
 
 
-
-#for r1 in range (10,15):
-#      for r2 in range (100,200,10):
-#          for r3 in range (200,205):
-#              M=np.array([r1, r2, r3])
-#              test2(M, V, 1000)
+#
+# for r1 in range (10,15):
+#       for r2 in range (100,200,10):
+#           for r3 in range (200,205):
+#               M=np.array([r1, r2, r3])
+#               test2(M, V1, 1000)
 
 
 
