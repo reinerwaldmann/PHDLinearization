@@ -250,7 +250,9 @@ def test1():
 def test2(iM, iV, nvol):
     rndv=generrandvals(iM, iV, nvol)
     truedisp=countDispMonteKarlo1(100, rndv ,funct)
+#    lineardisp=countDispLinearization(100, iM[0], iM[1], iM[2], iV, derivate)
     lineardisp=countDispLinearization(100, iM[0], iM[1], iM[2], iV, derivate1)
+
     print ("true", "linear", "diff")
     diff1=100*(truedisp[1]-lineardisp[0])/truedisp[1]
     diff2=100*(truedisp[3]-lineardisp[1])/truedisp[3]
