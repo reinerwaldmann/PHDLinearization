@@ -3,6 +3,8 @@
 # Теория вероятностей.  Вентцель Е.С.
 #4-е изд., стереотип. - М.: Наука, Физматгиз, 1969 - 576 с.
 
+ #а добил их комментарий перед злобной реализацией некого алгоритма на несколько страниц: "описание алгоритма смотри в тетрадке у Чуня"
+
 from cmath import sqrt
 import numpy as np
 import matplotlib.pyplot as plt
@@ -261,7 +263,7 @@ def test2(iM, iV, nvol):
     dacc=countDispLinearizationAcc(100, iM[0], iM[1], iM[2], iV, func1)
     diffdacc=100*(truedisp[1]-dacc)/truedisp[1]
 
-    #print (truedisp[1], lineardisp[0], "%5.2f"%diff1, "%")
+    print (truedisp[1], lineardisp[0], "%5.2f"%diff1, "%")
     #print (truedisp[1], lineardisp[0], "%5.2f"%diff1, "%", dacc, diffdacc, "%")
 
 
