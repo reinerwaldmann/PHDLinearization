@@ -1,3 +1,6 @@
+from copy import deepcopy
+from sympy.core.evalf import rnd
+
 __author__ = 'vasilev_is'
 
 
@@ -83,9 +86,6 @@ nvoly, размер выборки выходных переменых, полу
 опционально файл, где записаны входные переменные - выходные переменные. Столбцы озаглавливаются.
 
     """
-    res=dict()
-
-
     evalstr=""
     counter=0
     for key in xvectorlistsdict.keys():
@@ -99,50 +99,52 @@ nvoly, размер выборки выходных переменых, полу
 
     for i in range (0, counter):
         evalstr+="\t"
-
     evalstr+="resdict=dict()\n"
-
     for key in xvectorlistsdict.keys():
         for i in range (0, counter):
             evalstr+="\t"
         evalstr+="resdict[\""+key+"\"]="+key
         evalstr+="\n"
-
     for i in range (0, counter):
         evalstr+="\t"
-
     evalstr+="varslist.append(resdict)"
 #    print (evalstr)
 
     #    resdict[key]=list()
      #   evalstr+="resdict[\""+key+"\"].append("+funcstrdict[key]+")\n"
-    exec(evalstr, {"u1":0, "r3":0, "r2":0, "r1":0 }, locals() )
+
+    exec(evalstr, xvectorlistsdict, locals()) #исполняет полученную сроку, собсна, формирует список входных переменных
 
     #print (varslist)
     #varslist  - список словарей входных переменных
 
-
      #сюда должен быть добавлен вариант с генерацией рандомных последователььностей входных переменных
      #есть функция, которая генерирует рандомные коррелированные последовательности.
 
-
-
     #если задан разброс входных параметров
-    if ((Vx!=None) && (Vx!=None)):
+    #то мы вот берём и на каждое значение входных параметров генерим их выборку со значением в качестве матожидания, Vx в качестве корреляционной матрицы
+
+    rndinvalslist=list() #сначала всё новые значения сложить в этот список, потом  уже добавлять в varslist, иначе бесконечность
+    if spreadvarslist!=None and  Vx!=None:
         for rec in varslist: #для каждой записи из списка значений входных переменных
-            listForM=list()
-            #listForM.append()
+            listForM=list()  #составить вектор M
+            for var in spreadvarslist: #для каждой переменной из распределённых добавить её значение в вектор М
+                listForM.append(rec[var])
+            M=np.array(listForM) #сделали аррэй из списка вообще можно б и сразу в аррэй
+            rndvals = generrandvals (M, Vx, nvolx)[0] #получили кортеж случайных последовательностей
 
 
-            #M=np.array([20,30,400])
+            for m in range (0, nvolx):  #проходим по каждому случайному вектору
+                newrec = deepcopy(rec) #копируем запись
+                for ii in range (0, len (spreadvarslist)):#для каждой переменной из распределённых
+                    newrec[spreadvarslist[ii]]=rndvals[ii][m]
+                    pass
 
 
+                rndinvalslist.append(newrec)
+            varslist.remove(rec) # удаляем  исходное, без разброса
 
-
-
-
-
-
+        varslist+=rndinvalslist #добавляем к списку то, что мы получили с разбросом
 
 
 
@@ -168,42 +170,84 @@ nvoly, размер выборки выходных переменых, полу
             del rec["__builtins__"]  #с какого эта запись вообще пишется в словарь???? ОЛОЛО
 
 
-    print (varslist)
+
+
+
+
+    # запись в файл
+
+
+    if len (varslist)==0:
+        return varslist
+
+
+    try:
+        with open(outfilename, "wt") as file:
+
+            for key in varslist[0].keys():
+                file.write(key)
+                file.write("\t")
+            file.write("\n")
+
+
+            for rec in varslist:
+                for key in rec.keys():
+                    file.write(rec[key].__str__())
+                    file.write("\t")
+                file.write("\n")
+    except BaseException:
+        pass
+
+
+
+    return varslist
+
+
+def generateAsDict (funcstrdict, xvectorlistsdict, spreadvarslist=None, Vx=None, nvolx=1, yvectordispsdict=None, nvoly=1, outfilename=""):
+
+    vrslst=generate (funcstrdict, xvectorlistsdict, spreadvarslist, Vx, nvolx, yvectordispsdict, nvoly, outfilename)
+
+    if len(vrslst)==0:
+        return None
+
+    #режем список словарей на списки, соответствующие идентификаторам словарям - из этого составить функцию и добавить в генератор
+    resdict=dict()
+    for key in vrslst[0].keys():
+        resdict[key]=list()
+
+    for item in vrslst:
+        for key in item.keys():
+            resdict[key].append(item[key])
+
+    return resdict
 
 
 
 
 
-
-    return res
-
-
-
-
-
-
-
-
-funcstrdict= {"y1":"u1* (r2+r3)/(r1+r2+r3)", "y2":"u1* r3/(r1+r2+r3)"}
-#xvectorlistsdict = {"u1":[100],  "r1":list(np.arange(0,5,1)), "r2":list(range(0,3,1)), "r3":list(range (20,30,5))}
-
-xvectorlistsdict = {"u1":[100],  "r1":[10], "r2":[20], "r3":[30]}
-spreadvarslist  = [ "r1", "r2", "r3"]
-V=np.array       ( [[4, 2, 3],
-                    [2, 9, 6],
-                    [3, 6, 16]])
-
-
-
-#generate (funcstrdict, xvectorlistsdict, spreadvarslist=None, Vx=None, nvolx=1, yvectordispsdict={"y1":16, "y2":25 }, nvoly=1, outfilename="")
-
-
-
-
-M=np.array([20,30,400])
-
-
-print (generrandvals (M, V, nvol=10)[0] )
+#test area:
+#
+#
+# funcstrdict= {"y1":"u1* (r2+r3)/(r1+r2+r3)", "y2":"u1* r3/(r1+r2+r3)"}
+# #xvectorlistsdict = {"u1":[100],  "r1":list(np.arange(0,5,1)), "r2":list(range(0,3,1)), "r3":list(range (20,30,5))}
+#
+# xvectorlistsdict = {"u1":[100],  "r1":[20], "r2":[30], "r3":[400]}
+# spreadvarslist  = ["r1", "r2", "r3"]
+# V=np.array       ( [[4, 2, 3],
+#                     [2, 9, 6],
+#                     [3, 6, 16]])
+#
+#
+# #{"y1":16, "y2":25 }
+# vrslst=generate (funcstrdict, xvectorlistsdict, spreadvarslist, Vx=V, nvolx=100, yvectordispsdict=None, nvoly=1, outfilename="t.txt")
+#
+# for item in vrslst:
+#     print (item)
+#
+# M=np.array([20,30,400])
+#
+#
+# #print (generrandvals (M, V, nvol=10)[0] )
 
 
 
