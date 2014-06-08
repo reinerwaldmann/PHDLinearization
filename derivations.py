@@ -1,8 +1,19 @@
 __author__ = 'reiner'
 
-import numpy as np
-import sympy as smp
 import hashlib
+
+import sympy as smp
+
+
+derivdict=None
+
+def makefunnyhash (funcstr, n):
+    """
+    Делает имя файла из функции и номера производной.
+    Требует наличия доступной папки funcs для работы скрипта, иначе производит ошибки
+    """
+    return  "funcs/"+hashlib.sha224(funcstr.encode()).hexdigest()[0:20]+str(n)
+
 
 
 def derivsym (funcstr, argseq, n=1):
@@ -18,7 +29,7 @@ def derivsym (funcstr, argseq, n=1):
     for arg in argseq:
         res[arg]=str(smp.diff(funcstr,arg, n))
 
-    funnyhash=hashlib.sha224(funcstr.encode()).hexdigest()[0:20]+str(n)+".py"
+    funnyhash=makefunnyhash (funcstr, n)
 
     try:
         open(funnyhash, 'r')
@@ -42,8 +53,6 @@ def derivsym (funcstr, argseq, n=1):
         for arg in argseq:
             filef.write(arg+"\t"+res[arg])
 
-
-
     return res
 
 def evalderivsymv (funcstr, argseq, arginitseq, n=1):
@@ -56,24 +65,26 @@ def evalderivsymv (funcstr, argseq, arginitseq, n=1):
     """
     res=dict()
 
-    derivdict=dict()
-    funnyhash=hashlib.sha224(funcstr.encode()).hexdigest()[0:20]+str(n)
-    try:
-        file=open (funnyhash, 'rt')
-        for line in file:
-            l=line.split("\t")
-            derivdict[l[0]]=l[1]
+    global derivdict
+
+    if derivdict==None:
+        derivdict=dict()
+        funnyhash = makefunnyhash (funcstr, n)  #определить требуемое имя файла
+        try:
+            with open (funnyhash, 'rt') as file:  #попытаться открыть файл, где записаны производные функции по переменной. Одна функция - один файл!
+                for line in file:
+                    l=line.split("\t")
+                    derivdict[l[0]]=l[1]   #считать оттуда символные представления производных
 
 
-    except BaseException:
-        derivdict=derivsym (funcstr, argseq, n)
 
-
+        except BaseException: #если не вышло с файлом
+            derivdict=derivsym (funcstr, argseq, n) #то получить символьные значения производных (оно и файл запишет)
 
 
 
     for arg in argseq:
-        res[arg] = eval(derivdict[arg], arginitseq)
+        res[arg] = eval(derivdict[arg], arginitseq) #вычислить значения производных
     return res
 
 
@@ -99,13 +110,22 @@ def Jakobean (fun_seq, argseq, arginitseq):
 
 
 #TODO Jakobean
-#TODO кеширование функции
+
 
 
 #test area
+#тестируем на время: в первый раз 0.02 сек, далее 0.0 сек, когда файл уже создан, т. к. считывает сначала из файла, потом вообще из кеша.
+
+from time import clock
+
+for i in range (0,10):
+    start1 = clock()
+    test=evalderivsymv ("2*x+1+f*x", ['x'], {'x':1 ,'f':100} )
+    end1 = clock()
+    print("Result (iterativ): ", test, "\nDie Funktion lief %1.10f Sekunden" % (end1 - start1))
 
 
-print (evalderivsymv ("2*x+1+f*x", ['x'], {'x':1 ,'f':100} ))
+
 
 
 #derivsym ("2*x+1", ('x'), 1)
