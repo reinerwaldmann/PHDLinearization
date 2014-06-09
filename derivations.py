@@ -3,6 +3,7 @@ __author__ = 'reiner'
 import hashlib
 
 import sympy as smp
+import numpy as np
 
 
 derivdict=None
@@ -51,7 +52,7 @@ def derivsym (funcstr, argseq, n=1):
         # filef.write(funcstring)
 
         for arg in argseq:
-            filef.write(arg+"\t"+res[arg])
+            filef.write(arg+"\t"+res[arg]+"\n")
 
     return res
 
@@ -104,26 +105,63 @@ def deriv_func_seq (fun_seq, argseq, arginitseq, n=1):
 def Jakobean (fun_seq, argseq, arginitseq):
     """
     Возвращает якобиан векторной функции, по сути матричная форма deriv_func_seq
+
+    Якобиан
+    это функция, возвращающая np.array (то есть, матрицу по сути),
+    являющая собой производные всех функций по всем переменным,
+    df1/dfx1  df1/dx2
+    df2/dfx1  df2/dx2
     """
-    pass
+
+    res = np.zeros ( (len(fun_seq), len(argseq))  )
+
+
+    fndrv=deriv_func_seq (fun_seq, argseq, arginitseq, n=1)
+    print (fndrv)
+
+    for i in range (0, len(fun_seq)):
+        for j in range (0, len(argseq)):
+            res[i][j]=fndrv[fun_seq[i]][argseq[j]]
+            #print (fun_seq[i], argseq[j])
 
 
 
-#TODO Jakobean
+    return res
+
+
+def Jakobeand (funcstrdict, argseq, arginitseq):
+    ks=list(funcstrdict.keys())
+    ks.sort()
+    flst=list()
+    for i in range (0, len(ks)):
+        flst.append(funcstrdict[ks[i]])
+    return Jakobean(flst, spreadvarslist, xvectorlistsdict)
+
+
+
+
+
+
 
 
 
 #test area
 #тестируем на время: в первый раз 0.02 сек, далее 0.0 сек, когда файл уже создан, т. к. считывает сначала из файла, потом вообще из кеша.
 
-from time import clock
+# from time import clock
+#
+# for i in range (0,10):
+#     start1 = clock()
+#     test=evalderivsymv ("2*x+1+f*x", ['x'], {'x':1 ,'f':100} )
+#     end1 = clock()
+#     print("Result (iterativ): ", test, "\nDie Funktion lief %1.10f Sekunden" % (end1 - start1))
 
-for i in range (0,10):
-    start1 = clock()
-    test=evalderivsymv ("2*x+1+f*x", ['x'], {'x':1 ,'f':100} )
-    end1 = clock()
-    print("Result (iterativ): ", test, "\nDie Funktion lief %1.10f Sekunden" % (end1 - start1))
+funcstrdict= {"y1":"u1* (r2+r3)/(r1+r2+r3)", "y2":"u1* r3/(r1+r2+r3)"}
+xvectorlistsdict = {"u1":100,  "r1":20, "r2":30, "r3":400}
+spreadvarslist  = ["r1", "r2", "r3"]
 
+
+print (Jakobeand (funcstrdict, spreadvarslist, xvectorlistsdict))
 
 
 

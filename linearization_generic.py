@@ -68,6 +68,7 @@ def countDispLinearization (fun_seq, argseq, arginitseq, V):
 
     #для каждой функции из списка функций
     for fun in fun_seq:
+
         derivfunc = derivdict[fun]  #таким образом мы получили словарь значений производных
         first_member=0
         for i in range (0, len(argseq)):
