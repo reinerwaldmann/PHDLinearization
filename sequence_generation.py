@@ -64,7 +64,7 @@ def generrandvals (M, cov_ksi, nvol=1000):
 
 
 
-def generate (funcstrdict, xvectorlistsdict, spreadvarslist=None, Vx=None, nvolx=1, yvectordispsdict=None, nvoly=1, outfilename=""):
+def generate (funcstrdict, xvectorlistsdict, spreadvarslist=None, Vx=None, nvolx=1, yvectordispsdict=None, nvoly=1, outfilename="", listoutvars=None):
     """
 Функция способна в широких пределах моделировать экспериментальные данные, получаемые в процессе исследования
 сущности, задаваемой многооткликовой моделью.
@@ -79,6 +79,7 @@ nvolx, размер выборки входных переменных, полу
 словарь дисперсий выходных переменных - выходная переменная - дисперсия.
 nvoly, размер выборки выходных переменых, получаемых с разбросом, для каждого матожидания
 имя выходного файла, если имеется потребность в записи входных и выходных переменных в выходной файл
+listoutvars  -  список переменных, подлежащих выводу в файл. Если None, выводится всё
 
 
 Выходные значения:
@@ -185,15 +186,25 @@ nvoly, размер выборки выходных переменых, полу
         with open(outfilename, "wt") as file:
 
             for key in varslist[0].keys():
-                file.write(key)
-                file.write("\t")
+                if listoutvars!=None:
+                    if key in listoutvars:
+                        file.write(key)
+                        file.write("\t")
+                else:
+                    file.write(key)
+                    file.write("\t")
             file.write("\n")
 
 
             for rec in varslist:
                 for key in rec.keys():
-                    file.write(rec[key].__str__())
-                    file.write("\t")
+                    if listoutvars!=None:
+                        if key in listoutvars:
+                            file.write(rec[key].__str__())
+                            file.write("\t")
+                    else:
+                        file.write(rec[key].__str__())
+                        file.write("\t")
                 file.write("\n")
     except BaseException:
         pass
@@ -204,6 +215,11 @@ nvoly, размер выборки выходных переменых, полу
 
 
 def generateAsDict (funcstrdict, xvectorlistsdict, spreadvarslist=None, Vx=None, nvolx=1, yvectordispsdict=None, nvoly=1, outfilename=""):
+    """
+        режем список словарей на словарь списков
+
+    """
+
 
     vrslst=generate (funcstrdict, xvectorlistsdict, spreadvarslist, Vx, nvolx, yvectordispsdict, nvoly, outfilename)
 
