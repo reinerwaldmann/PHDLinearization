@@ -54,6 +54,7 @@ def derivsym (funcstr, argseq, n=1):
         for arg in argseq:
             filef.write(arg+"\t"+res[arg]+"\n")
 
+
     return res
 
 def evalderivsymv (funcstr, argseq, arginitseq, n=1):
@@ -100,24 +101,30 @@ def deriv_func_seq (fun_seq, argseq, arginitseq, n=1):
     res=dict()
     for fun in fun_seq:
         res[fun] = evalderivsymv(fun,argseq, arginitseq, n)
+
+
     return res
 
 def Jakobean (fun_seq, argseq, arginitseq):
     """
     Возвращает якобиан векторной функции, по сути матричная форма deriv_func_seq
 
+    fun_seq - последовательность строковых записей функций в должном порядке
+    argseq - последовательность аргументов с разбросом в должном порядке
+    arginitseq - значения всех аргументов
+
     Якобиан
     это функция, возвращающая np.array (то есть, матрицу по сути),
     являющая собой производные всех функций по всем переменным,
-    df1/dfx1  df1/dx2
     df2/dfx1  df2/dx2
+    df1/dfx1  df1/dx2
     """
 
     res = np.zeros ( (len(fun_seq), len(argseq))  )
 
 
     fndrv=deriv_func_seq (fun_seq, argseq, arginitseq, n=1)
-    print (fndrv)
+    #print (fndrv)
 
     for i in range (0, len(fun_seq)):
         for j in range (0, len(argseq)):
@@ -129,13 +136,16 @@ def Jakobean (fun_seq, argseq, arginitseq):
     return res
 
 
-def Jakobeand (funcstrdict, argseq, arginitseq):
-    ks=list(funcstrdict.keys())
-    ks.sort()
-    flst=list()
-    for i in range (0, len(ks)):
-        flst.append(funcstrdict[ks[i]])
-    return Jakobean(flst, spreadvarslist, xvectorlistsdict)
+def Jakobeand (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, invarlist, coefflist):
+
+    flst=list(map(lambda x:funcstrdict[x],outvarstrlist))
+
+    totalstrlist=invarstrlist+coeffstrlist
+    totallist=invarlist+coefflist
+    dic = {k:v for k,v in zip(totalstrlist, totallist)}   #with Python 3.x, goes for dict comprehensions   http://legacy.python.org/dev/peps/pep-0274/
+
+
+    return Jakobean(flst, coeffstrlist, dic)
 
 
 
@@ -161,7 +171,7 @@ xvectorlistsdict = {"u1":100,  "r1":20, "r2":30, "r3":400}
 spreadvarslist  = ["r1", "r2", "r3"]
 
 
-print (Jakobeand (funcstrdict, spreadvarslist, xvectorlistsdict))
+
 
 
 
