@@ -6,14 +6,18 @@ import sympy as smp
 import numpy as np
 
 
-derivdict=None
+derivdict=dict()
 
 def makefunnyhash (funcstr, n):
     """
     Делает имя файла из функции и номера производной.
     Требует наличия доступной папки funcs для работы скрипта, иначе производит ошибки
     """
+
     return  "funcs/"+hashlib.sha224(funcstr.encode()).hexdigest()[0:20]+str(n)
+
+    #return "funcs/"+funcstr+"_"+str(n)
+
 
 
 
@@ -69,24 +73,23 @@ def evalderivsymv (funcstr, argseq, arginitseq, n=1):
 
     global derivdict
 
-    if derivdict==None:
-        derivdict=dict()
-        funnyhash = makefunnyhash (funcstr, n)  #определить требуемое имя файла
+    funnyhash = makefunnyhash (funcstr, n)  #определить требуемое имя файла
+    if not (funnyhash in derivdict):
         try:
             with open (funnyhash, 'rt') as file:  #попытаться открыть файл, где записаны производные функции по переменной. Одна функция - один файл!
+                thisfundict=dict()
                 for line in file:
                     l=line.split("\t")
-                    derivdict[l[0]]=l[1]   #считать оттуда символные представления производных
-
-
+                    thisfundict[l[0]]=l[1]  #считать оттуда символные представления производных
+                derivdict[funnyhash] = thisfundict
 
         except BaseException: #если не вышло с файлом
-            derivdict=derivsym (funcstr, argseq, n) #то получить символьные значения производных (оно и файл запишет)
+            derivdict[funnyhash]=derivsym (funcstr, argseq, n) #то получить символьные значения производных (оно и файл запишет)
 
 
 
     for arg in argseq:
-        res[arg] = eval(derivdict[arg], arginitseq) #вычислить значения производных
+        res[arg] = eval(derivdict[funnyhash][arg], arginitseq) #вычислить значения производных
     return res
 
 
@@ -100,7 +103,7 @@ def deriv_func_seq (fun_seq, argseq, arginitseq, n=1):
     """
     res=dict()
     for fun in fun_seq:
-        res[fun] = evalderivsymv(fun,argseq, arginitseq, n)
+        res[fun] = evalderivsymv(fun, argseq, arginitseq, n)
 
 
     return res
@@ -124,12 +127,14 @@ def Jakobean (fun_seq, argseq, arginitseq):
 
 
     fndrv=deriv_func_seq (fun_seq, argseq, arginitseq, n=1)
+
     #print (fndrv)
 
     for i in range (0, len(fun_seq)):
         for j in range (0, len(argseq)):
             res[i][j]=fndrv[fun_seq[i]][argseq[j]]
-            #print (fun_seq[i], argseq[j])
+
+#            print (fun_seq[i], argseq[j])
 
 
 
@@ -143,6 +148,7 @@ def Jakobeand (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, invarlist
     totalstrlist=invarstrlist+coeffstrlist
     totallist=invarlist+coefflist
     dic = {k:v for k,v in zip(totalstrlist, totallist)}   #with Python 3.x, goes for dict comprehensions   http://legacy.python.org/dev/peps/pep-0274/
+
 
 
     return Jakobean(flst, coeffstrlist, dic)

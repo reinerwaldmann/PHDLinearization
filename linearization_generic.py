@@ -112,7 +112,7 @@ V1=np.array      ( [[4, 0, 0],
                     [0, 9, 0],
                     [0, 0, 16]])
 
-
+print ("VARIANCE:")
 print (countDispLinearizationWrapper(funcseq, argseq, arginitseq, V))
 
 

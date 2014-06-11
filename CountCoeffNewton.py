@@ -41,9 +41,11 @@ def countfunctvect (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, inva
         res=list()
         for outvar in outvarstrlist:
             res.append(eval(funcstrdict[outvar], dic))
-    except BaseException:
-
-        print (totalstrlist , invarlist, coefflist)
+    except BaseException as e:
+       print ("error in countfunctvect:", e)
+       print ("totalstrlist", totalstrlist)
+       print ("invarlist", invarlist)
+       print ("coefflist", coefflist)
 
 
 
@@ -55,7 +57,7 @@ def countfunctvect (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, inva
 
 
 
-def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst, NSIG=5):
+def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst, NSIG=3):
     """
     funcstrdict - словарь строкового представления функций
     outvarstrlist -  список выходных переменных (y1, y2)
@@ -85,7 +87,14 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
 
 
 
-    k=np.ones(len(coeffstrlist)) #начальное приближение вектора коэффициентов
+    #k=np.ones(len(coeffstrlist)) #начальное приближение вектора коэффициентов
+
+    k=np.array((range (1, len(coeffstrlist)+1  ))   )
+
+    k=np.array( [10, 20, 340])
+
+
+
     prevk=k #предыдущее значение вектора коэфф
     convergence=0
     numIterations=1
@@ -133,35 +142,78 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
             ydif=Ys[i]-func(Xs[i],k)
             b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
 
+
         deltak=np.linalg.solve(A,b)
 
         mu=2
 
         cond2=True
-
+        it=0
         while (cond2):
             Skmu=0
             mu/=2
             for i in range (0, len (Xs)):
-                vvv=Ys[i]-func(Xs[i], k+mu*deltak)
+
+                vvv=Ys[i]-func(Xs[i], mu*deltak.T[0] + k)
+                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
+                # (это матрица с одним столбцом)
+
+
                 Skmu+=np.dot(vvv.T, vvv)
 
+
+            it+=1
+            if (it>1000):
+                break
             cond2=Skmu>Skpriv
 
-        k+=mu*deltak
+#        k+=mu*deltak
+        k+=mu*deltak.T[0]
+                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
+                # (это матрица с одним столбцом)
+
+
+
+
         Sk=Skmu
 
-        log+="Iteration: "+ numIterations + "\n" + "Vect K="+k+"\n"+"Sk="+Sk+"\n\n"
+
         numIterations+=1
         convergence=0
 
         for i in range (0, len (coeffstrlist)):
             convergence+=math.fabs(deltak[i]/prevk[i])
         convergence/=len(coeffstrlist)
+
+
+        log+="Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n"
+
+
+
+        print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
+
+
         if (numIterations>100): #для ради безопасности поставим ограничитель на число итераций
             break
         condition = convergence>math.pow(10, -1*NSIG)
-    return k, Sk, numIterations
+
+
+    #print (log)
+
+
+    #пытаемся проанализировать результат: выводим средний остаток по функции с текущим K
+    #по сути тестареа
+    testdiff=0
+
+    for i in range (0, len(Xs)):
+        testdiff+=math.fabs(func(Xs[i], k)[1] - Ys[i][1])
+    testdiff/=len(Xs)
+
+
+    print ("testdiff: ", testdiff)
+
+
+    return k, Sk, numIterations, testdiff
 
 
 
@@ -177,8 +229,8 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
 
 import sequence_generation as sg
 
-#funcstrdict= {"y1":"u1* (r2+r3)/(r1+r2+r3)", "y2":"u1* r3/(r1+r2+r3)"}
-funcstrdict= {"y1":"u1*r23/(r1+r23)", "y2":"u1*r3/(r1+r23)"}
+funcstrdict= {"y1":"u1* (r2+r3)/(r1+r2+r3)", "y2":"u1* r3/(r1+r2+r3)"}
+#funcstrdict= {"y1":"u1*r23/(r1+r23)", "y2":"u1*r3/(r1+r23)"}
 
 
 
@@ -188,7 +240,7 @@ funcstrdict= {"y1":"u1*r23/(r1+r23)", "y2":"u1*r3/(r1+r23)"}
 
 xvectorlistsdict = {"u1":range(1,10),  "r1":[20], "r2":[30], "r3":[400]}
 
-#vrslst=sg.generate (funcstrdict, xvectorlistsdict, None, Vx=None, nvolx=None, yvectordispsdict=None, nvoly=1, outfilename="t.txt", listoutvars=["y1", "y2", "u1"] )
+vrslst=sg.generate (funcstrdict, xvectorlistsdict, None, Vx=None, nvolx=None, yvectordispsdict=None, nvoly=1, outfilename="t.txt", listoutvars=["y1", "y2", "u1"] )
 
 import pickle
 #pickle.dump(vrslst, open("vrslt.f", "wb"))
@@ -197,8 +249,8 @@ vrslst=pickle.load(open("vrslt.f", "rb"))
 
 #сюда впилить чтение файла
 
-#grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r1", "r2", "r3"] , vrslst, NSIG=5)
-grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r1", "r23"] , vrslst, NSIG=5)
+grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r1", "r2", "r3"] , vrslst, NSIG=5)
+#grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r1", "r23"] , vrslst, NSIG=5)
 
 
 
