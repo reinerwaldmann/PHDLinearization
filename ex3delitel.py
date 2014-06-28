@@ -32,7 +32,7 @@ def makepercent (leftksu2, rightksu2, leftksu3, rightksu3, generatedvals, draw=1
         seqksu2.append(ksu2)
         seqksu3.append(ksu3)
 
-        if (leftksu2 < ksu3 <rightksu2) and (leftksu3 < ksu2 < rightksu3):
+        if (leftksu2 < ksu2 <rightksu2) and (leftksu3 < ksu3 < rightksu3):
             numOfOk+=1
             seqksu2OK.append(ksu2)
             seqksu3OK.append(ksu3)
@@ -44,70 +44,60 @@ def makepercent (leftksu2, rightksu2, leftksu3, rightksu3, generatedvals, draw=1
 
 
     if (draw):
-        plt.figure(1) # Here's the part I need, but numbering starts at 1!
+
+        plt.ion()
+        fig = plt.figure()
         plt.xlabel('seqksu2')
         plt.ylabel('seqksu3')
-        #plt.axis([0.94, 0.97, 0.86, 0.92])
-        plt.plot(seqksu2, seqksu3, 'ro')
+      #  plt.axis([0.94, 0.97, 0.86, 0.92])
+        plt.plot(seqksu2, seqksu3, 'ro') # Returns a tuple of line objects, thus the comma
+
+        lplots=[plt.plot ([leftksu2, leftksu2], [leftksu3, rightksu3]),
+        plt.plot ([rightksu2, rightksu2], [leftksu3, rightksu3]),
+        plt.plot ([leftksu2, rightksu2], [leftksu3, leftksu3]),
+        plt.plot ([leftksu2, rightksu2], [rightksu3, rightksu3])]
+
+        for p in lplots:
+            plt.setp(p, color='b', linewidth=2.0)
         plt.draw()
-
-
-
-#        time.sleep(1)
-
-
-
-        plt.plot(seqksu2OK, seqksu3OK, 'ro')
-        plt.draw()
-
-
-        plt.show()
-
-        # plt.figure(2) # Here's the part I need, but numbering starts at 1!
-        # #plt.axis([0.94, 0.97, 0.86, 0.92])
-        # plt.xlabel('seqksu2')
-        # plt.ylabel('seqksu3')
-        # plt.plot(seqksu2OK, seqksu3OK, 'ro')
-        # plt.draw()
+        plt.show(block=True)
 
 
 
 
-
-    #plt.axis([0.8,0.97 ,0.8,0.97])
-    #plt.figure(2) # Here's the part I need, but numbering starts at 1!
-
-
-
-    return 100*numOfOk/numTotal, np.corrcoef(seqksu2, seqksu3)
-
-
+    return 100*numOfOk/numTotal, np.corrcoef(seqksu2, seqksu3), seqksu2, seqksu3
 #
 
-# plt.plot([1,2,3,4], [1,4,9,16], 'ro')
-# plt.axis([0, 6, 0, 20])
-# plt.show()
+
+
+#test area
+
+def ex3test():
+    funcstrdict= {"u2":"u1* (r2+r3)/(r1+r2+r3)", "u3":"u1* r3/(r1+r2+r3)"}
+    xvectorlistsdict = {"u1":[100],  "r1":[20], "r2":[30], "r3":[400]}
+    spreadvarslist  = ["r1", "r2", "r3"]
+    V=np.array       ( [[4, 2, 3],
+                                    [2, 9, 6],
+                                    [3, 6, 16]])
+
+    resdict=sg.generate (funcstrdict, xvectorlistsdict, spreadvarslist, V, 10000, nvoly=1)
+
+    ksu2=0.955
+    ksu3=0.888
+
+    diap=0.001
+    leftksu2=ksu2-diap
+    rightksu2=ksu2+diap
+    leftksu3=ksu3-diap
+    rightksu3=ksu3+diap
+    print (makepercent(leftksu2, rightksu2, leftksu3, rightksu3, resdict, draw=1))
 
 
 
 
 
 
-#print (makepercent(0.95, 0.96, 0.89, 0.9, resdict ))
 
-#for i in range (0,10):
-
-
-
-funcstrdict= {"u2":"u1* (r2+r3)/(r1+r2+r3)", "u3":"u1* r3/(r1+r2+r3)"}
-xvectorlistsdict = {"u1":[100],  "r1":[20], "r2":[30], "r3":[400]}
-spreadvarslist  = ["r1", "r2", "r3"]
-V=np.array       ( [[4, 2, 3],
-                                [2, 9, 6],
-                                [3, 6, 16]])
-
-resdict=sg.generate (funcstrdict, xvectorlistsdict, spreadvarslist, V, 10000, nvoly=1)
-print (makepercent(0.88, 0.90, 0.95, 0.96, resdict, draw=1))
 
 #first - y axiss, second - x axis
 
