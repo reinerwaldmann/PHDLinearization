@@ -5,6 +5,10 @@ import hashlib
 import sympy as smp
 import numpy as np
 
+"""
+В файле реализованы функции символьного диффенцирования векторных функций с оптимизацией
+
+"""
 
 derivdict=dict()
 

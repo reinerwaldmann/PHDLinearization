@@ -1,8 +1,18 @@
 __author__ = 'reiner'
 
-import numpy as np
-import derivations as der
 import math
+
+import numpy as np
+
+import derivations as der
+
+
+"""
+В файле реализован метод подгонки коэффициентов методом Ньютона-Гаусса
+
+"""
+
+
 
 def readFile(filename):
     """

@@ -1,9 +1,13 @@
 __author__ = 'vasilev_is'
 
-import sequence_generation as sg
 import numpy as np
 
+import sequence_generation as sg
+
+
 #Monte-Karlo method applied to the resistor problem, using new sequence generator
+
+
 
 
 def MonteKarloGenericV2 (funcstrdict, xvectorlistsdict, spreadvarslist, Vx, nvolx):
