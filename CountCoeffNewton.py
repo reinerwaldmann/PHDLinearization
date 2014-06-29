@@ -67,7 +67,7 @@ def countfunctvect (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, inva
 
 
 
-def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst, NSIG=3):
+def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst, NSIG=3, kinit=None):
     """
     funcstrdict - словарь строкового представления функций
     outvarstrlist -  список выходных переменных (y1, y2)
@@ -99,9 +99,13 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
 
     #k=np.ones(len(coeffstrlist)) #начальное приближение вектора коэффициентов
 
-    k=np.array((range (1, len(coeffstrlist)+1  ))   )
 
-    k=np.array( [10, 20, 340])
+    if kinit==None:
+        k=np.array((range (1, len(coeffstrlist)+1  ))   )
+    else:
+        k=kinit
+
+
 
 
 
@@ -216,7 +220,8 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
     testdiff=0
 
     for i in range (0, len(Xs)):
-        testdiff+=math.fabs(func(Xs[i], k)[1] - Ys[i][1])
+        testdiff+=math.fabs(func(Xs[i], k)[1] - Ys[i][1
+        ])
     testdiff/=len(Xs)
 
 
@@ -259,7 +264,7 @@ vrslst=pickle.load(open("vrslt.f", "rb"))
 
 #сюда впилить чтение файла
 
-grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r1", "r2", "r3"] , vrslst, NSIG=5)
+grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r1", "r2", "r3"] , vrslst, NSIG=5, kinit=np.array( [21, 31, 401]))
 #grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r1", "r23"] , vrslst, NSIG=5)
 
 
