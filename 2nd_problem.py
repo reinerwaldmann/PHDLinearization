@@ -1,3 +1,5 @@
+
+
 __author__ = 'reiner'
 """
 В файле реализованы функции, потребные для решения проблем во втором задании.
@@ -68,6 +70,37 @@ def showonlyoutputseq(inputseq, var):
 
     return list (map (filterksu, seq))
 
+def getellipse2D (seq, strx, stry):
+    """
+    1. Получает все параметры эллипса. А именно:
+     матожидание обоих параметров, дисперсии обоих параметров, коэффициент корреляции обоих параметров.
+     этими параметрами определяется уравнение эллипса
+
+    """
+    xseq=showonlyoutputseq(seq, strx)
+    yseq=showonlyoutputseq(seq, stry)
+
+    mx=np.mean(xseq)
+    my=np.mean(yseq)
+
+    dx=np.var(xseq)
+    dy=np.var(yseq)
+
+    sigmax=np.sqrt(dx)
+    sigmay=np.sqrt(dy)
+
+
+    r=np.corrcoef(xseq, yseq)[0][1]
+
+
+
+
+
+
+    # print (r)
+    #variance - это дисперсия, то есть сигма в квадрате
+
+
 
 
 
@@ -84,8 +117,11 @@ xvectorlistsdict = {"r1":[20], "r2":[30]}
 spreadvarslist  = ["r1", "r2"]
 
 
-V=np.array                   ( [[4, 2],
+V1=np.array                   ( [[4, 2],
                                 [3, 6]])
+
+V=np.array                   ( [[4, 0],
+                                [0, 6]])
 
 resdict=sg.generate (funcstrdict, xvectorlistsdict, spreadvarslist, V, 10000)
 
@@ -97,12 +133,14 @@ filteredresdict=filterseq (resdict, diaps)[0]
 seqr1=showonlyoutputseq (resdict, "r1")
 seqr2=showonlyoutputseq (resdict, "r2")
 
-
-
 seqr1f=showonlyoutputseq (filteredresdict, "r1")
 seqr2f=showonlyoutputseq (filteredresdict, "r2")
 
 
+getellipse2D (filteredresdict, "r1", "r2")
+
+
+exit(0)
 
 plt.figure(1) # Here's the part I need, but numbering starts at 1!
 plt.xlabel('seqr1')

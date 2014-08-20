@@ -86,7 +86,6 @@ def countDispLinearization (fun_seq, argseq, arginitseq, V):
 
 
 
-
 def countDispLinearizationWrapper (fun_seq, argseq, arginitseq, V):
     """
     Контролирует правильность аргументов
