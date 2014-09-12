@@ -102,6 +102,16 @@ def getellipse2D (seq, strx, stry):
 
 
 
+def buildAnEllipse (inputseq1, inputseq2):
+    """
+
+    Строит эллипс, определяемый распределением inputseq1 и inputseq2.
+     Эллипс строится по формуле из Вентцеля
+    @inputseq1 - одна входная последовательность
+    @inputseq2 - другая
+    """
+
+
 
 
 

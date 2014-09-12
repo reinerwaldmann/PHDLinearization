@@ -3,20 +3,13 @@ __author__ = 'reiner'
 
 
 from scipy import optimize
-import derivations as deriv
 
 #уравнения Кирхгофа:
 
 b=(60,60,40) #задаём вектор коэффициентов
 w=(1,2) #задаём вектор значений источников питания
 
-def kirh(y):
-    global b
 
-    return [y[0]+y[1]-y[2],
-            y[0]*b[0]-y[1]*b[1]-w[0]-w[1],
-            y[1]*b[1]+y[2]*b[2]+w[1]
-            ]
 
 def make_exp_plan (wstartend1, wstartend2,  num   ):
 
@@ -41,15 +34,37 @@ def make_exp_plan_2_generator (wstartend1, wstartend2, num):
 
 
 
+#http://pythonworld.ru/tipy-dannyx-v-python/vse-o-funkciyax-i-ix-argumentax.html
+def kirhWrapper (b):
+    #эта функция возвращает функцию же.
+
+    def kirh(y):
+        return [y[0]+y[1]-y[2],
+                y[0]*b[0]-y[1]*b[1]-w[0]-w[1],
+                y[1]*b[1]+y[2]*b[2]+w[1]
+                ]
+
+    return kirh
+
+
+
 def test():
+    global b
+
+
     print ("points in plan | ", " y vector | ", " left side of equation")
 
     for i in make_exp_plan_2_generator ((10,20), (60,40),  10):
         w=i
         #sol = optimize.root(kirh, [1, 1, 1 ], jac=jac, method=’hybr’)
-        sol = optimize.root(kirh, [1, 1, 1 ], method='hybr')
 
-        print (i, sol.x, kirh(sol.x))
+        fun = kirhWrapper(b)
+
+
+        sol = optimize.root(fun, [1, 1, 1 ], method='hybr')
+
+        print (i, sol.x, fun(sol.x))
+
 
 
         #print (list(i).extend(sol.x).extend (kirh(sol.x)))
