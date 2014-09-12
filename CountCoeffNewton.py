@@ -106,9 +106,6 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
         k=kinit
 
 
-
-
-
     prevk=k #предыдущее значение вектора коэфф
     convergence=0
     numIterations=1
@@ -140,7 +137,7 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
     Tv=lambda x: (np.asmatrix(x)).T
 
 
-    while condition:
+    while condition: #пока не пришли к конвергенции
         Skpriv=Sk
         prevk=k
         Sk=0
@@ -150,14 +147,14 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
 
 
 
-        for i in range (0, len(Xs)):
+        for i in range (0, len(Xs)):   #для всех наблюдений
             fstructval=fstruct(Xs[i], k)
             A+=np.dot (fstructval.T, fstructval)
             ydif=Ys[i]-func(Xs[i],k)
             b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
 
 
-        deltak=np.linalg.solve(A,b)
+        deltak=np.linalg.solve(A,b)  #определяем дельту
 
         mu=2
 
