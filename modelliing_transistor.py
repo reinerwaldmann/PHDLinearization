@@ -4,6 +4,8 @@ __author__ = 'reiner'
 
 from scipy import optimize
 
+import derivations as der
+
 #уравнения Кирхгофа:
 
 b=(60,60,40) #задаём вектор коэффициентов
@@ -105,6 +107,16 @@ test1()
     #return strEvaluator(funstr,x,b,c)(y)
 
 
+#хотели callable - получайте!
+def ret_callable_jac (fun_seq, argseq, arginitseq):
+    def innerj (y):
+
+
+    return innerj
+
+
+
+
 
 
 def test():
@@ -121,6 +133,10 @@ def test():
 
 
         sol = optimize.root(fun, [1, 1, 1 ], method='hybr')
+
+
+        #можно скормить jacobean. Но он должен быть callable с подачей y на вход, очевидно
+
 
         print (i, sol.x, fun(sol.x))
 
