@@ -4,8 +4,6 @@ __author__ = 'reiner'
 
 from scipy import optimize
 
-import derivations as der
-
 #уравнения Кирхгофа:
 
 b=(60,60,40) #задаём вектор коэффициентов
@@ -39,6 +37,7 @@ def make_exp_plan_2_generator (wstartend1, wstartend2, num):
 #http://pythonworld.ru/tipy-dannyx-v-python/vse-o-funkciyax-i-ix-argumentax.html
 def kirhWrapper (b):
     #эта функция возвращает функцию же.
+    #Теперь надо, чтобы она возвращала функцию с подставленными аргументами. Эту функцию скормить решальнику уравнений методом Ньютона
 
     def kirh(y):
         return [y[0]+y[1]-y[2],
@@ -110,9 +109,11 @@ test1()
 #хотели callable - получайте!
 def ret_callable_jac (fun_seq, argseq, arginitseq):
     def innerj (y):
+        Jakobean (fun_seq, argseq, arginitseq)
 
 
-    return innerj
+
+return innerj
 
 
 
