@@ -47,6 +47,65 @@ def kirhWrapper (b):
     return kirh
 
 
+def strEvaluator (funstr:list, x:list, b:list=[], c:dict={}):
+    """
+    Возвращает функцию, которая возвращает list результатов векторной функции, подаваемой во входных параметрах
+    Сделано только для неявных функций
+    funstr - вектор функций в строковом представлении
+    x - вектор входных аргументов
+    b - вектор коэффициентов
+    c - словарь прочих постоянных
+    """
+    vardict = {'x':x, 'b':b}
+    vardict.update(c)
+
+    def evalfunc(yy):
+        #yy - вектор выходных аргументов, которые мы находим методом Ньютона
+        vdict = vardict
+        vdict['y']=yy
+
+        fff=lambda f: eval (f, None, vardict)
+
+        return list(map(fff, funstr))
+
+    return evalfunc #возвращаем функцию
+
+def test1():
+    #на этом простом примере видно, что optimize_root выдаёт верные корни при использовании в связке с strEvaluator
+    #однако же при использовании его для модели транзистора резистивной есть расхождения с вариантом функции.
+    #возможно, надлежит скормить якобиан однако же
+
+
+
+    #funstr= ["x[0]+y[0]+b[0]", "x[1]+y[1]+b[1]" ]
+    #x=[1,2]
+    #y=[30,30]
+    #b=[100,200]
+    c={}
+
+    #w преобразовано в х
+    funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
+#    w=[10,60] #задаём
+ #   x=w
+    b=[60,60,40] #задаём вектор коэффициентов
+ #   c=[]
+   # function = strEvaluator(funstr,x,b,c)
+   # print (function(y) )
+
+    for i in make_exp_plan_2_generator ((10,20), (60,40),  10):
+        x=list(i)
+        function = strEvaluator(funstr,x,b,c)
+        sol = optimize.root(function, [1, 1, 1], method='lm')
+        print (i, sol, function(sol.x))
+        break
+
+test1()
+
+
+    #return strEvaluator(funstr,x,b,c)(y)
+
+
+
 
 def test():
     global b
@@ -73,6 +132,6 @@ def test():
         #написать проверялку, а точно корни-то подходящие?
 
 
-
-test()
+#print (test1())
+#test()
 
