@@ -1,8 +1,14 @@
 __author__ = 'reiner'
-#программая является аналогом kirhgres
+#песочница для отработки функций программы, аналога planpos
+
+
+
 
 
 from scipy import optimize
+
+import derivations as drv
+
 
 #уравнения Кирхгофа:
 
@@ -71,10 +77,66 @@ def strEvaluator (funstr:list, x:list, b:list=[], c:dict={}):
 
     return evalfunc #возвращаем функцию
 
+def debilizm (r:list, let:str):
+    """
+    Из вектора x[...] формирует словарь {x1: .. ,...} для совместимости с drv.Jacobean
+    """
+    res=dict()
+    for i in range(0, len(r)):
+        res[let+str(i)] = r[i]
+    return res
+
+
+#хотели callable - получайте!
+def ret_callable_jac (funstr:list, x:list, b:list=[], c:dict={}):
+    def innerj (y):
+        argseq=list()
+        for i in range(0, len(y)):
+            argseq.append('y{0}'.format(i))
+
+        updfunstr=list(map(lambda x: x.replace('[','').replace(']',''),  funstr))
+        xdict = debilizm(x,'x')
+        bdict = debilizm(b,'b')
+        cdict = debilizm(c,'c')
+        ydict = debilizm(y,'y')
+        vardict = xdict
+        vardict.update(bdict)
+        vardict.update(cdict)
+        vardict.update(c)
+        vardict.update(ydict)
+
+        return drv.Jakobean (updfunstr, argseq, vardict)
+
+    return innerj
+
+
+
+
+
+def generate_uniform_plan(funcstrlist:list, xdiaptuplelist:list, b:list, c:dict, ydisps:list, nvoly=1, outfilename="", listOfOutvars=None):
+    """
+    Моделирует набор экспериментальных данных, получаемых по равномерному априорному плану.
+    Возвращаемое значение - список словарей с ключами x, y, b, c
+    Parameters:
+    funcstrlist - векторная функция (список функций)
+    xdiaptuplelist - вектор диапазонов, заданных кортежами
+
+
+    """
+
+
+
+
+
+    pass
+
+
+
 def test1():
     #на этом простом примере видно, что optimize_root выдаёт верные корни при использовании в связке с strEvaluator
     #однако же при использовании его для модели транзистора резистивной есть расхождения с вариантом функции.
     #возможно, надлежит скормить якобиан однако же
+
 
 
 
@@ -90,31 +152,30 @@ def test1():
  #   x=w
     b=[60,60,40] #задаём вектор коэффициентов
  #   c=[]
-   # function = strEvaluator(funstr,x,b,c)
-   # print (function(y) )
+    x=[1,2]
+
+ #   print (ret_callable_jac(funstr, x,b,c)([10,20, 30]))
+
+
+
+
+#    exit(0)
+
 
     for i in make_exp_plan_2_generator ((10,20), (60,40),  10):
         x=list(i)
         function = strEvaluator(funstr,x,b,c)
-        sol = optimize.root(function, [1, 1, 1], method='lm')
-        print (i, sol, function(sol.x))
-        break
+        sol = optimize.root(function, [1, 1, 1], method='lm', jac=ret_callable_jac(funstr, x,b,c))
+
+        #TODO можно прогнать тестирование разными методами и выбрать лучший для конкретной задачи
+        #sol = optimize.root(function, [1, 1, 1], method='hybr')
+        print (i, sol.x, function(sol.x))
+
 
 test1()
 
 
     #return strEvaluator(funstr,x,b,c)(y)
-
-
-#хотели callable - получайте!
-def ret_callable_jac (fun_seq, argseq, arginitseq):
-    def innerj (y):
-        Jakobean (fun_seq, argseq, arginitseq)
-
-
-
-return innerj
-
 
 
 
