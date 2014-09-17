@@ -254,10 +254,10 @@ xvectorlistsdict = {"u1":range(1,10),  "r1":[20], "r2":[30], "r3":[400]}
 
 vrslst=sg.generate (funcstrdict, xvectorlistsdict, None, Vx=None, nvolx=None, yvectordispsdict=None, nvoly=1, outfilename="t.txt", listoutvars=["y1", "y2", "u1"] )
 
-import pickle
+#import pickle
 #pickle.dump(vrslst, open("vrslt.f", "wb"))
 
-vrslst=pickle.load(open("vrslt.f", "rb"))
+#vrslst=pickle.load(open("vrslt.f", "rb"))
 
 #сюда впилить чтение файла
 

@@ -18,7 +18,7 @@ def makefunnyhash (funcstr, n):
     Требует наличия доступной папки funcs для работы скрипта, иначе производит ошибки
     """
 
-    return  "funcs/"+hashlib.sha224(funcstr.encode()).hexdigest()[0:20]+str(n)
+    return  "funcs/"+hashlib.sha224(funcstr.encode()).hexdigest()[0:30]+str(n)
 
     #return "funcs/"+funcstr+"_"+str(n)
 
@@ -35,10 +35,13 @@ def derivsym (funcstr, argseq, n=1):
 1
     """
     res=dict()
+
+
     for arg in argseq:
         res[arg]=str(smp.diff(funcstr,arg, n))
 
-    funnyhash=makefunnyhash (funcstr, n)
+
+    funnyhash=makefunnyhash (funcstr+argseq.__str__(), n)
 
     try:
         open(funnyhash, 'r')
@@ -77,7 +80,7 @@ def evalderivsymv (funcstr, argseq, arginitseq, n=1):
 
     global derivdict
 
-    funnyhash = makefunnyhash (funcstr, n)  #определить требуемое имя файла
+    funnyhash = makefunnyhash (funcstr+argseq.__str__(), n)  #определить требуемое имя файла
     if not (funnyhash in derivdict):
         try:
             with open (funnyhash, 'rt') as file:  #попытаться открыть файл, где записаны производные функции по переменной. Одна функция - один файл!
@@ -93,6 +96,7 @@ def evalderivsymv (funcstr, argseq, arginitseq, n=1):
 
 
     for arg in argseq:
+
         res[arg] = eval(derivdict[funnyhash][arg], arginitseq) #вычислить значения производных
     return res
 

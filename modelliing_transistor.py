@@ -13,6 +13,7 @@ import derivations as drv
 
 
 
+
 #уравнения Кирхгофа:
 
 b=(60,60,40) #задаём вектор коэффициентов
@@ -87,6 +88,8 @@ def rety (funstr, x, b, c):
     sol = optimize.root(function, [1, 1, 1], method='lm', jac=ret_callable_jac(funstr, x,b,c))
     return sol.x
 
+
+
 def generate_uniform_plan_exp_data(funcstrlist:list, xdiapdictlist:list, b:list, c:dict, ydisps:list=None, n=1, outfilename="", listOfOutvars=None):
     """
     Моделирует набор экспериментальных данных, получаемых по равномерному априорному плану.
@@ -134,180 +137,6 @@ def generate_uniform_plan_exp_data(funcstrlist:list, xdiapdictlist:list, b:list,
         res.append(appdict)
 
     return res
-
-
-
-def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
-    """
-    Подгоняет коэфф. методом Ньютона-Гаусса с изменяемой длиной шага (через mu)
-    Parameters:
-    funcf - функция, на вход которой подаются вектора x и b, а на выходе получается вектор y, притом без возмущений
-    jacf - функция, на вход которой подаются вектора x и b, а на выходе получается якобиан функции
-    expdatalist:list - экспериментальные данные
-    kinit=None - начальное приближение коэффициентов
-    NSIG=3 - число значащих цифр (точность подгонки коэффициентов)
-    """
-    log=""#строка, куда пишутся всякие сообщения
-
-    if expdatalist==None:
-        print ("grandCountGN_Ultra Error: cannot read exp data")
-        return None
-    #надо произвести два списка: список векторов Xs, и Ys из входного
-
-
-#     Xs=list()
-#     Ys=list()
-# #здесь можно ещё поиграть с лямбдами, чтоб полностью отказаться от итеративных  процессов
-#     for line in vrslst:
-#         la=lambda x: line[x]
-#         Xs.append(np.array (list (map (la, invarstrlist))))
-#         Ys.append(np.array (list (map (la, outvarstrlist))))
-
-
-
-    #k=np.ones(len(coeffstrlist)) #начальное приближение вектора коэффициентов
-
-
-    # if kinit==None:
-    #     k=np.array((range (1, len(coeffstrlist)+1  ))   )
-    # else:
-    #     k=kinit
-
-    k=kinit
-    M=len(k) # число оцениваемых коэффициентов
-
-
-    prevk=k #предыдущее значение вектора коэфф
-    convergence=0
-    numIterations=1
-
-
-
-    A=np.zeros ((M, M))
-    b=np.zeros((M, 1))
-
-    Sk=0
-    Skmu=0
-    N=len(expdatalist)  #размер выборки
-
-
-
-
-    func = funcf
-    for i in range(0, len(expdatalist)):
-        dif = np.array(expdatalist[i]['y'])-np.array(func(expdatalist[i]['x'],k))
-        Sk+= np.dot(dif.T, dif)
-
-    # ind=0
-    # func=lambda x,k: np.array(countfunctvect (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, x.tolist(), k.tolist())) #собственно, функция
-    #
-    # for xx in Xs:
-    #     dif=Ys[ind]-np.array(func(xx,k))
-    #     Sk+= np.dot(dif.T, dif)
-    #     ind+=1
-
-    Skpriv=0
-    mu=1
-
-    condition = True
-#    fstruct = lambda x,k: der.Jakobeand (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, x.tolist(), k.tolist())
-    fstruct=jacf
-
-    Tv=lambda x: (np.asmatrix(x)).T
-
-
-    while condition: #пока не пришли к конвергенции
-        Skpriv=Sk
-        prevk=k
-        Sk=0
-        A=np.zeros_like(A)
-        b=np.zeros_like(b)
-#*************************************#
-
-
-
-        for i in range (0, len(Xs)):   #для всех наблюдений
-            fstructval=fstruct(Xs[i], k)
-            A+=np.dot (fstructval.T, fstructval)
-            ydif=Ys[i]-func(Xs[i],k)
-            b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
-
-#http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.solve.html
-        deltak=np.linalg.solve(A,b)  #определяем дельту
-
-        mu=2
-
-        cond2=True
-        it=0
-        while (cond2):
-            Skmu=0
-            mu/=2
-            for i in range (0, len (Xs)):
-
-                vvv=Ys[i]-func(Xs[i], mu*deltak.T[0] + k)
-                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
-                # (это матрица с одним столбцом)
-
-
-                Skmu+=np.dot(vvv.T, vvv)
-
-
-            it+=1
-            if (it>1000):
-                break
-            cond2=Skmu>Skpriv
-
-#        k+=mu*deltak
-        k+=mu*deltak.T[0]
-                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
-                # (это матрица с одним столбцом)
-
-
-
-
-        Sk=Skmu
-
-
-        numIterations+=1
-        convergence=0
-
-        for i in range (0, len (coeffstrlist)):
-            convergence+=math.fabs(deltak[i]/prevk[i])
-        convergence/=len(coeffstrlist)
-
-
-        log+="Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n"
-
-
-
-        print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
-
-
-        if (numIterations>100): #для ради безопасности поставим ограничитель на число итераций
-            break
-        condition = convergence>math.pow(10, -1*NSIG)
-
-
-    #print (log)
-
-
-    #пытаемся проанализировать результат: выводим средний остаток по функции с текущим K
-    #по сути тестареа
-    testdiff=0
-
-    for i in range (0, len(Xs)):
-        testdiff+=math.fabs(func(Xs[i], k)[1] - Ys[i][1
-        ])
-    testdiff/=len(Xs)
-
-
-    print ("testdiff: ", testdiff)
-
-
-    return k, Sk, numIterations, testdiff
-
-
-
 
 def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst, NSIG=3, kinit=None):
     """
@@ -476,22 +305,239 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
     #print (nvars)
 
 
+def retAdvStructJac (funstr:list, x:list, b:list, c:dict={}, yy:list=None):
+    """
+    Возвращает структурную матрицу для неявной функции
+    G=dY/dB=dF/dB * (dF/dY)^-1
+    """
+    if yy==None:
+        y= rety (funstr, x, b, c)
+    else:
+        y=yy
+
+
+    #находим dF/dB
+
+
+    argseq=list()
+    for i in range(0, len(b)):
+        argseq.append('b{0}'.format(i))
+
+    updfunstr=list(map(lambda x: x.replace('[','').replace(']',''),  funstr))
+
+
+    xdict = debilizm(x,'x')
+    bdict = debilizm(b,'b')
+    cdict = debilizm(c,'c')
+    ydict = debilizm(y,'y')
+    vardict = xdict
+    vardict.update(bdict)
+    vardict.update(cdict)
+    vardict.update(c)
+    vardict.update(ydict)
+
+
+
+    dFdB=drv.Jakobean (updfunstr, argseq, vardict)
+
+    dFdY=ret_callable_jac (funstr, x, b, c)(y)
+
+    return np.dot(dFdB, np.linalg.inv(dFdY))
+
+
+
+def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
+    """
+    Подгоняет коэфф. методом Ньютона-Гаусса с изменяемой длиной шага (через mu)
+    Parameters:
+    funcf - функция, на вход которой подаются вектора x и b, а на выходе получается вектор y, притом без возмущений
+    jacf - функция, на вход которой подаются вектора x и b, а на выходе получается якобиан функции
+    expdatalist:list - экспериментальные данные
+    kinit=None - начальное приближение коэффициентов
+    NSIG=3 - число значащих цифр (точность подгонки коэффициентов)
+    """
+    log=""#строка, куда пишутся всякие сообщения
+
+    if expdatalist==None:
+        print ("grandCountGN_Ultra Error: cannot read exp data")
+        return None
+    #надо произвести два списка: список векторов Xs, и Ys из входного
+
+
+#     Xs=list()
+#     Ys=list()
+# #здесь можно ещё поиграть с лямбдами, чтоб полностью отказаться от итеративных  процессов
+#     for line in vrslst:
+#         la=lambda x: line[x]
+#         Xs.append(np.array (list (map (la, invarstrlist))))
+#         Ys.append(np.array (list (map (la, outvarstrlist))))
+
+
+
+    #k=np.ones(len(coeffstrlist)) #начальное приближение вектора коэффициентов
+
+
+    # if kinit==None:
+    #     k=np.array((range (1, len(coeffstrlist)+1  ))   )
+    # else:
+    #     k=kinit
+
+    k=kinit
+    M=len(k) # число оцениваемых коэффициентов
+
+
+    prevk=k #предыдущее значение вектора коэфф
+    convergence=0
+    numIterations=1
+
+
+
+    A=np.zeros ((M, M))
+    b=np.zeros((M, 1))
+
+    Sk=0
+    Skmu=0
+    N=len(expdatalist)  #размер выборки
 
 
 
 
+    func = funcf
+    for i in range(0, len(expdatalist)):
+        dif = np.array(expdatalist[i]['y'])-np.array(func(expdatalist[i]['x'],k))
+        Sk+= np.dot(dif.T, dif)
+
+    # ind=0
+    # func=lambda x,k: np.array(countfunctvect (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, x.tolist(), k.tolist())) #собственно, функция
+    #
+    # for xx in Xs:
+    #     dif=Ys[ind]-np.array(func(xx,k))
+    #     Sk+= np.dot(dif.T, dif)
+    #     ind+=1
+
+    Skpriv=0
+    mu=1
+
+    condition = True
+#    fstruct = lambda x,k: der.Jakobeand (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, x.tolist(), k.tolist())
+    fstruct=jacf
+
+    Tv=lambda x: (np.asmatrix(x)).T
+
+
+    while condition: #пока не пришли к конвергенции
+        Skpriv=Sk
+        prevk=k
+        Sk=0
+        A=np.zeros_like(A)
+        b=np.zeros_like(b)
+
+
+
+        for i in range(0, len(expdatalist)): #для всех наблюдений
+
+            fstructval=fstruct(expdatalist[i]['x'], k)
+            A+=np.dot (fstructval.T, fstructval)
+            ydif=expdatalist[i]['y']-func(expdatalist[i]['x'],k)
+            b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
+
+#http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.solve.html
+        deltak=np.linalg.solve(A,b)  #определяем дельту
+
+        mu=2
+
+        cond2=True
+        it=0
+        while (cond2):
+            Skmu=0
+            mu/=2
+            for i in range (0, len (expdatalist)):
+
+                vvv=expdatalist[i]['y']-func(expdatalist[i]['x'], mu*deltak.T[0] + k)
+                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
+                # (это матрица с одним столбцом)
+                Skmu+=np.dot(vvv.T, vvv)
+            it+=1
+            if (it>1000):
+                break
+            cond2=Skmu>Skpriv
+
+        k+=mu*deltak.T[0]
+
+
+        print (mu, deltak.T[0])
+
+       # k-=0.3*deltak.T[0]
+
+
+                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
+                # (это матрица с одним столбцом)
 
 
 
 
+        Sk=Skmu
+
+
+        numIterations+=1
+        convergence=0
+
+        for i in range (0, M):
+            convergence+=math.fabs(deltak[i]/prevk[i])
+        convergence/=M
+
+
+        log+="Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n"
 
 
 
+        print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
+
+
+        if (numIterations>100): #для ради безопасности поставим ограничитель на число итераций
+            break
+        condition = convergence>math.pow(10, -1*NSIG)
+
+
+    #print (log)
+
+
+    #пытаемся проанализировать результат: выводим средний остаток по функции с текущим K
+    #по сути тестареа
+    testdiff=0
+
+    for i in range (0, len(expdatalist)):
+        testdiff+=math.fabs(func(expdatalist[i]['x'], k)[1] - expdatalist[i]['y'][1]) #TODO проверить целесообразность [1]
+    testdiff/=len(expdatalist)
+
+
+    print ("testdiff: ", testdiff)
+
+
+    return k, Sk, numIterations, testdiff
 
 
 
+def test4():
+    funstr= ["x[1]-y[1]*b[1]",
+             "y[1]+c['AR']*c['ISC']*()  ",
+             "y[1]*b[1]+y[2]*b[2]+x[1]"]
+    b=[100,200, 300]
+    c={}
+
+def test3():
+    funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
+    b=[10,25, 15]
+    c={}
+    expdata=generate_uniform_plan_exp_data(funstr, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, [0.000001,0, 0.000001], 50)
 
 
+    funcf=lambda x,b: rety(funstr, x, b, c)
+    jacf = lambda x,b: retAdvStructJac(funstr, x, b, c)
+
+    print  (grandCountGN_Ultra(funcf, jacf, expdata, [1,1,1]))
+
+test3()
 
 
 def test2():
