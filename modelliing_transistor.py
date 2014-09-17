@@ -14,6 +14,7 @@ import derivations as drv
 
 
 
+
 #уравнения Кирхгофа:
 
 b=(60,60,40) #задаём вектор коэффициентов
@@ -364,24 +365,6 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
     #надо произвести два списка: список векторов Xs, и Ys из входного
 
 
-#     Xs=list()
-#     Ys=list()
-# #здесь можно ещё поиграть с лямбдами, чтоб полностью отказаться от итеративных  процессов
-#     for line in vrslst:
-#         la=lambda x: line[x]
-#         Xs.append(np.array (list (map (la, invarstrlist))))
-#         Ys.append(np.array (list (map (la, outvarstrlist))))
-
-
-
-    #k=np.ones(len(coeffstrlist)) #начальное приближение вектора коэффициентов
-
-
-    # if kinit==None:
-    #     k=np.array((range (1, len(coeffstrlist)+1  ))   )
-    # else:
-    #     k=kinit
-
     k=kinit
     M=len(k) # число оцениваемых коэффициентов
 
@@ -421,9 +404,7 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
     condition = True
 #    fstruct = lambda x,k: der.Jakobeand (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, x.tolist(), k.tolist())
     fstruct=jacf
-
     Tv=lambda x: (np.asmatrix(x)).T
-
 
     while condition: #пока не пришли к конвергенции
         Skpriv=Sk
@@ -432,11 +413,11 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
         A=np.zeros_like(A)
         b=np.zeros_like(b)
 
-
-
         for i in range(0, len(expdatalist)): #для всех наблюдений
+            fstructval=fstruct(expdatalist[i]['x'], k, None)
 
-            fstructval=fstruct(expdatalist[i]['x'], k)
+
+
             A+=np.dot (fstructval.T, fstructval)
             ydif=expdatalist[i]['y']-func(expdatalist[i]['x'],k)
             b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
@@ -444,7 +425,7 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
 #http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.solve.html
         deltak=np.linalg.solve(A,b)  #определяем дельту
 
-        mu=2
+        mu=4
 
         cond2=True
         it=0
@@ -457,8 +438,9 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
                 #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
                 # (это матрица с одним столбцом)
                 Skmu+=np.dot(vvv.T, vvv)
+
             it+=1
-            if (it>1000):
+            if (it>2):
                 break
             cond2=Skmu>Skpriv
 
@@ -518,6 +500,9 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
 
 
 
+def test5():
+    pass
+
 def test4():
     funstr= ["x[1]-y[1]*b[1]",
              "y[1]+c['AR']*c['ISC']*()  ",
@@ -533,7 +518,7 @@ def test3():
 
 
     funcf=lambda x,b: rety(funstr, x, b, c)
-    jacf = lambda x,b: retAdvStructJac(funstr, x, b, c)
+    jacf = lambda x,b, y: retAdvStructJac(funstr, x, b, c, y)
 
     print  (grandCountGN_Ultra(funcf, jacf, expdata, [1,1,1]))
 
