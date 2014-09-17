@@ -120,7 +120,7 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
     N=len(Xs)  #размер выборки
 
     ind=0
-    func=lambda x,k: np.array(countfunctvect (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, x.tolist(), k.tolist()))
+    func=lambda x,k: np.array(countfunctvect (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, x.tolist(), k.tolist())) #собственно, функция
     for xx in Xs:
         dif=Ys[ind]-np.array(func(xx,k))
         Sk+= np.dot(dif.T, dif)
@@ -153,7 +153,7 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
             ydif=Ys[i]-func(Xs[i],k)
             b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
 
-
+#http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.solve.html
         deltak=np.linalg.solve(A,b)  #определяем дельту
 
         mu=2

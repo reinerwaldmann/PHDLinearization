@@ -183,7 +183,7 @@ listoutvars  -  список переменных, подлежащих выво
                 else:
                     rec[func]=random.normalvariate(eval(funcstrdict[func], rec), math.sqrt(yvectordispsdict[func])) #иначе просто добавляется одно значение с разбросом
 
-            del rec["__builtins__"]  #с какого эта запись вообще пишется в словарь???? ОЛОЛО
+            del rec["__builtins__"]  #с какого эта запись вообще пишется в словарь???? ОЛОЛО возможно, её туда пишет eval
 
 
 

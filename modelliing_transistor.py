@@ -2,12 +2,14 @@ __author__ = 'reiner'
 #песочница для отработки функций программы, аналога planpos
 
 
-
-
+import random
+import math
 
 from scipy import optimize
+import numpy as np
 
 import derivations as drv
+
 
 
 #уравнения Кирхгофа:
@@ -17,41 +19,8 @@ w=(1,2) #задаём вектор значений источников пит�
 
 
 
-def make_exp_plan (wstartend1, wstartend2,  num   ):
-
-    """делает план эксперимента, возвращает список кортежей"""
-    stepw1=(wstartend1[1]-wstartend1[0])/num
-    stepw2=(wstartend2[1]-wstartend2[0])/num
-
-    for i in (wstartend1[0]+i*stepw1 for i in range(0, num)):
-        print (i);
-
-def make_exp_plan_one_generator (wstartend, num):
-    stepw1=(wstartend[1]-wstartend[0])/num
-    for i in range (0, num):
-        yield wstartend[0]+i*stepw1
-
-def make_exp_plan_2_generator (wstartend1, wstartend2, num):
-    stepw1=(wstartend1[1]-wstartend1[0])/num
-    stepw2=(wstartend2[1]-wstartend2[0])/num
-
-    for i in range (0, num):
-        yield wstartend1[0]+i*stepw1, wstartend2[0]+i*stepw2
-
-
-
 #http://pythonworld.ru/tipy-dannyx-v-python/vse-o-funkciyax-i-ix-argumentax.html
-def kirhWrapper (b):
-    #эта функция возвращает функцию же.
-    #Теперь надо, чтобы она возвращала функцию с подставленными аргументами. Эту функцию скормить решальнику уравнений методом Ньютона
 
-    def kirh(y):
-        return [y[0]+y[1]-y[2],
-                y[0]*b[0]-y[1]*b[1]-w[0]-w[1],
-                y[1]*b[1]+y[2]*b[2]+w[1]
-                ]
-
-    return kirh
 
 
 def strEvaluator (funstr:list, x:list, b:list=[], c:dict={}):
@@ -109,28 +78,429 @@ def ret_callable_jac (funstr:list, x:list, b:list=[], c:dict={}):
 
     return innerj
 
+def rety (funstr, x, b, c):
+    """
+    Возвращает y для указанных аргументов
+    """
+    function = strEvaluator(funstr,x,b,c)
+    sol = optimize.root(function, [1, 1, 1], method='lm', jac=ret_callable_jac(funstr, x,b,c))
+    return sol.x
 
-
-
-
-def generate_uniform_plan(funcstrlist:list, xdiaptuplelist:list, b:list, c:dict, ydisps:list, nvoly=1, outfilename="", listOfOutvars=None):
+def generate_uniform_plan_exp_data(funcstrlist:list, xdiapdictlist:list, b:list, c:dict, ydisps:list=None, n=1, outfilename="", listOfOutvars=None):
     """
     Моделирует набор экспериментальных данных, получаемых по равномерному априорному плану.
     Возвращаемое значение - список словарей с ключами x, y, b, c
     Parameters:
     funcstrlist - векторная функция (список функций)
-    xdiaptuplelist - вектор диапазонов, заданных кортежами
+    xdiapdictlist - вектор диапазонов, заданных словарями 'start 'end'
+    b - вектор коэффициентов
+    c - словарь дополнительных переменных
+    ydisps - вектор дисперсий
+    n - объём выборки
+    outfilename - имя выходного файла (пока не используется)
+    listOfOutvars - список переменных, подлежащих выводу в файл
+
+    example:
+        funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
+    b=[100,200, 300]
+    c={}
+    for x in  generate_uniform_plan_exp_data(funstr, [{'start':10, 'end':20},{'start':40, 'end':60}], b, c, [0.000001,0, 0.000001], 10):
+        print (x)
+
+    """
+    for xdiap in xdiapdictlist:  #нашли step
+        xdiap['step']=(xdiap['start']-xdiap['end'])/n
+
+        res=list()
+    for i in range(0, n):
+        appdict=dict()
+        xx=list(map (lambda x: x['start']+x['step']*i, xdiapdictlist))
+
+#        print (xx,b,c, funcstrlist)
+
+        yy=rety(funcstrlist, xx, b, c)
+
+        #Внесём возмущения:
+        if not ydisps==None:
+            #distort = lambda i:
+
+            for i in range (0, len(yy)):
+                yy[i]=random.normalvariate(yy[i], math.sqrt(ydisps[i]))
+
+            #random.normalvariate(eval(funcstrdict[func], rec), math.sqrt(yvectordispsdict[func])) #иначе просто добавляется одно значение с разбросом
+
+        appdict={'x':xx, 'y':yy, 'b':b, 'c':c}
+        res.append(appdict)
+
+    return res
+
+
+
+def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
+    """
+    Подгоняет коэфф. методом Ньютона-Гаусса с изменяемой длиной шага (через mu)
+    Parameters:
+    funcf - функция, на вход которой подаются вектора x и b, а на выходе получается вектор y, притом без возмущений
+    jacf - функция, на вход которой подаются вектора x и b, а на выходе получается якобиан функции
+    expdatalist:list - экспериментальные данные
+    kinit=None - начальное приближение коэффициентов
+    NSIG=3 - число значащих цифр (точность подгонки коэффициентов)
+    """
+    log=""#строка, куда пишутся всякие сообщения
+
+    if expdatalist==None:
+        print ("grandCountGN_Ultra Error: cannot read exp data")
+        return None
+    #надо произвести два списка: список векторов Xs, и Ys из входного
+
+
+#     Xs=list()
+#     Ys=list()
+# #здесь можно ещё поиграть с лямбдами, чтоб полностью отказаться от итеративных  процессов
+#     for line in vrslst:
+#         la=lambda x: line[x]
+#         Xs.append(np.array (list (map (la, invarstrlist))))
+#         Ys.append(np.array (list (map (la, outvarstrlist))))
+
+
+
+    #k=np.ones(len(coeffstrlist)) #начальное приближение вектора коэффициентов
+
+
+    # if kinit==None:
+    #     k=np.array((range (1, len(coeffstrlist)+1  ))   )
+    # else:
+    #     k=kinit
+
+    k=kinit
+    M=len(k) # число оцениваемых коэффициентов
+
+
+    prevk=k #предыдущее значение вектора коэфф
+    convergence=0
+    numIterations=1
+
+
+
+    A=np.zeros ((M, M))
+    b=np.zeros((M, 1))
+
+    Sk=0
+    Skmu=0
+    N=len(expdatalist)  #размер выборки
+
+
+
+
+    func = funcf
+    for i in range(0, len(expdatalist)):
+        dif = np.array(expdatalist[i]['y'])-np.array(func(expdatalist[i]['x'],k))
+        Sk+= np.dot(dif.T, dif)
+
+    # ind=0
+    # func=lambda x,k: np.array(countfunctvect (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, x.tolist(), k.tolist())) #собственно, функция
+    #
+    # for xx in Xs:
+    #     dif=Ys[ind]-np.array(func(xx,k))
+    #     Sk+= np.dot(dif.T, dif)
+    #     ind+=1
+
+    Skpriv=0
+    mu=1
+
+    condition = True
+#    fstruct = lambda x,k: der.Jakobeand (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, x.tolist(), k.tolist())
+    fstruct=jacf
+
+    Tv=lambda x: (np.asmatrix(x)).T
+
+
+    while condition: #пока не пришли к конвергенции
+        Skpriv=Sk
+        prevk=k
+        Sk=0
+        A=np.zeros_like(A)
+        b=np.zeros_like(b)
+#*************************************#
+
+
+
+        for i in range (0, len(Xs)):   #для всех наблюдений
+            fstructval=fstruct(Xs[i], k)
+            A+=np.dot (fstructval.T, fstructval)
+            ydif=Ys[i]-func(Xs[i],k)
+            b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
+
+#http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.solve.html
+        deltak=np.linalg.solve(A,b)  #определяем дельту
+
+        mu=2
+
+        cond2=True
+        it=0
+        while (cond2):
+            Skmu=0
+            mu/=2
+            for i in range (0, len (Xs)):
+
+                vvv=Ys[i]-func(Xs[i], mu*deltak.T[0] + k)
+                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
+                # (это матрица с одним столбцом)
+
+
+                Skmu+=np.dot(vvv.T, vvv)
+
+
+            it+=1
+            if (it>1000):
+                break
+            cond2=Skmu>Skpriv
+
+#        k+=mu*deltak
+        k+=mu*deltak.T[0]
+                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
+                # (это матрица с одним столбцом)
+
+
+
+
+        Sk=Skmu
+
+
+        numIterations+=1
+        convergence=0
+
+        for i in range (0, len (coeffstrlist)):
+            convergence+=math.fabs(deltak[i]/prevk[i])
+        convergence/=len(coeffstrlist)
+
+
+        log+="Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n"
+
+
+
+        print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
+
+
+        if (numIterations>100): #для ради безопасности поставим ограничитель на число итераций
+            break
+        condition = convergence>math.pow(10, -1*NSIG)
+
+
+    #print (log)
+
+
+    #пытаемся проанализировать результат: выводим средний остаток по функции с текущим K
+    #по сути тестареа
+    testdiff=0
+
+    for i in range (0, len(Xs)):
+        testdiff+=math.fabs(func(Xs[i], k)[1] - Ys[i][1
+        ])
+    testdiff/=len(Xs)
+
+
+    print ("testdiff: ", testdiff)
+
+
+    return k, Sk, numIterations, testdiff
+
+
+
+
+def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst, NSIG=3, kinit=None):
+    """
+    funcstrdict - словарь строкового представления функций
+    outvarstrlist -  список выходных переменных (y1, y2)
+    invarstrlist - список входных переменных
+    coeffstrlist - список коэффициентов (r1, r2, r3)
+
+    #filename - имя файла с результатами эксперимента
+
+    vrslst - вывод функции generate, данные эксперимента, в виде списка словарей
+    NSIG=5 - количество значащих (точность)
 
 
     """
+    log=""#строка, куда пишутся всякие сообщения
+
+    if vrslst==None:
+        print ("grandCountGN Error: cannot read file")
+        return None
+    #надо произвести два списка: список векторов Xs, и Ys из входного
+    Xs=list()
+    Ys=list()
+#здесь можно ещё поиграть с лямбдами, чтоб полностью отказаться от итеративных  процессов
+    for line in vrslst:
+        la=lambda x: line[x]
+        Xs.append(np.array (list (map (la, invarstrlist))))
+        Ys.append(np.array (list (map (la, outvarstrlist))))
+
+
+
+    #k=np.ones(len(coeffstrlist)) #начальное приближение вектора коэффициентов
+
+
+    if kinit==None:
+        k=np.array((range (1, len(coeffstrlist)+1  ))   )
+    else:
+        k=kinit
+
+
+    prevk=k #предыдущее значение вектора коэфф
+    convergence=0
+    numIterations=1
+
+
+
+    A=np.zeros ((len(coeffstrlist), len(coeffstrlist)))
+    b=np.zeros((len(coeffstrlist), 1))
+
+    Sk=0
+    Skmu=0
+    N=len(Xs)  #размер выборки
+
+    ind=0
+    func=lambda x,k: np.array(countfunctvect (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, x.tolist(), k.tolist())) #собственно, функция
+    for xx in Xs:
+        dif=Ys[ind]-np.array(func(xx,k))
+        Sk+= np.dot(dif.T, dif)
+        ind+=1
+
+
+
+    Skpriv=0
+    mu=1
+
+    condition = True
+    fstruct = lambda x,k: der.Jakobeand (funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, x.tolist(), k.tolist())
+
+    Tv=lambda x: (np.asmatrix(x)).T
+
+
+    while condition: #пока не пришли к конвергенции
+        Skpriv=Sk
+        prevk=k
+        Sk=0
+        A=np.zeros_like(A)
+        b=np.zeros_like(b)
+
+
+
+
+        for i in range (0, len(Xs)):   #для всех наблюдений
+            fstructval=fstruct(Xs[i], k)
+            A+=np.dot (fstructval.T, fstructval)
+            ydif=Ys[i]-func(Xs[i],k)
+            b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
+
+#http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.solve.html
+        deltak=np.linalg.solve(A,b)  #определяем дельту
+
+        mu=2
+
+        cond2=True
+        it=0
+        while (cond2):
+            Skmu=0
+            mu/=2
+            for i in range (0, len (Xs)):
+
+                vvv=Ys[i]-func(Xs[i], mu*deltak.T[0] + k)
+                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
+                # (это матрица с одним столбцом)
+
+
+                Skmu+=np.dot(vvv.T, vvv)
+
+
+            it+=1
+            if (it>1000):
+                break
+            cond2=Skmu>Skpriv
+
+#        k+=mu*deltak
+        k+=mu*deltak.T[0]
+                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
+                # (это матрица с одним столбцом)
+
+
+
+
+        Sk=Skmu
+
+
+        numIterations+=1
+        convergence=0
+
+        for i in range (0, len (coeffstrlist)):
+            convergence+=math.fabs(deltak[i]/prevk[i])
+        convergence/=len(coeffstrlist)
+
+
+        log+="Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n"
+
+
+
+        print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
+
+
+        if (numIterations>100): #для ради безопасности поставим ограничитель на число итераций
+            break
+        condition = convergence>math.pow(10, -1*NSIG)
+
+
+    #print (log)
+
+
+    #пытаемся проанализировать результат: выводим средний остаток по функции с текущим K
+    #по сути тестареа
+    testdiff=0
+
+    for i in range (0, len(Xs)):
+        testdiff+=math.fabs(func(Xs[i], k)[1] - Ys[i][1
+        ])
+    testdiff/=len(Xs)
+
+
+    print ("testdiff: ", testdiff)
+
+
+    return k, Sk, numIterations, testdiff
+
+
+
+   # nvars = len(expdata[0])-len(funcstrstrlist) #количество входных переменных
+
+    #print (nvars)
 
 
 
 
 
-    pass
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+def test2():
+    funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
+    b=[100,200, 300]
+    c={}
+    for x in  generate_uniform_plan_exp_data(funstr, [{'start':10, 'end':20},{'start':40, 'end':60}], b, c, [0.000001,0, 0.000001], 10):
+        print (x)
+
+#test2()
 
 def test1():
     #на этом простом примере видно, что optimize_root выдаёт верные корни при использовании в связке с strEvaluator
@@ -165,22 +535,20 @@ def test1():
     for i in make_exp_plan_2_generator ((10,20), (60,40),  10):
         x=list(i)
         function = strEvaluator(funstr,x,b,c)
-        sol = optimize.root(function, [1, 1, 1], method='lm', jac=ret_callable_jac(funstr, x,b,c))
+
+        print (x,b,c)
+
+        #sol = optimize.root(function, [1, 1, 1], method='lm', jac=ret_callable_jac(funstr, x,b,c))
 
         #TODO можно прогнать тестирование разными методами и выбрать лучший для конкретной задачи
         #sol = optimize.root(function, [1, 1, 1], method='hybr')
-        print (i, sol.x, function(sol.x))
+        #print (i, sol.x, function(sol.x))
 
 
-test1()
+#test1()
 
 
     #return strEvaluator(funstr,x,b,c)(y)
-
-
-
-
-
 def test():
     global b
 
