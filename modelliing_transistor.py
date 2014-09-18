@@ -15,6 +15,7 @@ import derivations as drv
 
 
 
+
 #уравнения Кирхгофа:
 
 b=(60,60,40) #задаём вектор коэффициентов
@@ -42,6 +43,8 @@ def strEvaluator (funstr:list, x:list, b:list=[], c:dict={}):
         #yy - вектор выходных аргументов, которые мы находим методом Ньютона
         vdict = vardict
         vdict['y']=yy
+
+
 
         fff=lambda f: eval (f, None, vardict)
 
@@ -91,12 +94,12 @@ def rety (funstr, x, b, c):
 
 
 
-def generate_uniform_plan_exp_data(funcstrlist:list, xdiapdictlist:list, b:list, c:dict, ydisps:list=None, n=1, outfilename="", listOfOutvars=None):
+def generate_uniform_plan_exp_data(func, xdiapdictlist:list, b:list, c:dict, ydisps:list=None, n=1, outfilename="", listOfOutvars=None):
     """
     Моделирует набор экспериментальных данных, получаемых по равномерному априорному плану.
     Возвращаемое значение - список словарей с ключами x, y, b, c
     Parameters:
-    funcstrlist - векторная функция (список функций)
+    func - callable function, векторная функция, возвращает вектор y при подаче на вход векторов x, b, и словаря с
     xdiapdictlist - вектор диапазонов, заданных словарями 'start 'end'
     b - вектор коэффициентов
     c - словарь дополнительных переменных
@@ -123,7 +126,7 @@ def generate_uniform_plan_exp_data(funcstrlist:list, xdiapdictlist:list, b:list,
 
 #        print (xx,b,c, funcstrlist)
 
-        yy=rety(funcstrlist, xx, b, c)
+        yy=func(xx, b)
 
         #Внесём возмущения:
         if not ydisps==None:
@@ -134,7 +137,7 @@ def generate_uniform_plan_exp_data(funcstrlist:list, xdiapdictlist:list, b:list,
 
             #random.normalvariate(eval(funcstrdict[func], rec), math.sqrt(yvectordispsdict[func])) #иначе просто добавляется одно значение с разбросом
 
-        appdict={'x':xx, 'y':yy, 'b':b, 'c':c}
+        appdict={'x':xx, 'y':yy}
         res.append(appdict)
 
     return res
@@ -312,7 +315,7 @@ def retAdvStructJac (funstr:list, x:list, b:list, c:dict={}, yy:list=None):
     G=dY/dB=dF/dB * (dF/dY)^-1
     """
     if yy==None:
-        y= rety (funstr, x, b, c)
+        y= rety(funstr, x, b, c)
     else:
         y=yy
 
@@ -499,30 +502,175 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
     return k, Sk, numIterations, testdiff
 
 
+def grandCountGN_UltraX (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
+    """
+    Подгоняет коэфф. методом Ньютона-Гаусса с изменяемой длиной шага (через mu)
+    Parameters:
+    funcf - функция, на вход которой подаются вектора x и b, а на выходе получается вектор y, притом без возмущений
+    jacf - функция, на вход которой подаются вектора x и b, а на выходе получается якобиан функции
+    expdatalist:list - экспериментальные данные
+    kinit=None - начальное приближение коэффициентов
+    NSIG=3 - число значащих цифр (точность подгонки коэффициентов)
+    """
+    log=""#строка, куда пишутся всякие сообщения
 
-def test5():
-    pass
+    if expdatalist==None:
+        print ("grandCountGN_Ultra Error: cannot read exp data")
+        return None
+    #надо произвести два списка: список векторов Xs, и Ys из входного
 
-def test4():
-    funstr= ["x[1]-y[1]*b[1]",
-             "y[1]+c['AR']*c['ISC']*()  ",
-             "y[1]*b[1]+y[2]*b[2]+x[1]"]
-    b=[100,200, 300]
-    c={}
+
+    k=kinit
+    M=len(k) # число оцениваемых коэффициентов
+
+
+    prevk=k #предыдущее значение вектора коэфф
+    convergence=0
+    numIterations=1
+
+
+    Sk=0
+    Sprev=0
+    N=len(expdatalist)  #размер выборки
+
+
+    condition = True
+    while condition: #пока не пришли к конвергенции
+
+        Skpriv=Sk
+        prevk=k
+        Sk=0
+
+
+        PP=np.zeros ((M, M))
+
+        PYY=np.zeros((M, 1))
+
+        Tv=lambda x: (np.asmatrix(x)).T
+
+        for i in range(0, N):
+            PP+=np.dot(jacf(expdatalist[i]['x'], k), np.transpose(jacf(expdatalist[i]['x'], k))  )
+
+            print (jacf(expdatalist[i]['x'], k))
+            dif = np.array(expdatalist[i]['y'])-np.array(funcf(expdatalist[i]['x'],k))
+
+            Sk+= np.dot(dif.T, dif)
+
+
+            PYY+=np.dot(jacf(expdatalist[i]['x'], k), np.transpose(np.asmatrix(dif)))
+
+
+
+        print (PP)
+        deltak=np.dot(np.linalg.inv(PP), PYY)
+
+        mu=1
+        k+=0.3*deltak
+        #k+=mu*deltak.T[0]
+
+
+        print (mu, deltak.T[0])
+
+        #k-=0.3*deltak.T[0]
+
+
+                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
+                # (это матрица с одним столбцом)
+
+
+
+
+        #Sk=Skmu
+
+
+        numIterations+=1
+        convergence=0
+
+        for i in range (0, M):
+            convergence+=math.fabs(deltak[i]/prevk[i])
+        convergence/=M
+
+
+        log+="Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n"
+
+
+
+        print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
+
+
+        if (numIterations>100): #для ради безопасности поставим ограничитель на число итераций
+            break
+        condition = convergence>math.pow(10, -1*NSIG)
+
+
+    #print (log)
+
+
+    #пытаемся проанализировать результат: выводим средний остаток по функции с текущим K
+    #по сути тестареа
+    testdiff=0
+
+    for i in range (0, len(expdatalist)):
+        testdiff+=math.fabs(funcf(expdatalist[i]['x'], k)[1] - expdatalist[i]['y'][1]) #TODO проверить целесообразность [1]
+    testdiff/=len(expdatalist)
+
+
+    print ("testdiff: ", testdiff)
+
+
+    return k, Sk, numIterations, testdiff
+
+
+
+
+
 
 def test3():
-    funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
+    funstr= ["y[0]+y[1]-b[0]*y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
     b=[10,25, 15]
     c={}
-    expdata=generate_uniform_plan_exp_data(funstr, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, [0.000001,0, 0.000001], 50)
-
-
+    #expdata=generate_uniform_plan_exp_data(funstr, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, [0.000001,0, 0.000001], 50)
     funcf=lambda x,b: rety(funstr, x, b, c)
-    jacf = lambda x,b, y: retAdvStructJac(funstr, x, b, c, y)
+    jacf =lambda x,b: retAdvStructJac(funstr, x, b, c, None)
 
-    print  (grandCountGN_Ultra(funcf, jacf, expdata, [1,1,1]))
+
+    expdata=generate_uniform_plan_exp_data(funcf, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, None, 50)
+
+
+    print  (grandCountGN_UltraX(funcf, jacf, expdata, [11,25,15]))
 
 test3()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def test4(): #тестируем на обычной, не неявной функции
+    #y1=x0*(b1+b2)
+    #y2=x0*b2
+
+    b=[30,400]
+    c={}
+    #expdata=generate_uniform_plan_exp_data(funstr, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, [0.000001,0, 0.000001], 50)
+
+
+    funcf=lambda x,b: [x[0]*(b[0]+b[1]), x[0]*b[1]]
+    jacf = lambda x,b: [b[0]+b[1], b[1]]
+
+    expdata=generate_uniform_plan_exp_data(funcf, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, None, 50)
+
+    print  (grandCountGN_Ultra(funcf, jacf, expdata, [11,25,15]))
+#test4()
+
 
 
 def test2():

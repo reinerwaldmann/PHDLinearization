@@ -241,16 +241,15 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
 
 import sequence_generation as sg
 
-funcstrdict= {"y1":"u1* (r2+r3)/(r1+r2+r3)", "y2":"u1* r3/(r1+r2+r3)"}
-#funcstrdict= {"y1":"u1*r23/(r1+r23)", "y2":"u1*r3/(r1+r23)"}
+#funcstrdict= {"y1":"u1* (r2+r3)/(r1+r2+r3)", "y2":"u1* r3/(r1+r2+r3)"}
 
 
 
+funcstrdict= {"y1":"u1* (r2+r3)", "y2":"u1* r3"}
 
+#xvectorlistsdict = {"u1":range(1,10),  "r1":[20], "r2":[30], "r3":[400]}
 
-
-
-xvectorlistsdict = {"u1":range(1,10),  "r1":[20], "r2":[30], "r3":[400]}
+xvectorlistsdict = {"u1":range(1,10),  "r2":[30], "r3":[400]}
 
 vrslst=sg.generate (funcstrdict, xvectorlistsdict, None, Vx=None, nvolx=None, yvectordispsdict=None, nvoly=1, outfilename="t.txt", listoutvars=["y1", "y2", "u1"] )
 
@@ -261,8 +260,10 @@ vrslst=sg.generate (funcstrdict, xvectorlistsdict, None, Vx=None, nvolx=None, yv
 
 #сюда впилить чтение файла
 
-grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r1", "r2", "r3"] , vrslst, NSIG=5, kinit=np.array( [21, 31, 401]))
-#grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r1", "r23"] , vrslst, NSIG=5)
+
+grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r2", "r3"] , vrslst, NSIG=5, kinit=np.array( [ 1, 2]))
+#grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r1", "r2", "r3"] , vrslst, NSIG=5, kinit=np.array( [21, 31, 401]))
+##grandCountGN(funcstrdict,["u1"] , ["y1", "y2"],["r1", "r23"] , vrslst, NSIG=5)
 
 
 
