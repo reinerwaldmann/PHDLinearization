@@ -16,6 +16,7 @@ import derivations as drv
 
 
 
+
 #уравнения Кирхгофа:
 
 b=(60,60,40) #задаём вектор коэффициентов
@@ -65,6 +66,9 @@ def debilizm (r:list, let:str):
 #хотели callable - получайте!
 def ret_callable_jac (funstr:list, x:list, b:list=[], c:dict={}):
     def innerj (y):
+        """
+
+        """
         argseq=list()
         for i in range(0, len(y)):
             argseq.append('y{0}'.format(i))
@@ -83,6 +87,41 @@ def ret_callable_jac (funstr:list, x:list, b:list=[], c:dict={}):
         return drv.Jakobean (updfunstr, argseq, vardict)
 
     return innerj
+
+def ret_callable_jac_ultra (funstr:list, x:list, vectorletter:str,  b:list=[], c:dict={}):
+    """
+    vectorletter - буква вектора, по которому мы берём производную
+    """
+
+    def innerj (y):
+        """
+        y - значение вектора, по которому берём производную
+
+        """
+        argseq=list()
+        for i in range(0, len(y)):
+            argseq.append('{0}{1}'.format(vectorletter, i))
+
+        updfunstr=list(map(lambda x: x.replace('[','').replace(']',''),  funstr))
+        xdict = debilizm(x,'x')
+        bdict = debilizm(b,'b')
+        cdict = debilizm(c,'c')
+        ydict = debilizm(y,'y')
+        vardict = xdict
+        vardict.update(bdict)
+        vardict.update(cdict)
+        vardict.update(c)
+        vardict.update(ydict)
+
+        return drv.Jakobean (updfunstr, argseq, vardict)
+
+    return innerj
+
+
+
+
+
+
 
 def rety (funstr, x, b, c):
     """
@@ -421,7 +460,16 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
 
 
 
-            A+=np.dot (fstructval.T, fstructval)
+
+
+            rt=np.dot (fstructval.T, fstructval)
+
+
+            A+=rt
+
+
+
+
             ydif=expdatalist[i]['y']-func(expdatalist[i]['x'],k)
             b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
 
@@ -521,6 +569,8 @@ def grandCountGN_UltraX (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
 
 
     k=kinit
+
+
     M=len(k) # число оцениваемых коэффициентов
 
 
@@ -549,27 +599,46 @@ def grandCountGN_UltraX (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
         Tv=lambda x: (np.asmatrix(x)).T
 
         for i in range(0, N):
-            PP+=np.dot(jacf(expdatalist[i]['x'], k), np.transpose(jacf(expdatalist[i]['x'], k))  )
 
-            print (jacf(expdatalist[i]['x'], k))
+
+
+            PP+=np.dot(jacf(expdatalist[i]['x'], k, None), np.transpose(jacf(expdatalist[i]['x'], k, None))  )
+
+
             dif = np.array(expdatalist[i]['y'])-np.array(funcf(expdatalist[i]['x'],k))
 
             Sk+= np.dot(dif.T, dif)
 
 
-            PYY+=np.dot(jacf(expdatalist[i]['x'], k), np.transpose(np.asmatrix(dif)))
+
+
+            PYY+=np.dot(jacf(expdatalist[i]['x'], k, None), np.transpose(np.asmatrix(dif)))
 
 
 
-        print (PP)
+
+
         deltak=np.dot(np.linalg.inv(PP), PYY)
 
+
+
         mu=1
-        k+=0.3*deltak
+
+
+
+        print ('kkk', k, deltak.transpose())
+
+
+        for i in range (0, len(k)):
+            k[i]+=deltak.transpose()[0][i]*0.3
+
+
+
+
         #k+=mu*deltak.T[0]
+        print (k)
 
 
-        print (mu, deltak.T[0])
 
         #k-=0.3*deltak.T[0]
 
@@ -639,13 +708,7 @@ def test3():
 
     print  (grandCountGN_UltraX(funcf, jacf, expdata, [11,25,15]))
 
-test3()
-
-
-
-
-
-
+#test3()
 
 
 
@@ -658,18 +721,34 @@ def test4(): #тестируем на обычной, не неявной фун
     #y1=x0*(b1+b2)
     #y2=x0*b2
 
-    b=[30,400]
+    b=[30,40]
     c={}
     #expdata=generate_uniform_plan_exp_data(funstr, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, [0.000001,0, 0.000001], 50)
 
 
-    funcf=lambda x,b: [x[0]*(b[0]+b[1]), x[0]*b[1]]
-    jacf = lambda x,b: [b[0]+b[1], b[1]]
+    funcf=lambda x,b: np.array ([x[0]*(b[0]+b[1]), x[0]*b[1]])
+    jacf = lambda x,b, y: np.matrix([ [x[0], x[0]], [0, x[0] ]   ])
+
+
+    # def ret_callable_jac_ultra (funstr:list, x:list, vectorletter:str,  b:list=[], c:dict={}):
+    # """
+    # vectorletter - буква вектора, по которому мы берём производную
+    # """
+    #
+    # def innerj (y):
+
+
+
 
     expdata=generate_uniform_plan_exp_data(funcf, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, None, 50)
 
-    print  (grandCountGN_Ultra(funcf, jacf, expdata, [11,25,15]))
-#test4()
+
+
+
+
+
+    print  (grandCountGN_UltraX(funcf, jacf, expdata, [1,1]))
+test4()
 
 
 

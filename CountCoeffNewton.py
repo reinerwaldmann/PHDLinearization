@@ -149,6 +149,9 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
 
         for i in range (0, len(Xs)):   #для всех наблюдений
             fstructval=fstruct(Xs[i], k)
+
+
+
             A+=np.dot (fstructval.T, fstructval)
             ydif=Ys[i]-func(Xs[i],k)
             b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
