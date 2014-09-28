@@ -15,8 +15,6 @@ import derivations as drv
 
 
 
-
-
 #уравнения Кирхгофа:
 
 b=(60,60,40) #задаём вектор коэффициентов
@@ -477,7 +475,6 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
         deltak=np.linalg.solve(A,b)  #определяем дельту
 
         mu=4
-
         cond2=True
         it=0
         while (cond2):
@@ -491,7 +488,7 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
                 Skmu+=np.dot(vvv.T, vvv)
 
             it+=1
-            if (it>2):
+            if (it>100):
                 break
             cond2=Skmu>Skpriv
 
@@ -566,71 +563,59 @@ def grandCountGN_UltraX (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
         print ("grandCountGN_Ultra Error: cannot read exp data")
         return None
     #надо произвести два списка: список векторов Xs, и Ys из входного
-
-
     k=kinit
-
-
     M=len(k) # число оцениваемых коэффициентов
-
-
     prevk=k #предыдущее значение вектора коэфф
     convergence=0
     numIterations=1
-
-
     Sk=0
-    Sprev=0
+    Skpriv=0
     N=len(expdatalist)  #размер выборки
-
-
     condition = True
     while condition: #пока не пришли к конвергенции
-
         Skpriv=Sk
         prevk=k
         Sk=0
-
-
         PP=np.zeros ((M, M))
-
         PYY=np.zeros((M, 1))
-
         Tv=lambda x: (np.asmatrix(x)).T
-
         for i in range(0, N):
-
-
-
             PP+=np.dot(jacf(expdatalist[i]['x'], k, None), np.transpose(jacf(expdatalist[i]['x'], k, None))  )
-
-
             dif = np.array(expdatalist[i]['y'])-np.array(funcf(expdatalist[i]['x'],k))
-
             Sk+= np.dot(dif.T, dif)
-
-
-
-
             PYY+=np.dot(jacf(expdatalist[i]['x'], k, None), np.transpose(np.asmatrix(dif)))
-
-
-
-
-
         deltak=np.dot(np.linalg.inv(PP), PYY)
 
+        #применение mu
+        mu=4
+        cond2=True
+        it=0
+        while (cond2):
+            Skmu=0
+            mu/=2
+            for i in range (0, len (expdatalist)):
+                dif = np.array(expdatalist[i]['y'])-np.array(funcf(expdatalist[i]['x'], k+mu*deltak.T[0]))
+                Skmu+=np.dot(dif.T, dif)
+            it+=1
+            if (it>100):
+                print ("break")
+                break
+            cond2=Skmu>Sk
+
+        k+=mu*deltak.T[0]
 
 
-        mu=1
+        #for i in range (0, len(k)):
+        #    k[i]+=deltak.transpose()[0][i]*mu
 
 
+        print ('mu', mu)
 
-        print ('kkk', k, deltak.transpose())
 
+        Sk=Skmu
 
-        for i in range (0, len(k)):
-            k[i]+=deltak.transpose()[0][i]*0.3
+    #***************
+
 
 
 
@@ -694,27 +679,6 @@ def grandCountGN_UltraX (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
 
 
 
-def test3():
-    funstr= ["y[0]+y[1]-b[0]*y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
-    b=[10,25, 15]
-    c={}
-    #expdata=generate_uniform_plan_exp_data(funstr, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, [0.000001,0, 0.000001], 50)
-    funcf=lambda x,b: rety(funstr, x, b, c)
-    jacf =lambda x,b: retAdvStructJac(funstr, x, b, c, None)
-
-
-    expdata=generate_uniform_plan_exp_data(funcf, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, None, 50)
-
-
-    print  (grandCountGN_UltraX(funcf, jacf, expdata, [11,25,15]))
-
-#test3()
-
-
-
-
-
-
 
 
 def test4(): #тестируем на обычной, не неявной функции
@@ -725,32 +689,23 @@ def test4(): #тестируем на обычной, не неявной фун
     c={}
     #expdata=generate_uniform_plan_exp_data(funstr, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, [0.000001,0, 0.000001], 50)
 
-
     funcf=lambda x,b: np.array ([x[0]*(b[0]+b[1]), x[0]*b[1]])
     jacf = lambda x,b, y: np.matrix([ [x[0], x[0]], [0, x[0] ]   ])
 
-
-    # def ret_callable_jac_ultra (funstr:list, x:list, vectorletter:str,  b:list=[], c:dict={}):
-    # """
-    # vectorletter - буква вектора, по которому мы берём производную
-    # """
-    #
-    # def innerj (y):
-
-
-
-
     expdata=generate_uniform_plan_exp_data(funcf, [{'start':10, 'end':100},{'start':200, 'end':250}], b, c, None, 50)
 
+    print  (grandCountGN_Ultra(funcf, jacf, expdata, [1,1]))
+    #Почему-то так UltraX c mu выдаёт неверный результат, без mu выдаёт верный, но с большим число итераций
+
+#test4()
 
 
+def test5():
+    """
+    Попробуем скормить Ultra квадратичную модель
+    """
 
-
-
-    print  (grandCountGN_UltraX(funcf, jacf, expdata, [1,1]))
-test4()
-
-
+    pass
 
 def test2():
     funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
