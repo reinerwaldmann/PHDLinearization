@@ -1,6 +1,11 @@
 __author__ = 'vasilev_is'
 
-import copy, random, numpy as np
+import copy
+import random
+import math
+
+import numpy as np
+
 
 def replaceInList (list, i, x):
     """
@@ -75,9 +80,18 @@ def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, ydisps:list=None, n=1,
     :param listOfOutvars: список выносимых переменных
     :return: список экспериментальных данных в формате списка словарей 'x':..., 'y':...
     """
-    pass
 
+    res = copy.deepcopy(expplan)
 
+    for i in range(len(res)):
+        y=func(res[i]["x"],b,c)
+        #Внесём возмущения:
+        if not ydisps==None:
+            for i in range (len(y)):
+                y[i]=random.normalvariate(y[i], math.sqrt(ydisps[i]))
+
+        res[i]["y"]=y
+    return res
 
 
 
