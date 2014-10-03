@@ -190,15 +190,6 @@ def doublesearch (xstart, xend, xinit, function):
     return x
 
 
-
-
-
-
-
-
-
-
-
 def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list, c, Ve, jac, func=None, Ntries=30):
     """
     :param xstart: начало диапазона x
@@ -249,8 +240,6 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
 
     return (dopt, planopt)
-
-
 
 
 
