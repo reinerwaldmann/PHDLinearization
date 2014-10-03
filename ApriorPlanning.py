@@ -7,6 +7,83 @@ import math
 import numpy as np
 from scipy.optimize import minimize
 
+"""
+replaceInList (list, i, x):
+    :param list: список
+    :param i: индекс элемента
+    :param x: переменная, на которую заменяем элемент
+    :return: Возвращает список list, в котором i-й элемент заменяется на x
+ uniformVector(xstart, xend):
+    :param xstart: вектор начала диапазона
+    :param xend: вектор конца диапазона
+    :return: вектор, являющийся частью равномерного распределения между xstart и xend
+makeUniformExpPlan(xstart:list, xend:list, N:int):
+    Делает равномерный неслучайный план эксперимента
+    :param xstart: начало диапазона x (вектор)
+    :param xend: конец диапазона x (вектор)
+    :param N: Количество точек в плане
+    :return: равномерный план эксперимента
+
+    makeRandomUniformExpPlan(xstart:list, xend:list, N:int):
+    Делает случайный план эксперимента, в котором точки равномерно распределяются в диапазоне в формате списка словарей 'x': вектор
+    :param xstart: начало диапазона x (вектор)
+    :param xend: конец диапазона x (вектор)
+    :param N: Количество точек в плане
+
+
+     makeMeasAccToPlan(func, expplan:list, b:list, c:dict, ydisps:list=None, n=1, outfilename="", listOfOutvars=None):
+    Моделирует измерения в соответствии с планом эксперимента.
+    :param func: векторная функция, на вход принимает x, на выходе выдаёт значения y
+    :param expplan: план эксперимента (список значений вектора x) (список списков)
+    :param b: вектор b - коэффициенты
+    :param c: словарь c - дополнительные переменные
+    :param ydisps: вектор дисперсий y (диагональ ковариационной матрицы)
+    :param n: объём выборки y  - в данной версии не используется
+    :param outfilename: имя выходного файла, куда писать план - в данной версии не используется
+    :param listOfOutvars: список выносимых переменных - в данной версии не используется
+    :return: список экспериментальных данных в формате списка словарей 'x':..., 'y':...
+
+    def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
+    Считает значение определителя Vb, ковариационной матрицы коэффициентов, для данного плана эксперимента
+    :param expplan: план эксперимента (список списков)
+    :param b: b (вектор коэффициентов)
+    :param b: b (вектор коэффициентов)
+    :param c: словарь доп. параметров
+    :param Ve: ковариационная матрица ошибок экспериментов np.array
+    :param jac: функция якобиана (на входе x,b,c=None, y=None), возвращать должно np.array
+    :return: значение определителя для данного плана эксперимента
+
+    def countMeanVbForAprior_S4000(expplan:list, bstart:list, bend:list, c, Ve, jac, func=None):
+    Считает среднее значение определителя и дисперсию определителя Vb, формируя выборку из значений случайных b, распределённых равномерно (uniform) в диапазоне. Выборка в данной версии объёмом в 30 значений.
+    :param expplan: план эксперимента
+    :param bstart: начало диапазона b (вектор)
+    :param bend: конец диапазона b (вектор)
+    :param c: словарь доп. параметров
+    :param Ve: ковариационная матрица ошибок экспериментов
+    :param jac: функция якобиана (на входе x,b,c=None, y=None)
+    :return: среднее значение определителя [0] и его дисперсию [1]
+
+    doublesearch (xstart, xend, xinit, function):
+    Реализует метод двойного поиска с ограничениями. Внимание: функция требует правки в части штрафов в зависимости от значений, которые может принимает объектная функция.
+    :param xstart: начало диапазона x (вектор)
+    :param xend: конец диапазона x (вектор)
+    :param xinit:начальное значение x (вектор)
+    :param function: объектная функция, принимает на вход x
+    :return: оптимизированное значение x
+
+    def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list, c, Ve, jac, func=None, Ntries=30):
+    Реализует априорное планирование эксперимента
+    :param xstart: начало диапазона x (вектор)
+    :param xend: конец диапазона x  (вектор)
+    :param N: размер плана (количество контрольных точек)
+    :param bstart: начало диапазона b (вектор)
+    :param bend: конец диапазона b (вектор)
+    :param c: словарь дополнительных переменных
+    :param Ve: Ковариационная матрица y, реально её диагональ (вектор)
+    :param jac: Якобиан функции, принимает на вход x,b,c,y
+    :return: кортеж: 0: оптимизированное значение определителя Vb, 1: оптимальный план эксперимента
+
+"""
 
 def replaceInList (list, i, x):
     """
@@ -93,9 +170,6 @@ def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, ydisps:list=None, n=1,
         res.append(curdict)
     return res
 
-
-#below untested
-
 def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
     """
     :param expplan: план эксперимента
@@ -115,7 +189,6 @@ def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
         #print (jj*jj.T)
 
     return np.linalg.inv(G)
-
 
 def countMeanVbForAprior_S4000(expplan:list, bstart:list, bend:list, c, Ve, jac, func=None):
     """
@@ -144,15 +217,14 @@ def countMeanVbForAprior_S4000(expplan:list, bstart:list, bend:list, c, Ve, jac,
 
     return DS, SD
 
-
 def doublesearch (xstart, xend, xinit, function):
     """
     Метод двойного поиска с ограничениями
-    :param xstart:
-    :param xend:
-    :param xinit:
-    :param function:
-    :return:
+    :param xstart: начало диапазона x (вектор)
+    :param xend: конец диапазона x (вектор)
+    :param xinit:начальное значение x (вектор)
+    :param function: объектная функция, принимает на вход x
+    :return: оптимизированное значение x
     """
     x=copy.deepcopy(xinit)
     #xcurr=copy.deepcopy(x)
@@ -189,18 +261,18 @@ def doublesearch (xstart, xend, xinit, function):
 
     return x
 
-
 def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list, c, Ve, jac, func=None, Ntries=30):
     """
-    :param xstart: начало диапазона x
-    :param xend: конец диапазона x
-    :param N:
-    :param bstart:
-    :param bend:
-    :param c:
-    :param Ve:
-    :param jac:
-    :return:
+    Реализует априорное планирование эксперимента
+    :param xstart: начало диапазона x (вектор)
+    :param xend: конец диапазона x  (вектор)
+    :param N: размер плана (количество контрольных точек)
+    :param bstart: начало диапазона b (вектор)
+    :param bend: конец диапазона b (вектор)
+    :param c: словарь дополнительных переменных
+    :param Ve: Ковариационная матрица y, реально её диагональ (вектор)
+    :param jac: Якобиан функции, принимает на вход x,b,c,y
+    :return: кортеж: 0: оптимизированное значение определителя Vb, 1: оптимальный план эксперимента
     """
 
     dopt=100000000
@@ -243,14 +315,19 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
 
 
+
+
+
 def test():
+    """
+    Тестирует априорное планирование
+    :return:
+    """
     xstart=[1, 100]
     xend=[20,200]
     N=10
     c={"a":1000}
-    #funcf=lambda x,b: np.array ([x[0]*(b[0]+b[1]), (x[0]+x[1])*b[1]])
-    #jacf = lambda x,b,c,y: np.matrix([ [x[0], x[0]], [0, x[1]+x[0]]])
-    funcf=lambda x,b: np.array ( [ b[1]+b[2]*x[1]+b[3]*x[2]+b[4]*x[1]*x[2]+b[5]*x[1]*x[1]+b[6]*x[2]*x[2],   b[7]+b[8]*x[1]+b[9]*x[2]+b[10]*x[1]*x[2]+b[11]*x[1]*x[1]+b[12]*x[2]*x[2] ] )
+    funcf=lambda x,b,c: np.array ( [ b[1]+b[2]*x[1]+b[3]*x[2]+b[4]*x[1]*x[2]+b[5]*x[1]*x[1]+b[6]*x[2]*x[2],   b[7]+b[8]*x[1]+b[9]*x[2]+b[10]*x[1]*x[2]+b[11]*x[1]*x[1]+b[12]*x[2]*x[2] ] )
     jacf = lambda x,b,c,y: np.matrix([ [1, x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1], 0, 0, 0, 0, 0, 0],
                                        [0,0,0,0,0,0,1,x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1]] ]).T
     Ve=np.array([ [0.1, 0],
@@ -259,7 +336,7 @@ def test():
     blen=  [0.3,0.2,0.2,0.2,0.2,0.3,0.2,0.2]
     bend=  [1.1,0.6,1.6,0.4,1.1,0.6,1.6,0.4,2.5,3.3,4.6,5.6]
 
-    #print (doublesearch ([1, 0.5], [10,10], [9,9], lambda x: x[0]*x[0]+2*x[1]*x[1]+10))
+    #print (doublesearch ([1, 0.5], [10,10], [9,9], lambda x: x[0]*x[0]+2*x[1]*x[1]+10)) #тестирование поиска
 
     rs=grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=30)
     print (rs[0])
@@ -269,11 +346,9 @@ def test():
         print(r[0], '\t', r[1])
 
 
-
     # plan=makeUniformExpPlan(xstart, xend, N)
     # func = lambda x,b,c: [x[0]*b[0]+c["a"], x[1]*b[1]+c["a"], x[2]*b[2]+c["a"]]
     # meas = makeMeasAccToPlan(func, plan,  b, c, [0.0001]*3)
     # for x in meas:
     #     print (x)
 
-test()

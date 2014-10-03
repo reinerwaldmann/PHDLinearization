@@ -1,19 +1,11 @@
 __author__ = 'reiner'
 #песочница для отработки функций программы, аналога planpos
 
-
 import random
 import math
-
 from scipy import optimize
 import numpy as np
-
 import derivations as drv
-
-
-
-
-
 
 #уравнения Кирхгофа:
 
@@ -21,9 +13,7 @@ b=(60,60,40) #задаём вектор коэффициентов
 w=(1,2) #задаём вектор значений источников питания
 
 
-
 #http://pythonworld.ru/tipy-dannyx-v-python/vse-o-funkciyax-i-ix-argumentax.html
-
 
 
 def strEvaluator (funstr:list, x:list, b:list=[], c:dict={}):
@@ -59,8 +49,6 @@ def debilizm (r:list, let:str):
     for i in range(0, len(r)):
         res[let+str(i)] = r[i]
     return res
-
-
 #хотели callable - получайте!
 def ret_callable_jac (funstr:list, x:list, b:list=[], c:dict={}):
     def innerj (y):
@@ -115,12 +103,6 @@ def ret_callable_jac_ultra (funstr:list, x:list, vectorletter:str,  b:list=[], c
 
     return innerj
 
-
-
-
-
-
-
 def rety (funstr, x, b, c):
     """
     Возвращает y для указанных аргументов
@@ -128,8 +110,6 @@ def rety (funstr, x, b, c):
     function = strEvaluator(funstr,x,b,c)
     sol = optimize.root(function, [1, 1, 1], method='lm', jac=ret_callable_jac(funstr, x,b,c))
     return sol.x
-
-
 
 def generate_uniform_plan_exp_data(func, xdiapdictlist:list, b:list, c:dict, ydisps:list=None, n=1, outfilename="", listOfOutvars=None):
     """
@@ -345,7 +325,6 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
 
     #print (nvars)
 
-
 def retAdvStructJac (funstr:list, x:list, b:list, c:dict={}, yy:list=None):
     """
     Возвращает структурную матрицу для неявной функции
@@ -384,8 +363,6 @@ def retAdvStructJac (funstr:list, x:list, b:list, c:dict={}, yy:list=None):
     dFdY=ret_callable_jac (funstr, x, b, c)(y)
 
     return np.dot(dFdB, np.linalg.inv(dFdY))
-
-
 
 def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
     """
@@ -673,12 +650,6 @@ def grandCountGN_UltraX (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
 
 
     return k, Sk, numIterations, testdiff
-
-
-
-
-
-
 
 
 def test4(): #тестируем на обычной, не неявной функции
