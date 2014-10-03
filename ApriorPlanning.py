@@ -112,10 +112,7 @@ def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
         jj=jac(point, b, c, func(point,b,c) if func else None)
         #G+=jj*np.linalg.inv(Ve)*jj.T
         G+=jj*jj.T
-
         #print (jj*jj.T)
-
-
 
     return np.linalg.inv(G)
 
@@ -133,16 +130,72 @@ def countMeanVbForAprior_S4000(expplan:list, bstart:list, bend:list, c, Ve, jac,
     """
     DS=0 #среднее определителя
     SD=0 #дисперсия определителя
+
     for sss in range(1, 30): #30 - количество  попыток в выборке
         b=uniformVector (bstart, bend)
         Vb=countVbForPlan(expplan, b, c, Ve, jac, func)
         D=np.linalg.det(Vb)
+
+
         if D:
             DS=(D+(sss-1)*DS)/sss  #среднее определителя
             SD=((DS-D)*(DS-D)+(sss-1)*SD)/sss #дисперсия определителя
 
 
     return DS, SD
+
+
+def doublesearch (xstart, xend, xinit, function):
+    """
+    Метод двойного поиска с ограничениями
+    :param xstart:
+    :param xend:
+    :param xinit:
+    :param function:
+    :return:
+    """
+    x=copy.deepcopy(xinit)
+    #xcurr=copy.deepcopy(x)
+    for i in range (len(x)):
+        step=(xend[i]-xstart[i])/3 #задание начального шага
+        brval=10000000 #критичное число итераций, после которого надо выйти из цикла и сообщить об ошибке
+        while(1):
+            xcurr=copy.deepcopy(x)
+            d3=function(xcurr)
+            xcurr[i]=x[i]+step  #пробуем шаг вперёд
+            d4=function(xcurr) if xcurr[i]<xend[i] else 1 #штраф при выходе из диапазона
+            xcurr[i]=x[i]-step #пробуем шаг назад
+            d5=function(xcurr) if xcurr[i]>xstart[i] else 1 #штраф при выходе из диапазона
+
+            # print ('head')
+            # print (d3,d4,d5, step, x, i)
+            # print ('tail')
+
+
+            if (d3-d4)*(d3-d5)>0: #
+                step=step/2       #уменьшение шага вполовину
+                if step<(xend[i]-xstart[i])/1000: #если шаг меньше 1/1000, значит этот член вектора прооптимизировали, переходим к следующему
+                    break
+            else:
+                if (d4>d5):
+                    x[i]=x[i]-step #шаг назад
+                else:
+                    x[i]=x[i]+step #шаг вперёд
+
+            brval-=1
+            if not brval:
+                print ("doublesearch: exit due to max. number of iteration archieved, possible ERROR")
+                break
+
+    return x
+
+
+
+
+
+
+
+
 
 
 
@@ -168,17 +221,23 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
         unopt=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac)[0]
 
+
+
+
         #оптимизация
         for j in range(N):
-            xdot=plan[j]
-            function = lambda x: countMeanVbForAprior_S4000(replaceInList(plan,j,list(x)), bstart, bend, c, Ve, jac, func)[0]   #TODO test it!!
+            xdot=copy.deepcopy(plan[j])
+            function = lambda x: countMeanVbForAprior_S4000(replaceInList(plan,j,x), bstart, bend, c, Ve, jac, func)[0]   #TODO test it!!
 
-            boundsarr=list()
-            for k in range(len(xstart)):
-                boundsarr.append((xstart[k],xend[k]))
+            # boundsarr=list()
+            # for k in range(len(xstart)):
+            #     boundsarr.append((xstart[k],xend[k]))
+            #
+            # sol = minimize (function, xdot, bounds=boundsarr)
+            # plan[j]=sol.x
+            plan[j]=doublesearch(xstart, xend, xdot, function)
 
-            sol = minimize (function, xdot, bounds=boundsarr)
-            plan[j]=sol.x
+
 
         dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac)[0]
 
@@ -196,59 +255,29 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
 
 def test():
-    xstart=[0, 0,100]
-    xend=[0, 20,200]
-    N=20
-
-
-
+    xstart=[1, 100]
+    xend=[20,200]
+    N=10
     c={"a":1000}
-
     #funcf=lambda x,b: np.array ([x[0]*(b[0]+b[1]), (x[0]+x[1])*b[1]])
     #jacf = lambda x,b,c,y: np.matrix([ [x[0], x[0]], [0, x[1]+x[0]]])
-
-
     funcf=lambda x,b: np.array ( [ b[1]+b[2]*x[1]+b[3]*x[2]+b[4]*x[1]*x[2]+b[5]*x[1]*x[1]+b[6]*x[2]*x[2],   b[7]+b[8]*x[1]+b[9]*x[2]+b[10]*x[1]*x[2]+b[11]*x[1]*x[1]+b[12]*x[2]*x[2] ] )
-
-
-    jacf = lambda x,b,c,y: np.matrix([ [1, x[1], x[2], x[1]*x[2], x[1]*x[1], x[2]*x[2], 0, 0, 0, 0, 0, 0],
-                                       [0,0,0,0,0,0,1,x[1], x[2], x[1]*x[2], x[1]*x[1], x[2]*x[2]] ]).T
-
-
+    jacf = lambda x,b,c,y: np.matrix([ [1, x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1], 0, 0, 0, 0, 0, 0],
+                                       [0,0,0,0,0,0,1,x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1]] ]).T
     Ve=np.array([ [0.1, 0],
                   [0, 0.1]]  )
-
-
     bstart=[0.8,0.4,1.4,0.2,0.9,0.3,1.4,0.2,2.1,3.1,4.1,5.1]
     blen=  [0.3,0.2,0.2,0.2,0.2,0.3,0.2,0.2]
     bend=  [1.1,0.6,1.6,0.4,1.1,0.6,1.6,0.4,2.5,3.3,4.6,5.6]
 
+    #print (doublesearch ([1, 0.5], [10,10], [9,9], lambda x: x[0]*x[0]+2*x[1]*x[1]+10))
 
+    rs=grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=30)
+    print (rs[0])
 
-#
-# CC(1) = 0.8 'Нижняя граница для первого коэффициента
-    # GG(1) = 0.3 'Длина диапазона изменения первого коэффициента
-# CC(2) = 0.4
-    # GG(2) = 0.2
-# CC(3) = 1.4
-    # GG(3) = 0.2
-# CC(4) = 0.2
-    # GG(4) = 0.2
-# CC(5) = 0.9
-    # GG(5) = 0.2
-# CC(6) = 0.3
-    # GG(6) = 0.3
-# CC(7) = 1.4
-    # GG(7) = 0.2
-# CC(8) = 0.2
-    # GG(8) = 0.2
-
-
-
-
-
-    print (grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=30)[0])
-
+    print ('Experimental plan')
+    for r in rs[1]:
+        print(r[0], '\t', r[1])
 
 
 
