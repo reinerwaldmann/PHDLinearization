@@ -5,7 +5,7 @@ import random
 import math
 
 import numpy as np
-from scipy.optimize import minimize
+
 
 """
 replaceInList (list, i, x):
@@ -94,7 +94,20 @@ def replaceInList (list, i, x):
     """
     l=copy.deepcopy(list)
     l[i]=x
-    return l   #+
+    return l
+
+def appendToList (list, x):
+    """
+    :param list: список
+    :param x: переменная, которую добавляем
+    :return: Возвращает список list, в который добавляется x
+    """
+    l=copy.deepcopy(list)
+    l.append(x)
+    return l
+
+
+
 
 def uniformVector(xstart, xend):
     """
@@ -157,7 +170,8 @@ def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, ydisps:list=None, n=1,
 
     res = list()
 
-    for i in range(len(res)):
+
+    for i in range(len(expplan)):
         y=func(expplan[i],b,c)
         #Внесём возмущения:
         if not ydisps==None:
@@ -185,8 +199,10 @@ def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
     for point in expplan:
         jj=jac(point, b, c, func(point,b,c) if func else None)
         #G+=jj*np.linalg.inv(Ve)*jj.T
-        G+=jj*jj.T
-        #print (jj*jj.T)
+
+        #G+=jj*jj.T
+        G+=jj.T*jj #TODO  тестировать!
+
 
     return np.linalg.inv(G)
 
@@ -280,17 +296,11 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
     for i in range(0,Ntries):
         plan = makeRandomUniformExpPlan(xstart, xend, N)
-
-
         unopt=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac)[0]
-
-
-
-
         #оптимизация
         for j in range(N):
             xdot=copy.deepcopy(plan[j])
-            function = lambda x: countMeanVbForAprior_S4000(replaceInList(plan,j,x), bstart, bend, c, Ve, jac, func)[0]   #TODO test it!!
+            function = lambda x: countMeanVbForAprior_S4000(replaceInList(plan,j,x), bstart, bend, c, Ve, jac, func)[0]
 
             # boundsarr=list()
             # for k in range(len(xstart)):
@@ -299,23 +309,12 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
             # sol = minimize (function, xdot, bounds=boundsarr)
             # plan[j]=sol.x
             plan[j]=doublesearch(xstart, xend, xdot, function)
-
-
-
         dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac)[0]
-
         print ("unoptimized-optimized:",unopt, dcurr)
-
         if (dcurr<dopt):
             dopt=dcurr
             planopt=plan
-
-
     return (dopt, planopt)
-
-
-
-
 
 
 def test():
@@ -329,7 +328,10 @@ def test():
     c={"a":1000}
     funcf=lambda x,b,c: np.array ( [ b[1]+b[2]*x[1]+b[3]*x[2]+b[4]*x[1]*x[2]+b[5]*x[1]*x[1]+b[6]*x[2]*x[2],   b[7]+b[8]*x[1]+b[9]*x[2]+b[10]*x[1]*x[2]+b[11]*x[1]*x[1]+b[12]*x[2]*x[2] ] )
     jacf = lambda x,b,c,y: np.matrix([ [1, x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1], 0, 0, 0, 0, 0, 0],
-                                       [0,0,0,0,0,0,1,x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1]] ]).T
+                                       [0,0,0,0,0,0,1,x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1]] ])
+
+    #убрал .T
+
     Ve=np.array([ [0.1, 0],
                   [0, 0.1]]  )
     bstart=[0.8,0.4,1.4,0.2,0.9,0.3,1.4,0.2,2.1,3.1,4.1,5.1]
@@ -338,7 +340,7 @@ def test():
 
     #print (doublesearch ([1, 0.5], [10,10], [9,9], lambda x: x[0]*x[0]+2*x[1]*x[1]+10)) #тестирование поиска
 
-    rs=grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=30)
+    rs=grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=20)
     print (rs[0])
 
     print ('Experimental plan')
@@ -351,4 +353,3 @@ def test():
     # meas = makeMeasAccToPlan(func, plan,  b, c, [0.0001]*3)
     # for x in meas:
     #     print (x)
-

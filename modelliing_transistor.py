@@ -3,9 +3,12 @@ __author__ = 'reiner'
 
 import random
 import math
+
 from scipy import optimize
 import numpy as np
+
 import derivations as drv
+
 
 #уравнения Кирхгофа:
 
@@ -668,15 +671,9 @@ def test4(): #тестируем на обычной, не неявной фун
     print  (grandCountGN_Ultra(funcf, jacf, expdata, [1,1]))
     #Почему-то так UltraX c mu выдаёт неверный результат, без mu выдаёт верный, но с большим число итераций
 
-#test4()
+test4()
 
 
-def test5():
-    """
-    Попробуем скормить Ultra квадратичную модель
-    """
-
-    pass
 
 def test2():
     funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
