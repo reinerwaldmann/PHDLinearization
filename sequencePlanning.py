@@ -6,6 +6,7 @@ import numpy as np
 
 import ApriorPlanning as ap
 
+#http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 
 def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
     """
@@ -23,43 +24,26 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
         print ("grandCountGN_Ultra Error: cannot read exp data")
         return None
     #надо произвести два списка: список векторов Xs, и Ys из входного
-
-
-
     k=kinit
     M=len(k) # число оцениваемых коэффициентов
-
-
-
     prevk=k #предыдущее значение вектора коэфф
     convergence=0
     numIterations=1
-
-
-
     A=np.zeros ((M, M))
     b=np.zeros((M, 1))
-
-
-
-
     Sk=0
     Skmu=0
     N=len(expdatalist)  #размер выборки
-
 
     func = funcf
     for i in range(0, len(expdatalist)):
         dif = np.array(expdatalist[i]['y'])-np.array(func(expdatalist[i]['x'],k,c))
         Sk+= np.dot(dif.T, dif)
-
     Skpriv=0
     mu=1
-
     condition = True
     fstruct=jacf
     Tv=lambda x: (np.asmatrix(x)).T
-
     while condition: #пока не пришли к конвергенции
         Skpriv=Sk
         prevk=k
@@ -67,31 +51,14 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
         A=np.zeros_like(A)
         b=np.zeros_like(b)
 
-
-
-
-
         for i in range(0, len(expdatalist)): #для всех наблюдений
             fstructval=fstruct(expdatalist[i]['x'], k, c, None) #TODO опять же вопрос с неявными функциями
             rt=np.dot (fstructval.T, fstructval)
-
-
-
             A+=rt
-
-
-
             ydif=expdatalist[i]['y']-func(expdatalist[i]['x'],k,c)
             b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
-
 #http://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.solve.html
-
-
-
         deltak=np.linalg.solve(A,b)  #определяем дельту
-
-
-
 
         mu=4
         cond2=True
@@ -113,7 +80,7 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
 
 
 
-        k+=0.3*deltak.T[0]
+        k+=mu*deltak.T[0]
 
 
         #print (mu, deltak.T[0])
@@ -127,18 +94,19 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
         convergence=0
 
         for i in range (0, M):
-            if (prevk[i]):
-                convergence+=math.fabs((deltak[i])/(prevk[i]))
+            #if (prevk[i]):
+            convergence+=math.fabs((deltak[i])/(prevk[i]))
 
         convergence/=M
 
         #log+="Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n"
 
 
-        #print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
+        print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
 
         if (numIterations>200): #для ради безопасности поставим ограничитель на число итераций
             log+="Break due to max number of iteration exceed"
+            print ("GKNU Break due to max number of iteration exceed")
             break
         condition = convergence>math.pow(10, -1*NSIG)
     #print (log)
@@ -246,14 +214,38 @@ def test():
                                        [0,0,0,0,0,0,1,x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1]] ])
     Ve=np.array([ [0.1, 0],
                   [0, 0.1]]  )
-    bstart=[0.8,0.4,1.4,0.2,0.9,0.3,1.4,0.2,2.1,3.1,4.1,5.1]
+
+
+    bstart=[8,4,2,2,9,3,4,2,2,3,4,5]
     blen=  [0.3,0.2,0.2,0.2,0.2,0.3,0.2,0.2]
     bend=  [1.1,0.6,1.6,0.4,1.1,0.6,1.6,0.4,2.5,3.3,4.6,5.6]
 
     #print (doublesearch ([1, 0.5], [10,10], [9,9], lambda x: x[0]*x[0]+2*x[1]*x[1]+10)) #тестирование поиска
 
-    binit=[x for x in range(len(bstart))]
-    print (getbSeqPlan (xstart, xend, N, bstart, bend , c, np.diagonal(Ve), jacf, funcf, NSIG=3))
+    binit=[1+x*0.5 for x in range(len(bstart))]
+    binit=[1]*len(bstart)
+
+
+
+    print (binit)
+
+
+
+#проверяем работу метода оценки
+
+    startplan =  ap.makeUniformExpPlan(xstart, xend, N)
+    measdata = ap.makeMeasAccToPlan(funcf, startplan, bstart, c,None )
+
+    print (grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3))
+
+
+
+
+
+
+
+
+    #print (getbSeqPlan (xstart, xend, N, bstart, binit , c, np.diagonal(Ve), jacf, funcf, NSIG=3))
 
 
     # plan=makeUniformExpPlan(xstart, xend, N)
