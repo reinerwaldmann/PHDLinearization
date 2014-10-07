@@ -6,6 +6,8 @@ import numpy as np
 
 import ApriorPlanning as ap
 
+import random
+
 #http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 
 def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
@@ -102,7 +104,7 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
         #log+="Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n"
 
 
-        print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
+        #print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
 
         if (numIterations>200): #для ради безопасности поставим ограничитель на число итераций
             log+="Break due to max number of iteration exceed"
@@ -124,7 +126,7 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
 
 
 
-def getbSeqPlan (xstart:list, xend:list, N:int, btrue:list, binit:list, c, ydisps, jacf, funcf, NSIG=3):
+def getbSeqPlan (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, NSIG=3, smallestdetVb=1e-15):
     """
     Осуществляет последовательное планирование и оценку коэффициентов модели
     :param xstart: начало диапазона x
@@ -133,35 +135,27 @@ def getbSeqPlan (xstart:list, xend:list, N:int, btrue:list, binit:list, c, ydisp
     :param binit: стартовое значение вектора коэффициентов
     :param btrue: истинное значение вектора коэффициентов
     :param c: словарь дополнительных переменных
-    :param ydisps: диагональ ковариационной матрицы y
+    :param Ve:  ковариационная матрица y
     :param jacf: функция, возвращающая якобиан модели, входящие x,b,c,y
     :param funcf: функция, возвращающая значение модели, входящие x,b,c
     :param NSIG:
     :return: k, число итераций, лог
-
     Для переделывания на реальные измерения btrue=None и функции моделирования переводятся на измерительные
     """
-
-    #делаем ковариационную матрицу y
-    Vearr = np.array(ydisps)
-    Ve = np.diag(Vearr)
-
-
     startplan =  ap.makeUniformExpPlan(xstart, xend, N)
-    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, ydisps)
 
+    origplan = copy.copy(startplan)
 
-
+    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
 
     log=""
 
     b=binit
     for numiter in range(1000000): #ограничитель цикла - если выход произошёл по ограничению, значит, возможна ошибка
 
-
         est=grandCountGN_Ultra(funcf, jacf, measdata, b, c, NSIG) #получили оценку b binit=b
         b=est[0]
-
+        Sk=est[1]
 
         Vb=ap.countVbForPlan(startplan, b,  c, Ve, jacf, funcf) #TODO: проработать вопрос с неявными функциями в данном случае!
         #Возможно, надлежит сделать эту функцию универсальной - принимающей и план эксперимента, и measdata.
@@ -169,10 +163,10 @@ def getbSeqPlan (xstart:list, xend:list, N:int, btrue:list, binit:list, c, ydisp
 
         detVb=np.linalg.det(Vb)
 
-        print ("iteration: {0}\nb={1}\ndetVb={2}\nest={3}".format(numiter, b, detVb, (est[1], est[2], est[3])))
+        #print ("iteration: {0}\nb={1}\ndetVb={2}\nGKNU output(sum, numiter, log)={3}".format(numiter, b, detVb, (est[1], est[2], est[3])))
 
-        if (detVb<math.pow(10, -6)): #если определитель меньше 10^-6
-            return b, numiter, log #то всё вернуть
+        if detVb>0 and detVb<smallestdetVb: #если определитель меньше 10^-6
+            return b, numiter, Sk, startplan, origplan, log #то всё вернуть
 
         #иначе поиск следующей точки плана
 
@@ -191,13 +185,7 @@ def getbSeqPlan (xstart:list, xend:list, N:int, btrue:list, binit:list, c, ydisp
 
 
     #окончание этого цикла "естественным путём" говорит о том, что превышено максимальное число итераций
-    return b, 1000000, log+"ERROR: maximum number of iteration archieved" #то всё вернуть
-
-
-
-
-
-
+    return b, 1000000, Sk, startplan, origplan, log+"ERROR: maximum number of iteration archieved" #то всё вернуть
 
 
 def test():
@@ -207,47 +195,62 @@ def test():
     """
     xstart=[1, 100]
     xend=[20,200]
-    N=50
+
+    N=10
     c={"a":1000}
     funcf=lambda x,b,c: np.array ( [ b[0]+b[1]*x[0]+b[2]*x[1]+b[3]*x[0]*x[1]+b[4]*x[0]*x[0]+b[5]*x[1]*x[1],   b[6]+b[7]*x[0]+b[8]*x[1]+b[9]*x[0]*x[1]+b[10]*x[0]*x[0]+b[11]*x[1]*x[1] ] )
     jacf = lambda x,b,c,y: np.matrix([ [1, x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1], 0, 0, 0, 0, 0, 0],
-                                       [0,0,0,0,0,0,1,x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1]] ])
+                                      [0,0,0,0,0,0,1,x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1]] ])
+
     Ve=np.array([ [0.1, 0],
                   [0, 0.1]]  )
+    btrue=[8,4,2,2,9,3,4,2,2,3,4,5]
+    bstart=np.array(btrue)-np.array([2]*len(btrue))
+    bend=np.array(btrue)+np.array([2]*len(btrue))
+
+    #bstart=[0.8,0.4,1.4,0.2,0.9,0.3,1.4,0.2,2.1,3.1,4.1,5.1]
+#    blen=  [0.3,0.2,0.2,0.2,0.2,0.3,0.2,0.2]
+    #bend=  [1.1,0.6,1.6,0.4,1.1,0.6,1.6,0.4,2.5,3.3,4.6,5.6]
 
 
-    bstart=[8,4,2,2,9,3,4,2,2,3,4,5]
-    blen=  [0.3,0.2,0.2,0.2,0.2,0.3,0.2,0.2]
-    bend=  [1.1,0.6,1.6,0.4,1.1,0.6,1.6,0.4,2.5,3.3,4.6,5.6]
-
-    #print (doublesearch ([1, 0.5], [10,10], [9,9], lambda x: x[0]*x[0]+2*x[1]*x[1]+10)) #тестирование поиска
-
-    binit=[1+x*0.5 for x in range(len(bstart))]
-    binit=[1]*len(bstart)
-
-
-
-    print (binit)
-
-
-
-#проверяем работу метода оценки
-
+    #проверяем работу метода оценки
     startplan =  ap.makeUniformExpPlan(xstart, xend, N)
-    measdata = ap.makeMeasAccToPlan(funcf, startplan, bstart, c,None )
+    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
 
-    print (grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3))
+    binit=[1]*len(btrue)
+
+    print("performing normal research:")
+    startplan =  ap.makeUniformExpPlan(xstart, xend, N)
+    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c,Ve )
+    gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
+    print ("k, Sk, numIterations, log")
+    print (gknu)
+
+
+    print ("\n\nperforming aprior planning:")
+    oplan=ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=10)[1]
+
+
+    measdata = ap.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
+    gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
+    print ("k, Sk, numIterations, log")
+    print (gknu)
 
 
 
+    print("\n\nperforming sequence plan:")
+    seqplanb=getbSeqPlan (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, NSIG=3)
 
+    print ("b, numiter, Sk, startplan, origplan, log")
+    print (seqplanb[0],seqplanb[1],seqplanb[2], seqplanb[5]  )
 
-
-
+    for x in seqplanb[3]:
+        print (x)
+    print ("\noriginal plan")
+    for x in seqplanb[4]:
+        print (x)
 
     #print (getbSeqPlan (xstart, xend, N, bstart, binit , c, np.diagonal(Ve), jacf, funcf, NSIG=3))
-
-
     # plan=makeUniformExpPlan(xstart, xend, N)
     # func = lambda x,b,c: [x[0]*b[0]+c["a"], x[1]*b[1]+c["a"], x[2]*b[2]+c["a"]]
     # meas = makeMeasAccToPlan(func, plan,  b, c, [0.0001]*3)
@@ -255,5 +258,40 @@ def test():
     #     print (x)
 
 
-
 test()
+
+
+def test1():
+    xstart=[10, 100]
+    xend=[50,300]
+    N=50
+    btrue=[30,40]
+    funcf=lambda x,b, c: np.array ([x[0]*(b[0]+b[1]), x[0]*x[1]*b[1]])
+    jacf = lambda x,b, c, y: np.matrix([ [x[0], x[0]], [0, x[0]*x[1] ]   ])
+    Ve=np.array([ [0.5, 0],
+                  [0, 0.5]]  )
+    binit=[1]*len(btrue)
+    c={}
+    print("performing normal research:")
+    startplan =  ap.makeUniformExpPlan(xstart, xend, N)
+    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c,Ve )
+    gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
+    print (gknu)
+    print("\n\nperforming sequence plan:")
+
+    seqplanb=getbSeqPlan (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, NSIG=3, smallestdetVb=1e10)
+
+    print ()
+    print (seqplanb[0],seqplanb[1], seqplanb[4]  )
+
+    for x in seqplanb[2]:
+        print (x)
+    print ("\noriginal plan")
+    for x in seqplanb[3]:
+        print (x)
+
+
+#test1()
+
+#Зачем функция оптимизации плана эксперимента добавляет те точки, которые уже в плане эксперимента есть? Наиболее опорные что ли?
+

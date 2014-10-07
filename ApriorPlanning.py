@@ -153,28 +153,26 @@ def makeRandomUniformExpPlan(xstart:list, xend:list, N:int):
         res.append(uniformVector(xstart, xend))
     return res
 
-def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, ydisps:list=None, n=1, outfilename="", listOfOutvars=None):
+def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilename="", listOfOutvars=None):
     """
 
     :param func: векторная функция
     :param expplan: план эксперимента (список значений вектора x)
     :param b: вектор b
     :param c: вектор c
-    :param ydisps: вектор дисперсий y (диагональ ковариационной матрицы)
+    :param Ve: ковариационная матрица (np.array)
     :param n: объём выборки y
     :param outfilename: имя выходного файла, куда писать план
     :param listOfOutvars: список выносимых переменных
     :return: список экспериментальных данных в формате списка словарей 'x':..., 'y':...
     """
-
-
     res = list()
-
 
     for i in range(len(expplan)):
         y=func(expplan[i],b,c)
         #Внесём возмущения:
-        if not ydisps==None:
+        if len(Ve):
+            ydisps=np.diag(Ve)
             for k in range(len(y)):
                 y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
 
@@ -314,7 +312,7 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
         if (dcurr<dopt):
             dopt=dcurr
             planopt=plan
-    return (dopt, planopt)
+    return dopt, planopt
 
 
 def test():
@@ -340,7 +338,7 @@ def test():
 
     #print (doublesearch ([1, 0.5], [10,10], [9,9], lambda x: x[0]*x[0]+2*x[1]*x[1]+10)) #тестирование поиска
 
-    rs=grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=20)
+    rs=grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=10)
     print (rs[0])
 
     print ('Experimental plan')
@@ -353,3 +351,4 @@ def test():
     # meas = makeMeasAccToPlan(func, plan,  b, c, [0.0001]*3)
     # for x in meas:
     #     print (x)
+#test()
