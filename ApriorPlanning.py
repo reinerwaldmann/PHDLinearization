@@ -341,6 +341,17 @@ def logTruthness (measdata:list, b:list, Ve,  func, c):
     return Average, Disp, math.sqrt(Disp)
 
 
+def averageDif(measdata:list, b:list, Ve,  func, c):
+    diflist=list()
+    for measpoint in range(len(measdata)):
+        diflist.append(np.array(measpoint['y'])-func(measpoint['x'],b,c))
+    return np.average(diflist), np.var(diflist), math.sqrt(np.var(diflist))
+
+def getQualitat(measdata:list, b:list, Ve,  func, c):
+    return "Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков\n",
+    logTruthness (measdata, b, Ve,  func, c),
+    averageDif(measdata, b, Ve,  func, c)
+
 
 
 
