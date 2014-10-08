@@ -1,6 +1,6 @@
 __author__ = 'vasilev_is'
 import math
-import copy
+import copy, pickle
 
 import numpy as np
 
@@ -125,8 +125,7 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
     return k, Sk, numIterations, log
 
 
-
-def getbSeqPlan (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, NSIG=3, smallestdetVb=1e-15):
+def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=3, smallestdetVb=1e-6):
     """
     Осуществляет последовательное планирование и оценку коэффициентов модели
     :param xstart: начало диапазона x
@@ -138,20 +137,17 @@ def getbSeqPlan (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, j
     :param Ve:  ковариационная матрица y
     :param jacf: функция, возвращающая якобиан модели, входящие x,b,c,y
     :param funcf: функция, возвращающая значение модели, входящие x,b,c
+    :param initplan: - начальный план
     :param NSIG:
     :return: k, число итераций, лог
     Для переделывания на реальные измерения btrue=None и функции моделирования переводятся на измерительные
     """
-    startplan =  ap.makeUniformExpPlan(xstart, xend, N)
-
+    startplan =  initplan if initplan else ap.makeUniformExpPlan(xstart, xend, N)
     origplan = copy.copy(startplan)
-
     measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
-
     log=""
-
     b=binit
-    for numiter in range(1000000): #ограничитель цикла - если выход произошёл по ограничению, значит, возможна ошибка
+    for numiter in range(100): #ограничитель цикла - если выход произошёл по ограничению, значит, возможна ошибка
 
         est=grandCountGN_Ultra(funcf, jacf, measdata, b, c, NSIG) #получили оценку b binit=b
         b=est[0]
@@ -185,7 +181,13 @@ def getbSeqPlan (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, j
 
 
     #окончание этого цикла "естественным путём" говорит о том, что превышено максимальное число итераций
-    return b, 1000000, Sk, startplan, origplan, log+"ERROR: maximum number of iteration archieved" #то всё вернуть
+    return b, 1000000, Sk, startplan, origplan, log+"ERROR: maximum number of iterations archieved" #то всё вернуть
+
+
+
+
+
+
 
 
 def test():
@@ -211,38 +213,54 @@ def test():
     #bstart=[0.8,0.4,1.4,0.2,0.9,0.3,1.4,0.2,2.1,3.1,4.1,5.1]
 #    blen=  [0.3,0.2,0.2,0.2,0.2,0.3,0.2,0.2]
     #bend=  [1.1,0.6,1.6,0.4,1.1,0.6,1.6,0.4,2.5,3.3,4.6,5.6]
-
-
-    #проверяем работу метода оценки
-    startplan =  ap.makeUniformExpPlan(xstart, xend, N)
-    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
-
     binit=[1]*len(btrue)
 
-    print("performing normal research:")
-    startplan =  ap.makeUniformExpPlan(xstart, xend, N)
-    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c,Ve )
-    gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
-    print ("k, Sk, numIterations, log")
-    print (gknu)
+    #проверяем работу метода оценки
+    # startplan =  ap.makeUniformExpPlan(xstart, xend, N)
+    # measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
+    # binit=[1]*len(btrue)
+    # print("performing normal research:")
+    # startplan =  ap.makeUniformExpPlan(xstart, xend, N)
+    # measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c,Ve )
+    # gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
+    # print ("k, Sk, numIterations, log")
+    # print (gknu)
+    # print ("AvLog, DLog, sigmaLog")
+    # print (ap.logTruthness (measdata, gknu[0], Ve,  funcf, c))
+    #
+    #
+    #
+    # print ("\n\nperforming aprior planning:")
+    # try: #пытаемся открыть архивированные данные
+    #     pkl_file = open('oplan.pkl', 'rb')
+    #     oplan = pickle.load(pkl_file)
+    #     pkl_file.close()
+    # except BaseException:
+    #     pkl_file  = open('oplan.pkl', 'wb')
+    #     oplan=ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=10)[1]
+    #     pickle.dump(oplan, pkl_file, -1)
+    #     pkl_file.close()
+    # measdata = ap.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
+    # gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
+    # print ("k, Sk, numIterations, log")
+    # print (gknu)
+    # print ("AvLog, DLog, sigmaLog")
+    # print (ap.logTruthness (measdata, gknu[0], Ve,  funcf, c))
 
-
-    print ("\n\nperforming aprior planning:")
-    oplan=ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=10)[1]
-
-
-    measdata = ap.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
-    gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
-    print ("k, Sk, numIterations, log")
-    print (gknu)
 
 
 
     print("\n\nperforming sequence plan:")
-    seqplanb=getbSeqPlan (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, NSIG=3)
+    seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf)
 
     print ("b, numiter, Sk, startplan, origplan, log")
     print (seqplanb[0],seqplanb[1],seqplanb[2], seqplanb[5]  )
+
+
+
+    print ("AvLog, DLog, sigmaLog")
+    measdata = ap.makeMeasAccToPlan(funcf, seqplanb[3], btrue, c,Ve )
+    print (ap.logTruthness (measdata, seqplanb[0], Ve,  funcf, c))
 
     for x in seqplanb[3]:
         print (x)
@@ -250,12 +268,29 @@ def test():
     for x in seqplanb[4]:
         print (x)
 
-    #print (getbSeqPlan (xstart, xend, N, bstart, binit , c, np.diagonal(Ve), jacf, funcf, NSIG=3))
-    # plan=makeUniformExpPlan(xstart, xend, N)
-    # func = lambda x,b,c: [x[0]*b[0]+c["a"], x[1]*b[1]+c["a"], x[2]*b[2]+c["a"]]
-    # meas = makeMeasAccToPlan(func, plan,  b, c, [0.0001]*3)
-    # for x in meas:
+
+
+
+    # print("\n\nperforming enchanced sequence plan:")
+    # #начальный план - априорный
+    # seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf,initplan=oplan)
+    # print ("b, numiter, Sk, startplan, origplan, log")
+    # print (seqplanb[0],seqplanb[1],seqplanb[2], seqplanb[5]  )
+    # print ("AvLog, DLog, sigmaLog")
+    # measdata = ap.makeMeasAccToPlan(funcf, seqplanb[3], btrue, c,Ve )
+    # print (ap.logTruthness (measdata, seqplanb[0], Ve,  funcf, c))
+    #
+    # for x in seqplanb[3]:
     #     print (x)
+    # print ("\noriginal plan")
+    # for x in seqplanb[4]:
+    #     print (x)
+    #
+
+
+
+
+
 
 
 test()

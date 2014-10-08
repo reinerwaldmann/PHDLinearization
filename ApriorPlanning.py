@@ -3,6 +3,7 @@ __author__ = 'vasilev_is'
 import copy
 import random
 import math
+import sys
 
 import numpy as np
 
@@ -105,9 +106,6 @@ def appendToList (list, x):
     l=copy.deepcopy(list)
     l.append(x)
     return l
-
-
-
 
 def uniformVector(xstart, xend):
     """
@@ -249,13 +247,13 @@ def doublesearch (xstart, xend, xinit, function):
             xcurr=copy.deepcopy(x)
             d3=function(xcurr)
             xcurr[i]=x[i]+step  #пробуем шаг вперёд
-            d4=function(xcurr) if xcurr[i]<xend[i] else 1 #штраф при выходе из диапазона
+            d4=function(xcurr) if xcurr[i]<xend[i] else sys.maxsize #штраф при выходе из диапазона
             xcurr[i]=x[i]-step #пробуем шаг назад
-            d5=function(xcurr) if xcurr[i]>xstart[i] else 1 #штраф при выходе из диапазона
+            d5=function(xcurr) if xcurr[i]>xstart[i] else sys.maxsize #штраф при выходе из диапазона
 
-            # print ('head')
-            # print (d3,d4,d5, step, x, i)
-            # print ('tail')
+            print ('head')
+            print (d3,d4,d5, step, x, i)
+            print ('tail')
 
 
             if (d3-d4)*(d3-d5)>0: #
@@ -314,6 +312,37 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
             planopt=plan
     return dopt, planopt
 
+def logTruthness (measdata:list, b:list, Ve,  func, c):
+    """
+    Считает логарифм функции правдоподобия для известной ковариационной матрицы Ve - ошибок экспериментальных данных
+    :param measdata: измеренные данные
+    :param b: оценка вектора коэффициентов
+    :param Ve: ковариационная матрица ошибок экспериментальных данных
+    :param func: callable функция x,b,c, возвращает значение y
+    :param c: словарь дополнительных переменных
+    :return: среднее значение логарифма функции правдоподобия, дисперсию по выборке экспериментальных данных, стандартное отклонение
+    """
+    S=list()
+
+    for i in range(len(measdata)):
+        measpoint = measdata[i]
+        dif=np.array(measpoint['y'])-func(measpoint['x'],b,c)
+        S.append(np.dot(np.dot(dif.T, np.linalg.inv(Ve)), dif))
+
+
+    K=Ve.shape[0] #число откликов
+    M=len(b) #число коэффициентов
+    N=len(measdata)
+    shift=K*N/(K*N-M)
+
+    Average=np.average(S)*shift
+    Disp = np.var(S)*shift*shift
+
+    return Average, Disp, math.sqrt(Disp)
+
+
+
+
 
 def test():
     """
@@ -352,3 +381,7 @@ def test():
     # for x in meas:
     #     print (x)
 #test()
+
+
+
+
