@@ -8,12 +8,10 @@ from scipy import optimize
 import numpy as np
 
 import derivations as drv
+import sympy
 
 
-#уравнения Кирхгофа:
 
-b=(60,60,40) #задаём вектор коэффициентов
-w=(1,2) #задаём вектор значений источников питания
 
 
 #http://pythonworld.ru/tipy-dannyx-v-python/vse-o-funkciyax-i-ix-argumentax.html
@@ -35,9 +33,6 @@ def strEvaluator (funstr:list, x:list, b:list=[], c:dict={}):
         #yy - вектор выходных аргументов, которые мы находим методом Ньютона
         vdict = vardict
         vdict['y']=yy
-
-
-
         fff=lambda f: eval (f, None, vardict)
 
         return list(map(fff, funstr))
@@ -111,7 +106,9 @@ def rety (funstr, x, b, c):
     Возвращает y для указанных аргументов
     """
     function = strEvaluator(funstr,x,b,c)
-    sol = optimize.root(function, [1, 1, 1], method='lm', jac=ret_callable_jac(funstr, x,b,c))
+    #sol = optimize.root(function, [1, 1, 1], method='lm', jac=ret_callable_jac(funstr, x,b,c))
+    sol = optimize.root(function, [1, 1, 1], method='lm')
+
     return sol.x
 
 def generate_uniform_plan_exp_data(func, xdiapdictlist:list, b:list, c:dict, ydisps:list=None, n=1, outfilename="", listOfOutvars=None):
@@ -671,20 +668,36 @@ def test4(): #тестируем на обычной, не неявной фун
     print  (grandCountGN_Ultra(funcf, jacf, expdata, [1,1]))
     #Почему-то так UltraX c mu выдаёт неверный результат, без mu выдаёт верный, но с большим число итераций
 
-test4()
+def test():
+    global b
+
+
+    print ("points in plan | ", " y vector | ", " left side of equation")
+
+    for i in make_exp_plan_2_generator ((10,20), (60,40),  10):
+        w=i
+        #sol = optimize.root(kirh, [1, 1, 1 ], jac=jac, method=’hybr’)
+
+        fun = kirhWrapper(b)
+
+
+        sol = optimize.root(fun, [1, 1, 1 ], method='hybr')
+
+
+        #можно скормить jacobean. Но он должен быть callable с подачей y на вход, очевидно
+
+
+        print (i, sol.x, fun(sol.x))
 
 
 
-def test2():
-    funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
-    b=[100,200, 300]
-    c={}
-    for x in  generate_uniform_plan_exp_data(funstr, [{'start':10, 'end':20},{'start':40, 'end':60}], b, c, [0.000001,0, 0.000001], 10):
-        print (x)
+        #print (list(i).extend(sol.x).extend (kirh(sol.x)))
 
-#test2()
+
+        #написать проверялку, а точно корни-то подходящие?
 
 def test1():
+
     #на этом простом примере видно, что optimize_root выдаёт верные корни при использовании в связке с strEvaluator
     #однако же при использовании его для модели транзистора резистивной есть расхождения с вариантом функции.
     #возможно, надлежит скормить якобиан однако же
@@ -731,35 +744,31 @@ def test1():
 
 
     #return strEvaluator(funstr,x,b,c)(y)
-def test():
-    global b
-
-
-    print ("points in plan | ", " y vector | ", " left side of equation")
-
-    for i in make_exp_plan_2_generator ((10,20), (60,40),  10):
-        w=i
-        #sol = optimize.root(kirh, [1, 1, 1 ], jac=jac, method=’hybr’)
-
-        fun = kirhWrapper(b)
-
-
-        sol = optimize.root(fun, [1, 1, 1 ], method='hybr')
-
-
-        #можно скормить jacobean. Но он должен быть callable с подачей y на вход, очевидно
-
-
-        print (i, sol.x, fun(sol.x))
 
 
 
-        #print (list(i).extend(sol.x).extend (kirh(sol.x)))
+
+def testNew():
+    funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
+    b=[100,200,300]
 
 
-        #написать проверялку, а точно корни-то подходящие?
+    updfunstr=list(map(lambda x: x.replace('[','').replace(']',''),  funstr))
 
 
-#print (test1())
-#test()
 
+    for i in range (len(updfunstr)):
+        print (sympy.diff(updfunstr[i], 'y0'), sympy.diff(updfunstr[i], 'y1'), sympy.diff(updfunstr[i], 'y2'))
+
+
+    #написать штуку, которая б выводила якобиан, который можно сразу в программу вставить
+
+
+
+#    c={}
+#    for x in  generate_uniform_plan_exp_data(funstr, [{'start':10, 'end':20},{'start':40, 'end':60}], b, c, [0.000001,0, 0.000001], 10):
+#        print (x)
+
+#test2()
+
+testNew()

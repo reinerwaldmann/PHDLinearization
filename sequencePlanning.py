@@ -124,7 +124,6 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
 
     return k, Sk, numIterations, log
 
-
 def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=3, smallestdetVb=1e-6):
     """
     Осуществляет последовательное планирование и оценку коэффициентов модели
@@ -182,12 +181,6 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
 
     #окончание этого цикла "естественным путём" говорит о том, что превышено максимальное число итераций
     return b, 1000000, Sk, startplan, origplan, log+"ERROR: maximum number of iterations archieved" #то всё вернуть
-
-
-
-
-
-
 
 
 def test():
