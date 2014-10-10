@@ -1,13 +1,18 @@
+
+
 __author__ = 'vasilev_is'
 
 """
 Назначение файла - тестирование возможности оценки параметров транзистора с помощью метода Ньютона-Гаусса
 Функции - метод Ньютона-Гаусса в исходном виде, функция, якобиан, априорное планирование
+
+Сперва возьмём обычную резистивную модель и попробуем её оценить.  С помощью обычного (равномерного) планирования, с помощью априорного плана
 """
 
-import math, copy, pickle
+import math
+
 import numpy as np
-import ApriorPlanning as ap
+from scipy import optimize
 
 
 def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
@@ -123,3 +128,46 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
     # print ("testdiff: ", testdiff)
 
     return k, Sk, numIterations, log
+
+
+
+
+def testNew():
+    funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
+    btrue=[60,40,60]
+
+    updfunstr=list(map(lambda x: x.replace('[','').replace(']',''),  funstr))
+
+
+    dfdy=lambda x,b,c,y: np.array( [ [1, 1, -1],
+                                     [b[0], -b[1], 0],
+                                     [0, b[1], b[2]]
+    ])
+
+    dfdb=lambda x,b,c,y: np.array ([ [0,    0,    0    ],
+                                     [y[0],-y[1], 0    ],
+                                     [0,    y[1], y[2] ] ])
+
+    #возвращает функцию
+    function=lambda x,b,c,y: [y[0]+y[1]-y[2], y[0]*b[0]-y[1]*b[1]-x[0]-x[1], y[1]*b[1]+y[2]*b[2]+x[1]]
+
+    #возвращает структурную матрицу
+    jacf=lambda x,b,c,y: np.dot(dfdb(x,b,c,y), np.linalg.inv(dfdy(x,b,c,y))) #g=dy/db=df/db*np.inv(df/dy)
+
+    #возвращает значение y
+    funcf=lambda x,b,c: optimize.root(function, [1, 1, 1], args=(x,b,c),method='lm').x
+
+
+
+
+
+
+
+
+testNew()
+
+
+
+#производство якобиана
+    # for i in range (len(updfunstr)):
+    #     print (sympy.diff(updfunstr[i], 'b0'), sympy.diff(updfunstr[i], 'b1'), sympy.diff(updfunstr[i], 'b2'))

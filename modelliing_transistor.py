@@ -6,9 +6,10 @@ import math
 
 from scipy import optimize
 import numpy as np
+import sympy
 
 import derivations as drv
-import sympy
+
 
 
 
@@ -751,11 +752,7 @@ def test1():
 def testNew():
     funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
     b=[100,200,300]
-
-
     updfunstr=list(map(lambda x: x.replace('[','').replace(']',''),  funstr))
-
-
 
     for i in range (len(updfunstr)):
         print (sympy.diff(updfunstr[i], 'y0'), sympy.diff(updfunstr[i], 'y1'), sympy.diff(updfunstr[i], 'y2'))
