@@ -3,20 +3,13 @@ __author__ = 'reiner'
 
 import random
 import math
-
 from scipy import optimize
 import numpy as np
 import sympy
-
 import derivations as drv
 
 
-
-
-
-
 #http://pythonworld.ru/tipy-dannyx-v-python/vse-o-funkciyax-i-ix-argumentax.html
-
 
 def strEvaluator (funstr:list, x:list, b:list=[], c:dict={}):
     """

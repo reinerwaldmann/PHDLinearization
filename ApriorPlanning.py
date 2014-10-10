@@ -196,8 +196,9 @@ def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
         jj=jac(point, b, c, func(point,b,c) if func else None)
         #G+=jj*np.linalg.inv(Ve)*jj.T
 
+
         #G+=jj*jj.T
-        G+=jj.T*jj #TODO  тестировать!
+        G+=jj.T*jj
 
 
     return np.linalg.inv(G)
@@ -251,9 +252,9 @@ def doublesearch (xstart, xend, xinit, function):
             xcurr[i]=x[i]-step #пробуем шаг назад
             d5=function(xcurr) if xcurr[i]>xstart[i] else sys.maxsize #штраф при выходе из диапазона
 
-            print ('head')
-            print (d3,d4,d5, step, x, i)
-            print ('tail')
+            # print ('head')
+            # print (d3,d4,d5, step, x, i)
+            # print ('tail')
 
 
             if (d3-d4)*(d3-d5)>0: #
@@ -292,7 +293,7 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
     for i in range(0,Ntries):
         plan = makeRandomUniformExpPlan(xstart, xend, N)
-        unopt=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac)[0]
+        unopt=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
         #оптимизация
         for j in range(N):
             xdot=copy.deepcopy(plan[j])
@@ -305,7 +306,7 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
             # sol = minimize (function, xdot, bounds=boundsarr)
             # plan[j]=sol.x
             plan[j]=doublesearch(xstart, xend, xdot, function)
-        dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac)[0]
+        dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
         print ("unoptimized-optimized:",unopt, dcurr)
         if (dcurr<dopt):
             dopt=dcurr
@@ -343,14 +344,12 @@ def logTruthness (measdata:list, b:list, Ve,  func, c):
 
 def averageDif(measdata:list, b:list, Ve,  func, c):
     diflist=list()
-    for measpoint in range(len(measdata)):
+    for measpoint in measdata:
         diflist.append(np.array(measpoint['y'])-func(measpoint['x'],b,c))
     return np.average(diflist), np.var(diflist), math.sqrt(np.var(diflist))
 
 def getQualitat(measdata:list, b:list, Ve,  func, c):
-    return "Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков\n",
-    logTruthness (measdata, b, Ve,  func, c),
-    averageDif(measdata, b, Ve,  func, c)
+    return "Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков\n", logTruthness (measdata, b, Ve,  func, c), averageDif(measdata, b, Ve,  func, c)
 
 
 

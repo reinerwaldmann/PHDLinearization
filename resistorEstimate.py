@@ -10,9 +10,11 @@ __author__ = 'vasilev_is'
 """
 
 import math
-
+import time
 import numpy as np
 from scipy import optimize
+import ApriorPlanning as ap
+import sequencePlanning as sp
 
 
 def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
@@ -59,7 +61,7 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
         b=np.zeros_like(b)
 
         for i in range(0, len(expdatalist)): #для всех наблюдений
-            fstructval=fstruct(expdatalist[i]['x'], k, c, None) #TODO опять же вопрос с неявными функциями
+            fstructval=fstruct(expdatalist[i]['x'], k, c, expdatalist[i]['y'])
             rt=np.dot (fstructval.T, fstructval)
             A+=rt
             ydif=expdatalist[i]['y']-func(expdatalist[i]['x'],k,c)
@@ -111,7 +113,7 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
 
         #print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
 
-        if (numIterations>200): #для ради безопасности поставим ограничитель на число итераций
+        if (numIterations>100): #для ради безопасности поставим ограничитель на число итераций
             log+="Break due to max number of iteration exceed"
             print ("GKNU Break due to max number of iteration exceed")
             break
@@ -133,32 +135,62 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
 
 
 def testNew():
-    funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
-    btrue=[60,40,60]
+    funstr= ["b[0]*x[0]*y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
+
 
     updfunstr=list(map(lambda x: x.replace('[','').replace(']',''),  funstr))
 
 
-    dfdy=lambda x,b,c,y: np.array( [ [1, 1, -1],
+    dfdy=lambda y,x,b,c: np.array( [ [b[0]*x[0], 1, -1],
                                      [b[0], -b[1], 0],
                                      [0, b[1], b[2]]
     ])
 
-    dfdb=lambda x,b,c,y: np.array ([ [0,    0,    0    ],
+    dfdb=lambda y,x,b,c: np.array ([ [x[0]*y[0],    0,    0    ],
                                      [y[0],-y[1], 0    ],
                                      [0,    y[1], y[2] ] ])
 
     #возвращает функцию
-    function=lambda x,b,c,y: [y[0]+y[1]-y[2], y[0]*b[0]-y[1]*b[1]-x[0]-x[1], y[1]*b[1]+y[2]*b[2]+x[1]]
+    function=lambda y,x,b,c: [b[0]*x[0]*y[0]+y[1]-y[2], y[0]*b[0]-y[1]*b[1]-x[0]-x[1], y[1]*b[1]+y[2]*b[2]+x[1]]
 
     #возвращает структурную матрицу
-    jacf=lambda x,b,c,y: np.dot(dfdb(x,b,c,y), np.linalg.inv(dfdy(x,b,c,y))) #g=dy/db=df/db*np.inv(df/dy)
+    jacf=lambda x,b,c,y: np.dot(dfdb(y,x,b,c), np.linalg.inv(dfdy(y,x,b,c))) #g=dy/db=df/db*np.inv(df/dy)
 
     #возвращает значение y
-    funcf=lambda x,b,c: optimize.root(function, [1, 1, 1], args=(x,b,c),method='lm').x
+    funcf=lambda x,b,c: optimize.root(function, [1, 1, 1], args=(x,b,c),method='lm', jac=dfdy).x
+
+
+    #теперь попробуем сделать эксперимент.
+    c={}
+    Ve=np.array([ [0.1, 0, 0],
+                  [0, 0.1, 0],
+                  [0, 0, 0.1]  ]  )
+
+    btrue=[60,40,60]
+    bstart=np.array(btrue)-np.array([2]*len(btrue))
+    bend=np.array(btrue)+np.array([2]*len(btrue))
+    binit=[1]*len(btrue)
+
+    xstart=[10,20,30]
+    xend=[150,200,300]
+
+    N=10
+
+    # print("performing normal research:")
+    # startplan =  ap.makeUniformExpPlan(xstart, xend, N)
+    # measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c,Ve )
+    # gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
+    # print (gknu)
+    # print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
 
 
+    print ("\n\nperforming aprior plan")
+    oplan=ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=funcf, Ntries=10)[1]
+    measdata = ap.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
+    gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
+    print (gknu)
+    print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
 
 
@@ -171,3 +203,4 @@ testNew()
 #производство якобиана
     # for i in range (len(updfunstr)):
     #     print (sympy.diff(updfunstr[i], 'b0'), sympy.diff(updfunstr[i], 'b1'), sympy.diff(updfunstr[i], 'b2'))
+
