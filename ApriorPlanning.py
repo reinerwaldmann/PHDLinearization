@@ -137,20 +137,28 @@ def makeUniformExpPlan(xstart:list, xend:list, N:int):
     """
     :param xstart: начало диапазона x
     :param xend: конец диапазона x
-    :param N: Количество точек в плане
+    :param N: Количество точек в плане (внимание! это количество измерений каждого вектора, то есть, реальное кол-во будет N^len(xstart))
     :return: равномерный план эксперимента
     """
-
     res=list()
 
     xstartnp=np.array(xstart)
     xendnp=np.array(xend)
+    xstep = list((xendnp-xstartnp)/N)
 
-    xstep = (xendnp-xstartnp)/N
+    evalstr="import numpy\n\n"
+    lststr=""
 
-    for i in range(N):
-        res.append(list(xstart+i*xstep))
+    for i in range (len(xstart)):
+        evalstr+="\t"*i+"for x{0} in numpy.arange(xstart[{0}], xend[{0}], xstep[{0}]):\n".format(i)
+        lststr+="x{0}".format(i)+("," if i+1<len(xstart) else "")
+    evalstr+="\t"*(i+1)+"res.append(("+lststr+"))"
 
+    #print (evalstr)
+    exec(evalstr,  locals()) #исполняет полученную сроку, собсна, формирует список входных переменных
+
+    # for i in range(N):
+    #     res.append(list(xstart+i*xstep))
     return res
 
 def makeRandomUniformExpPlan(xstart:list, xend:list, N:int):
@@ -183,7 +191,7 @@ def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilenam
     for i in range(len(expplan)):
         y=func(expplan[i],b,c)
         #Внесём возмущения:
-        if len(Ve):
+        if not Ve==None:
             ydisps=np.diag(Ve)
             for k in range(len(y)):
                 y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))

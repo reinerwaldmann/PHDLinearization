@@ -10,6 +10,7 @@ __author__ = 'vasilev_is'
 """
 
 import math
+import copy
 
 import numpy as np
 from scipy import optimize
@@ -92,7 +93,9 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
         k+=mu*deltak.T[0]
 
 
-        #print (mu, deltak.T[0])
+
+
+        print (mu, deltak.T[0], k , Sk)
 
        # k-=0.3*deltak.T[0]
 
@@ -133,28 +136,88 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
 
 
 
+def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
+    b=binit
+    log=""
+    numiter=0
+    condition=True
+    while (condition):
+
+        m=len(b) #число коэффициентов
+        G=np.zeros((m,m))
+        B5=None
+        bpriv=copy.copy(b)
+
+
+        for point in measdata:
+            jac=jacf(point['x'],b,c,point['y'])
+            G+=np.dot(jac.T,jac)
+
+            dif=point['y']-funcf(point['x'],b,c)
+
+
+            print (dif, point['y'], funcf(point['x'],b,c))
+
+
+            if B5==None:
+                B5=np.dot(jac,dif)
+            else:
+                B5+=np.dot(jac,dif)
+
+
+
+        deltab=np.dot(np.linalg.inv(G), B5)
+
+
+        b=b-deltab
+        numiter+=1
+
+
+        condition=False
+        for i in range (len(b)):
+            if math.fabs ((b[i]-bpriv[i])/bpriv[i])>math.pow(10,-1*NSIG):
+                condition=True
+
+        if numiter>100: #max number of iterations
+            log+="GKNUX1: Break due to max number of iteration exceed"
+            break
+
+
+
+
+    return b, numiter, log
+
+
+
+
+
+
+
+
 
 def testNew():
-    funstr= ["b[0]*x[0]*y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
+    funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
 
 
     updfunstr=list(map(lambda x: x.replace('[','').replace(']',''),  funstr))
 
 
-    dfdy=lambda y,x,b,c: np.array( [ [b[0]*x[0], 1, -1],
+    dfdy=lambda y,x,b,c: np.array( [ [1, 1, -1],
                                      [b[0], -b[1], 0],
                                      [0, b[1], b[2]]
     ])
 
-    dfdb=lambda y,x,b,c: np.array ([ [x[0]*y[0],    0,    0    ],
+    dfdb=lambda y,x,b,c: np.array ([[ 0,    0,    0    ],
                                      [y[0],-y[1], 0    ],
                                      [0,    y[1], y[2] ] ])
 
     #возвращает функцию
-    function=lambda y,x,b,c: [b[0]*x[0]*y[0]+y[1]-y[2], y[0]*b[0]-y[1]*b[1]-x[0]-x[1], y[1]*b[1]+y[2]*b[2]+x[1]]
+    function=lambda y,x,b,c: [y[0]+y[1]-y[2], y[0]*b[0]-y[1]*b[1]-x[0]-x[1], y[1]*b[1]+y[2]*b[2]+x[1]]
 
     #возвращает структурную матрицу
     jacf=lambda x,b,c,y: np.dot(dfdb(y,x,b,c), np.linalg.inv(dfdy(y,x,b,c))) #g=dy/db=df/db*np.inv(df/dy)
+    #jacf=lambda x,b,c,y: np.dot(np.linalg.inv(dfdy(y,x,b,c)), dfdb(y,x,b,c) ) #g=dy/db=df/db*np.inv(df/dy)
+
 
     #возвращает значение y
     funcf=lambda x,b,c: optimize.root(function, [1, 1, 1], args=(x,b,c),method='lm', jac=dfdy).x
@@ -162,43 +225,47 @@ def testNew():
 
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.1, 0, 0],
-                  [0, 0.1, 0],
-                  [0, 0, 0.1]  ]  )
+    Ve=np.array([ [0.001, 0, 0],
+                  [0, 0.001, 0],
+                  [0, 0, 0.001]  ]  )
 
-    btrue=[60,40,60]
+    btrue=[60,60,40]
     bstart=np.array(btrue)-np.array([2]*len(btrue))
     bend=np.array(btrue)+np.array([2]*len(btrue))
-    binit=[1]*len(btrue)
+    binit=[60,40,50]
 
-    xstart=[10,20,30]
-    xend=[150,200,300]
+    xstart=[10,40]
+    xend=[20,60]
 
-    N=40
+    N=8
 
-    # print("performing normal research:")
+    print("performing normal research:")
+    startplan =  ap.makeUniformExpPlan(xstart, xend, N)
+    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, None )
+
+    # for point in measdata:
+    #     print (point)
+
+    gknu=grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6)
+    print (gknu)
+    print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+
+
     # startplan =  ap.makeUniformExpPlan(xstart, xend, N)
-    # measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c,Ve )
+    #
+    #
+    # print ("\n\nperforming aprior plan")
+    # oplan=ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=funcf, Ntries=6)[1]
+    #
+    # ap.writePlanToFile(oplan)
+    #
+    #
+    #
+    # measdata = ap.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
     # gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
     # print (gknu)
     # print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
-
-
-
-    startplan =  ap.makeUniformExpPlan(xstart, xend, N)
-
-
-    print ("\n\nperforming aprior plan")
-    oplan=ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=funcf, Ntries=6)[1]
-
-    ap.writePlanToFile(oplan)
-
-
-
-    measdata = ap.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
-    gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
-    print (gknu)
-    print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
 
 testNew()
