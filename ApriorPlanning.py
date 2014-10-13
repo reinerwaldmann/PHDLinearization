@@ -6,6 +6,7 @@ import math
 import sys
 
 import numpy as np
+import scipy
 
 
 """
@@ -118,6 +119,19 @@ def uniformVector(xstart, xend):
         res[i]= random.uniform (xstart[i], xend[i])
     return res
     #Можно сделать map для списка списков сразу (или просто для нескольких списков) на основе этой функции  #
+
+
+def writePlanToFile (plan, filename='plan.txt'):
+    with open (filename, 'wt') as outfile:
+        for point in plan:
+            outfile.write(point.__str__())
+            outfile.write('\n')
+
+def readPlanFromFile (filename='plan.txt'):
+    with open (filename, 'rt') as infile:
+        lines = infile.readlines()
+        return list(map(eval, lines))
+
 
 def makeUniformExpPlan(xstart:list, xend:list, N:int):
     """
@@ -299,18 +313,21 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
             xdot=copy.deepcopy(plan[j])
             function = lambda x: countMeanVbForAprior_S4000(replaceInList(plan,j,x), bstart, bend, c, Ve, jac, func)[0]
 
-            # boundsarr=list()
-            # for k in range(len(xstart)):
-            #     boundsarr.append((xstart[k],xend[k]))
-            #
-            # sol = minimize (function, xdot, bounds=boundsarr)
-            # plan[j]=sol.x
-            plan[j]=doublesearch(xstart, xend, xdot, function)
+            boundsarr=list()
+            for k in range(len(xstart)):
+                boundsarr.append((xstart[k],xend[k]))
+
+            sol = scipy.optimize.minimize (function, xdot, bounds=boundsarr)
+            plan[j]=sol.x
+            # plan[j]=doublesearch(xstart, xend, xdot, function)
+
+
         dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
         print ("unoptimized-optimized:",unopt, dcurr)
-        if (dcurr<dopt):
+        if dcurr<dopt or planopt==None:
             dopt=dcurr
             planopt=plan
+        writePlanToFile(plan, "{0}plan.txt".format(i))
     return dopt, planopt
 
 def logTruthness (measdata:list, b:list, Ve,  func, c):

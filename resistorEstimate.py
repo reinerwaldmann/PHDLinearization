@@ -10,11 +10,11 @@ __author__ = 'vasilev_is'
 """
 
 import math
-import time
+
 import numpy as np
 from scipy import optimize
+
 import ApriorPlanning as ap
-import sequencePlanning as sp
 
 
 def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
@@ -174,7 +174,7 @@ def testNew():
     xstart=[10,20,30]
     xend=[150,200,300]
 
-    N=10
+    N=40
 
     # print("performing normal research:")
     # startplan =  ap.makeUniformExpPlan(xstart, xend, N)
@@ -185,15 +185,20 @@ def testNew():
 
 
 
+    startplan =  ap.makeUniformExpPlan(xstart, xend, N)
+
+
     print ("\n\nperforming aprior plan")
-    oplan=ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=funcf, Ntries=10)[1]
+    oplan=ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=funcf, Ntries=6)[1]
+
+    ap.writePlanToFile(oplan)
+
+
+
     measdata = ap.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
     gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
     print (gknu)
     print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
-
-
-
 
 
 testNew()
@@ -204,3 +209,10 @@ testNew()
     # for i in range (len(updfunstr)):
     #     print (sympy.diff(updfunstr[i], 'b0'), sympy.diff(updfunstr[i], 'b1'), sympy.diff(updfunstr[i], 'b2'))
 
+#
+# performing aprior plan
+# unoptimized-optimized: 4464562017.73 3988712816.77
+# unoptimized-optimized: 4222309340.43 4185237146.97
+# unoptimized-optimized: 3148228106.9 3442398755.35
+# unoptimized-optimized: 5561153213.04 5869494796.75
+# unoptimized-optimized: 3323491590.74 3290628104.43
