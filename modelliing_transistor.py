@@ -3,10 +3,13 @@ __author__ = 'reiner'
 
 import random
 import math
+
 from scipy import optimize
 import numpy as np
 import sympy
+
 import derivations as drv
+
 
 
 #http://pythonworld.ru/tipy-dannyx-v-python/vse-o-funkciyax-i-ix-argumentax.html
@@ -426,19 +429,8 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
 
         for i in range(0, len(expdatalist)): #для всех наблюдений
             fstructval=fstruct(expdatalist[i]['x'], k, None)
-
-
-
-
-
             rt=np.dot (fstructval.T, fstructval)
-
-
             A+=rt
-
-
-
-
             ydif=expdatalist[i]['y']-func(expdatalist[i]['x'],k)
             b+=np.dot (fstructval.T, Tv(ydif))   #транспонирование введено для согласования, не коррелирует с формулами
 

@@ -142,36 +142,28 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
     numiter=0
     condition=True
     while (condition):
-
         m=len(b) #число коэффициентов
         G=np.zeros((m,m))
         B5=None
         bpriv=copy.copy(b)
 
-
         for point in measdata:
             jac=jacf(point['x'],b,c,point['y'])
             G+=np.dot(jac.T,jac)
-
             dif=point['y']-funcf(point['x'],b,c)
 
-
-            print (dif, point['y'], funcf(point['x'],b,c))
-
-
             if B5==None:
-                B5=np.dot(jac,dif)
-            else:
-                B5+=np.dot(jac,dif)
+                #B5=np.dot(jac,dif)
+                B5=np.dot(dif, jac)
 
+
+            else:
+                B5+=np.dot(dif,jac)
 
 
         deltab=np.dot(np.linalg.inv(G), B5)
-
-
         b=b-deltab
         numiter+=1
-
 
         condition=False
         for i in range (len(b)):
@@ -181,18 +173,173 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
         if numiter>100: #max number of iterations
             log+="GKNUX1: Break due to max number of iteration exceed"
             break
-
-
-
-
     return b, numiter, log
 
 
 
 
+def grandCountGN_UltraX (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
+    """
+    Подгоняет коэфф. методом Ньютона-Гаусса с изменяемой длиной шага (через mu)
+    Parameters:
+    funcf - функция, на вход которой подаются вектора x и b, а на выходе получается вектор y, притом без возмущений
+    jacf - функция, на вход которой подаются вектора x и b, а на выходе получается якобиан функции
+    expdatalist:list - экспериментальные данные
+    kinit=None - начальное приближение коэффициентов
+    NSIG=3 - число значащих цифр (точность подгонки коэффициентов)
+    """
+    log=""#строка, куда пишутся всякие сообщения
+
+    if expdatalist==None:
+        print ("grandCountGN_Ultra Error: cannot read exp data")
+        return None
+    #надо произвести два списка: список векторов Xs, и Ys из входного
+    k=kinit
+    M=len(k) # число оцениваемых коэффициентов
+    prevk=k #предыдущее значение вектора коэфф
+    convergence=0
+    numIterations=1
+    Sk=0
+    Skpriv=0
+    N=len(expdatalist)  #размер выборки
+    condition = True
+    while condition: #пока не пришли к конвергенции
+        Skpriv=Sk
+        prevk=k
+        Sk=0
+        PP=np.zeros ((M, M))
+        PYY=np.zeros((M, 1))
+        Tv=lambda x: (np.asmatrix(x)).T
+        for i in range(0, N):
+            PP+=np.dot(jacf(expdatalist[i]['x'], k, c, expdatalist[i]['y']), np.transpose(jacf(expdatalist[i]['x'], k, c, expdatalist[i]['y']))  )
+            dif = np.array(expdatalist[i]['y'])-np.array(funcf(expdatalist[i]['x'],k,c))
+            Sk+= np.dot(dif.T, dif)
+            PYY+=np.dot(jacf(expdatalist[i]['x'], k, c, expdatalist[i]['y']), np.transpose(np.asmatrix(dif)))
+
+        print (PP)
+
+        deltak=np.dot(np.linalg.inv(PP), PYY)
+
+        #применение mu
+        mu=4
+        cond2=True
+        it=0
+        while (cond2):
+            Skmu=0
+            mu/=2
+            for i in range (0, len (expdatalist)):
+                dif = np.array(expdatalist[i]['y'])-np.array(funcf(expdatalist[i]['x'], k+mu*deltak.T[0]))
+                Skmu+=np.dot(dif.T, dif)
+            it+=1
+            if (it>100):
+                print ("break")
+                break
+            cond2=Skmu>Sk
+
+        k+=mu*deltak.T[0]
+
+
+        #for i in range (0, len(k)):
+        #    k[i]+=deltak.transpose()[0][i]*mu
+
+
+        print ('mu', mu)
+
+
+        Sk=Skmu
+
+    #***************
 
 
 
+
+
+        #k+=mu*deltak.T[0]
+        print (k)
+
+
+
+        #k-=0.3*deltak.T[0]
+
+
+                #почему так? потому, что numpy.linalg.solve выдаёт вертикальный массив, трактуемый как список списков
+                # (это матрица с одним столбцом)
+
+
+
+
+        #Sk=Skmu
+
+
+        numIterations+=1
+        convergence=0
+
+        for i in range (0, M):
+            convergence+=math.fabs(deltak[i]/prevk[i])
+        convergence/=M
+
+
+        log+="Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n"
+
+
+
+        print ("Iteration: "+ str(numIterations) + "\n" + "Vect K="+str(k)+"\n"+"Sk="+str(Sk)+"\n\n")
+
+
+        if (numIterations>100): #для ради безопасности поставим ограничитель на число итераций
+            break
+        condition = convergence>math.pow(10, -1*NSIG)
+
+
+    #print (log)
+
+
+    #пытаемся проанализировать результат: выводим средний остаток по функции с текущим K
+    #по сути тестареа
+    testdiff=0
+
+    for i in range (0, len(expdatalist)):
+        testdiff+=math.fabs(funcf(expdatalist[i]['x'], k)[1] - expdatalist[i]['y'][1]) #TODO проверить целесообразность [1]
+    testdiff/=len(expdatalist)
+
+
+    print ("testdiff: ", testdiff)
+
+
+    return k, Sk, numIterations, testdiff
+
+
+
+def jjacf (x,b,c,y, dfdb, dfdy):
+
+    q=dfdy(y,x,b,c)
+    k=dfdy(y,x,b,c).shape[0]
+
+
+    # for i in range(k):
+    #     for j in range(k):
+    #         d=q[i,j]
+    #         q[j,i]=d
+
+    #сделано как у Попова, но теоретически подобное траспонирование ошибочно!!!!
+
+    q=np.linalg.inv(q)
+
+
+    # print (dfdb(y,x,b,c))
+    # print ()
+    # print (np.dot(dfdb(y,x,b,c).T, np.linalg.inv(dfdy(y,x,b,c))))
+    #
+    # print (np.dot(np.linalg.inv(dfdy(y,x,b,c)),  dfdb(y,x,b,c)))
+
+
+    #return np.dot(dfdb(y,x,b,c), np.linalg.inv(dfdy(y,x,b,c))) #g=dy/db=df/db*np.inv(df/dy)
+
+
+
+    #return np.dot(np.linalg.inv(dfdy(y,x,b,c)),  dfdb(y,x,b,c))
+
+    return np.dot(q,  dfdb(y,x,b,c))
 
 
 def testNew():
@@ -215,8 +362,10 @@ def testNew():
     function=lambda y,x,b,c: [y[0]+y[1]-y[2], y[0]*b[0]-y[1]*b[1]-x[0]-x[1], y[1]*b[1]+y[2]*b[2]+x[1]]
 
     #возвращает структурную матрицу
-    jacf=lambda x,b,c,y: np.dot(dfdb(y,x,b,c), np.linalg.inv(dfdy(y,x,b,c))) #g=dy/db=df/db*np.inv(df/dy)
-    #jacf=lambda x,b,c,y: np.dot(np.linalg.inv(dfdy(y,x,b,c)), dfdb(y,x,b,c) ) #g=dy/db=df/db*np.inv(df/dy)
+    jacf=lambda x,b,c,y: jjacf(x,b,c,y,dfdb,dfdy)
+
+    #jacf=lambda x,b,c,y: np.dot(dfdb(y,x,b,c), np.linalg.inv(dfdy(y,x,b,c))) #g=dy/db=df/db*np.inv(df/dy)
+
 
 
     #возвращает значение y
