@@ -137,11 +137,18 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
 
 
 def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
+    """
+    WORKING: PROVED!
+
+    """
+    #TODO: добавить mu, ибо расхождение при Ve!=None
+
     b=binit
     log=""
     numiter=0
     condition=True
     while (condition):
+
         m=len(b) #число коэффициентов
         G=np.zeros((m,m))
         B5=None
@@ -155,12 +162,8 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
             if B5==None:
                 #B5=np.dot(jac,dif)
                 B5=np.dot(dif, jac)
-
-
             else:
                 B5+=np.dot(dif,jac)
-
-
         deltab=np.dot(np.linalg.inv(G), B5)
         b=b-deltab
         numiter+=1
@@ -173,6 +176,8 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
         if numiter>100: #max number of iterations
             log+="GKNUX1: Break due to max number of iteration exceed"
             break
+
+
     return b, numiter, log
 
 
@@ -381,7 +386,7 @@ def testNew():
     btrue=[60,60,40]
     bstart=np.array(btrue)-np.array([2]*len(btrue))
     bend=np.array(btrue)+np.array([2]*len(btrue))
-    binit=[60,40,50]
+    binit=[1,1,1]
 
     xstart=[10,40]
     xend=[20,60]
@@ -390,15 +395,11 @@ def testNew():
 
     print("performing normal research:")
     startplan =  ap.makeUniformExpPlan(xstart, xend, N)
-    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, None )
-
-    # for point in measdata:
-    #     print (point)
+    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, None)
 
     gknu=grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6)
     print (gknu)
     print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
-
 
 
     # startplan =  ap.makeUniformExpPlan(xstart, xend, N)
