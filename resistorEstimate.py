@@ -154,18 +154,43 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
         B5=None
         bpriv=copy.copy(b)
 
+        Sk=0
+
         for point in measdata:
             jac=jacf(point['x'],b,c,point['y'])
             G+=np.dot(jac.T,jac)
             dif=point['y']-funcf(point['x'],b,c)
-
             if B5==None:
                 #B5=np.dot(jac,dif)
                 B5=np.dot(dif, jac)
             else:
                 B5+=np.dot(dif,jac)
+            Sk+=np.dot(dif.T,dif)
+
         deltab=np.dot(np.linalg.inv(G), B5)
-        b=b-deltab
+
+        print ("Sk:",Sk)
+
+        #mu counting
+        mu=4
+        cond2=True
+        it=0
+        while (cond2):
+            Skmu=0
+            mu/=2
+            for point in measdata:
+                dif=point['y']-funcf(point['x'],b-deltab*mu,c)
+                Skmu+=np.dot(dif.T, dif)
+            it+=1
+            if (it>100):
+                log+="Mu counting: break due to max number of iteration exceed"
+                break
+            cond2=Skmu>Sk
+
+        b=b-deltab*mu
+
+        print ("Iteration {0} mu={1} delta={2} deltamu={3} resb={4}".format(numiter, mu, deltab, deltab*mu, b))
+
         numiter+=1
 
         condition=False
@@ -319,31 +344,13 @@ def jjacf (x,b,c,y, dfdb, dfdy):
 
     q=dfdy(y,x,b,c)
     k=dfdy(y,x,b,c).shape[0]
-
-
     # for i in range(k):
     #     for j in range(k):
     #         d=q[i,j]
     #         q[j,i]=d
-
     #сделано как у Попова, но теоретически подобное траспонирование ошибочно!!!!
 
     q=np.linalg.inv(q)
-
-
-    # print (dfdb(y,x,b,c))
-    # print ()
-    # print (np.dot(dfdb(y,x,b,c).T, np.linalg.inv(dfdy(y,x,b,c))))
-    #
-    # print (np.dot(np.linalg.inv(dfdy(y,x,b,c)),  dfdb(y,x,b,c)))
-
-
-    #return np.dot(dfdb(y,x,b,c), np.linalg.inv(dfdy(y,x,b,c))) #g=dy/db=df/db*np.inv(df/dy)
-
-
-
-    #return np.dot(np.linalg.inv(dfdy(y,x,b,c)),  dfdb(y,x,b,c))
-
     return np.dot(q,  dfdb(y,x,b,c))
 
 
@@ -379,43 +386,38 @@ def testNew():
 
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.001, 0, 0],
-                  [0, 0.001, 0],
-                  [0, 0, 0.001]  ]  )
+    Ve=np.array([ [0.00001, 0, 0],
+                  [0, 0.00001, 0],
+                  [0, 0, 0.00001]  ]  )
 
     btrue=[60,60,40]
     bstart=np.array(btrue)-np.array([2]*len(btrue))
     bend=np.array(btrue)+np.array([2]*len(btrue))
-    binit=[1,1,1]
+    binit=[60,55,45]
 
     xstart=[10,40]
     xend=[20,60]
 
-    N=8
+    N=10
 
     print("performing normal research:")
     startplan =  ap.makeUniformExpPlan(xstart, xend, N)
-    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, None)
+    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
+
 
     gknu=grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6)
     print (gknu)
     print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
 
-    # startplan =  ap.makeUniformExpPlan(xstart, xend, N)
-    #
-    #
-    # print ("\n\nperforming aprior plan")
-    # oplan=ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=funcf, Ntries=6)[1]
-    #
-    # ap.writePlanToFile(oplan)
-    #
-    #
-    #
-    # measdata = ap.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
-    # gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
-    # print (gknu)
-    # print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+    N=20
+    print ("\n\nperforming aprior plan")
+    oplan=ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=funcf, Ntries=6)[1]
+    ap.writePlanToFile(oplan)
+    measdata = ap.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
+    gknu=grandCountGN_Ultra (funcf, jacf,  measdata, binit, c, NSIG=3)
+    print (gknu)
+    print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
 
 testNew()
@@ -425,11 +427,3 @@ testNew()
 #производство якобиана
     # for i in range (len(updfunstr)):
     #     print (sympy.diff(updfunstr[i], 'b0'), sympy.diff(updfunstr[i], 'b1'), sympy.diff(updfunstr[i], 'b2'))
-
-#
-# performing aprior plan
-# unoptimized-optimized: 4464562017.73 3988712816.77
-# unoptimized-optimized: 4222309340.43 4185237146.97
-# unoptimized-optimized: 3148228106.9 3442398755.35
-# unoptimized-optimized: 5561153213.04 5869494796.75
-# unoptimized-optimized: 3323491590.74 3290628104.43

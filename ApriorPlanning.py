@@ -195,8 +195,6 @@ def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilenam
             ydisps=np.diag(Ve)
             for k in range(len(y)):
                 y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
-
-
         curdict = {'x':expplan[i], 'y':y}
         #res[i]["y"]=y
         res.append(curdict)
