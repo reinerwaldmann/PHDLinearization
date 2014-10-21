@@ -370,9 +370,9 @@ def testNew():
 
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.00001, 0, 0],
-                  [0, 0.00001, 0],
-                  [0, 0, 0.00001]  ]  )
+    Ve=np.array([ [0.01, 0, 0],
+                  [0, 0.01, 0],
+                  [0, 0, 0.01]  ]  )
 
     btrue=[60,60,40]
     bstart=np.array(btrue)-np.array([2]*len(btrue))
@@ -380,15 +380,23 @@ def testNew():
     binit=[60,55,45]
 
     xstart=[10,40]
-    xend=[20,60]
+    #xend=[20,60]
+    xend=[210,340]
 
-    N=10
+    N=30
     print("performing normal research:")
     startplan =  ap.makeUniformExpPlan(xstart, xend, N)
     measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
     gknu=grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6)
     print (gknu)
     print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+    #TODO: эксперимент с зависимостью от параметров
+    #Для обычного (равномерного) плана нарисовываются такие зависимости (регулировочные параметры):
+    #От количества точек в плане
+    #От диапазона точек в эксперименте
+    #От начального приближения
+    #От дисперсии входных данных (в нашем случае величину нельзя делать менее  0.01, и по сути можно использовать уровни 0.1 - 0.01
 
 
     # N=20
@@ -402,9 +410,3 @@ def testNew():
     #
 
 testNew()
-
-
-
-#производство якобиана
-    # for i in range (len(updfunstr)):
-    #     print (sympy.diff(updfunstr[i], 'b0'), sympy.diff(updfunstr[i], 'b1'), sympy.diff(updfunstr[i], 'b2'))
