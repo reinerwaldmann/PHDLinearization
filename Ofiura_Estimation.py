@@ -6,39 +6,36 @@ import copy
 import numpy as np
 
 
+
+
 def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
     """
-    :param funcf
-    :param jacf
-    :param measdata:list
-    :param binit:list
-    :param c
-    :param NSIG=3
+    Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом
+    В стандартный поток вывода выводит отладочную информацию по каждой итерации
+    :param funcf callable функция, параметры по формату x,b,c
+    :param jacf callable функция, параметры по формату x,b,c,y
+    :param measdata:list список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
+    :param binit:list начальное приближение b
+    :param c словарь дополнительных постоянных
+    :param NSIG=3 точность (кол-во знаков после запятой)
+    :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
     """
-
 
     b=binit
     log=""
     numiter=0
     condition=True
     while (condition):
-
         m=len(b) #число коэффициентов
         G=np.zeros((m,m))
         B5=None
         bpriv=copy.copy(b)
-
         Sk=0
-
         for point in measdata:
             jac=jacf(point['x'],b,c,point['y'])
 
             print (G.shape, jac.T.shape, jac.shape)
-
-
             G+=np.dot(jac.T,jac)
-
-
 
             dif=point['y']-funcf(point['x'],b,c)
             if B5==None:
