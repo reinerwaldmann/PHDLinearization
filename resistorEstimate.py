@@ -16,6 +16,7 @@ import numpy as np
 from scipy import optimize
 
 import ApriorPlanning as ap
+import Ofiura_Estimation as est
 
 
 def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
@@ -387,7 +388,7 @@ def testNew():
     print("performing normal research:")
     startplan =  ap.makeUniformExpPlan(xstart, xend, N)
     measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
-    gknu=grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6)
+    gknu=est.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6)
     print (gknu)
     print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
