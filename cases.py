@@ -96,12 +96,16 @@ def outTransParamWErlie (Vin, Vcc):
     Ic=IS*( (math.exp(Vbe/FT)-math.exp(Vbc/FT))*(1-Vbc/VA)-(1/BR)*(math.exp(Vbc/FT)-1))+GMIN*((Vbe-Vbc)*(1-Vbc/VA)-Vbc/BR)
     Ib=IS*( (1/BF)*(math.exp(Vbe/FT)-1)+(1/BR)*(math.exp(Vbc/FT)-1)) + GMIN*(Vbe/BF+Vbc/BR)
 
-
     return  Ib, Ic
 
 
 
 rng=numpy.arange(0.01,1,0.01)
+
+
+#TODO ну и три возможные задачи: 1. Можно дальше улучшать модель, доведя до Гуммеля-Пуна
+#TODO 2. Обязательно попробовать оценку через Гаусса-Ньютона
+#TODO 3. Сделать модель IGBT или ещё чего-нибудь такого
 
 
 # resrng=[outTransParam(x,50)[0] for x in rng]
