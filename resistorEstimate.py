@@ -1,5 +1,4 @@
 
-
 __author__ = 'vasilev_is'
 
 """
@@ -137,7 +136,7 @@ def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
 
 
 
-def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
+def grandCountGN_UltraX1_ (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
     """
     WORKING: PROVED!
     """

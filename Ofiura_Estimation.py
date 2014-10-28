@@ -5,7 +5,20 @@ import copy
 
 import numpy as np
 
+"""
+def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
+    Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом
+    В стандартный поток вывода выводит отладочную информацию по каждой итерации
+    :param funcf callable функция, параметры по формату x,b,c
+    :param jacf callable функция, параметры по формату x,b,c,y
+    :param measdata:list список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
+    :param binit:list начальное приближение b
+    :param c словарь дополнительных постоянных
+    :param NSIG=3 точность (кол-во знаков после запятой)
+    :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
 
+
+"""
 
 
 def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):

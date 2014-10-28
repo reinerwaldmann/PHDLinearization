@@ -2,8 +2,9 @@ __author__ = 'reiner'
 
 import math
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy
+import sympy
 
 
 def testTransistorEMModel ():
@@ -22,9 +23,7 @@ def testTransistorEMModel ():
     FT=0.026 #тепловой потенциал
 
     Ict=IS*(math.exp(Vbe/FT)-math.exp(Vbc/FT))
-
     Icc_sep_BF=(IS/BF)*(math.exp(Vbe/FT)-1)
-
     Iec_sep_BR=(IS/BR)*(math.exp(Vbc/FT)-1)
 
     Ic=Ict-Iec_sep_BR
@@ -74,7 +73,6 @@ def outTransParamWErlie (Vin, Vcc):
     #Схема с общим эмиттером
     #Работает, выдаёт ВАХ, похожие на правду. Теперь надо, чтоб хоть какая-то из моих моделей полностью билась с PSPICE
 
-
     VIN=Vin
     VCC=Vcc
 
@@ -86,6 +84,7 @@ def outTransParamWErlie (Vin, Vcc):
     BF=120 #коэфф передачи по току в схеме с оэ нормальный режим
     BR=1 #коэфф передачи по току в схеме с оэ инверсный режим
     IS=1.28e-15 #ток утечки
+
     FT=0.026 #тепловой потенциал - он фиксирован для 27С http://cads.narod.ru/kurs/OrCAD.htm
 
     ISZERO=IS
@@ -98,6 +97,101 @@ def outTransParamWErlie (Vin, Vcc):
     Ib=IS*( (1/BF)*(math.exp(Vbe/FT)-1)+(1/BR)*(math.exp(Vbc/FT)-1)) + GMIN*(Vbe/BF+Vbc/BR)
 
     return  Ib, Ic
+
+def outTransParamErlieFormat (x,b,c):
+    """
+    :param x: вектор входов (напряженения  база, коллектор)
+    :param b: вектор коэффициентов: BF,BR,IS,VA
+    :param c: пустой, фиксированные параметры заданы в функции
+    :return: ток базы, ток коллектора
+    """
+
+    VIN=x[0]
+    VCC=x[1]
+
+    #входные напряжения
+    Vbe=VIN
+    Vbc=VIN-VCC
+
+    #параметры (пока не в стандарте)
+    BF=120 #коэфф передачи по току в схеме с оэ нормальный режим
+    BR=1 #коэфф передачи по току в схеме с оэ инверсный режим
+    IS=1.28e-15 #ток утечки
+
+    BF=b[0]
+    BR=b[1]
+    IS=b[2]
+
+    FT=0.026 #тепловой потенциал - он фиксирован для 27С http://cads.narod.ru/kurs/OrCAD.htm
+    ISZERO=IS
+
+    VA=1e1 #напряжение Эрли по умолчанию бесконечность
+    VA=b[3]
+
+    GMIN=1e-12
+
+#    Ict=(ISZERO/(1+Vbc/VA)) *(math.exp(Vbe/FT)-math.exp(Vbc/FT)) #VA=INF даёт нам обычное выражение
+    Ic=IS*( (math.exp(Vbe/FT)-math.exp(Vbc/FT))*(1-Vbc/VA)-(1/BR)*(math.exp(Vbc/FT)-1))+GMIN*((Vbe-Vbc)*(1-Vbc/VA)-Vbc/BR)
+    Ib=IS*( (1/BF)*(math.exp(Vbe/FT)-1)+(1/BR)*(math.exp(Vbc/FT)-1)) + GMIN*(Vbe/BF+Vbc/BR)
+
+    return  Ib, Ic
+
+
+
+def outTransParamErlieFormatJAC (x,b,c):
+    FT=0.026 #тепловой потенциал - он фиксирован для 27С http://cads.narod.ru/kurs/OrCAD.htm
+    GMIN=1e-12
+
+     #входные напряжения
+    VIN=x[0]
+    VCC=x[1]
+    Vbe=VIN
+    Vbc=VIN-VCC
+
+
+
+    jac=numpy.zeros((2, 3))
+
+    jac[0][0]=-B2*(exp(Vbe/FT) - 1)/B0**2 - GMIN*Vbe/B0**2
+    jac[0][1]=-B2*(exp(Vbc/FT) - 1)/B1**2 - GMIN*Vbc/B1**2
+    jac[0][2]=(exp(Vbc/FT) - 1)/B1 + (exp(Vbe/FT) - 1)/B0
+
+    jac[1][0]=0
+    jac[1][1]=B2*(exp(Vbc/FT) - 1)/B1**2 + GMIN*Vbc/B1**2
+    jac[1][2]=(1 - Vbc/B3)*(-exp(Vbc/FT) + exp(Vbe/FT)) - (exp(Vbc/FT) - 1)/B1
+
+
+
+
+
+def getderivative_outTransParamErlieFormatJAC():
+    """
+    Якобиан по коэфффициентам
+    """
+    funstr=["B2*( (1/B0)*(exp(Vbe/FT)-1)+(1/B1)*(exp(Vbc/FT)-1)) + GMIN*(Vbe/B0+Vbc/B1)", "B2*( (exp(Vbe/FT)-exp(Vbc/FT))*(1-Vbc/B3)-(1/B1)*(exp(Vbc/FT)-1))+GMIN*((Vbe-Vbc)*(1-Vbc/B3)-Vbc/B1)" ]
+
+    resstr=""
+
+    for i in range (0, len(funstr)):
+        for ind in range (0, 3):
+            #print(sympy.diff(funstr[i],'B{0}'.format(ind)))
+
+
+            resstr+=sympy.diff(funstr[i],'B{0}'.format(ind)).__str__()
+            resstr+="\n"
+        resstr+="------------------\n"
+
+    return resstr
+
+
+
+print(outTransParamErlieFormatJAC (None,None,None))
+exit(0)
+
+
+
+
+
 
 
 def outTransParamPopov (Vin, Vcc):
@@ -181,24 +275,11 @@ plt.plot(rng , resrng)
 
 plt.grid()
 plt.show()
-
-
 #ax.set_xticks(numpy.arange(0,1,0.1))
 #ax.set_yticks(numpy.arange(0,1.,0.1))
-
-
-
-
 #print (resrng1)
-
-
-
 #print (resrng)
 #plt.plot(rng , resrng1)
-
-
-
-
 plt.show()
 
 

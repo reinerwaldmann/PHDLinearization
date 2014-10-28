@@ -1,15 +1,10 @@
 __author__ = 'vasilev_is'
 
-import copy
-import random
-import math
-import sys
+
 
 import numpy as np
-import scipy
 
-
-
+import Ofiura_ApriorPlanning as o_ap
 
 def test():
     """
@@ -34,7 +29,7 @@ def test():
 
     #print (doublesearch ([1, 0.5], [10,10], [9,9], lambda x: x[0]*x[0]+2*x[1]*x[1]+10)) #тестирование поиска
 
-    rs=grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=10)
+    rs=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=10)
     print (rs[0])
 
     print ('Experimental plan')
@@ -47,7 +42,7 @@ def test():
     # meas = makeMeasAccToPlan(func, plan,  b, c, [0.0001]*3)
     # for x in meas:
     #     print (x)
-#test()
+test()
 
 
 

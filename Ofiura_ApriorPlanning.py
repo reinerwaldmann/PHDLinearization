@@ -1,5 +1,7 @@
 __author__ = 'vasilev_is'
-import scipy, copy
+import copy
+
+from scipy import optimize
 
 import Ofiura_general as o_g
 import Ofiura_planning as o_p
@@ -88,16 +90,21 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
             for k in range(len(xstart)):
                 boundsarr.append((xstart[k],xend[k]))
 
-            sol = scipy.optimize.minimize (function, xdot, bounds=boundsarr)
-            plan[j]=sol.x
-            # plan[j]=doublesearch(xstart, xend, xdot, function)
+            #sol = optimize.minimize (function, xdot, bounds=boundsarr)
+            #plan[j]=sol.x
+            #В этом варианте не работает, хоть результат и проходит быстрее
+
+            plan[j]=o_g.doublesearch(xstart, xend, xdot, function)
 
 
         dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
+
+
+
         print ("unoptimized-optimized:",unopt, dcurr)
         if dcurr<dopt or planopt==None:
             dopt=dcurr
             planopt=plan
-        o_p.writePlanToFile(plan, "{0}plan.txt".format(i))
+        #o_p.writePlanToFile(plan, "{0}plan.txt".format(i))
     return dopt, planopt
 
