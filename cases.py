@@ -148,19 +148,17 @@ def outTransParamErlieFormatJAC (x,b,c):
     Vbe=VIN
     Vbc=VIN-VCC
 
-
-
     jac=numpy.zeros((2, 3))
 
-    jac[0][0]=-B2*(exp(Vbe/FT) - 1)/B0**2 - GMIN*Vbe/B0**2
-    jac[0][1]=-B2*(exp(Vbc/FT) - 1)/B1**2 - GMIN*Vbc/B1**2
-    jac[0][2]=(exp(Vbc/FT) - 1)/B1 + (exp(Vbe/FT) - 1)/B0
+    jac[0][0]=-b[2]*(math.exp(Vbe/FT) - 1)/b[0]**2 - GMIN*Vbe/b[0]**2
+    jac[0][1]=-b[2]*(math.exp(Vbc/FT) - 1)/b[1]**2 - GMIN*Vbc/b[1]**2
+    jac[0][2]=(math.exp(Vbc/FT) - 1)/b[1] + (math.exp(Vbe/FT) - 1)/b[0]
 
     jac[1][0]=0
-    jac[1][1]=B2*(exp(Vbc/FT) - 1)/B1**2 + GMIN*Vbc/B1**2
-    jac[1][2]=(1 - Vbc/B3)*(-exp(Vbc/FT) + exp(Vbe/FT)) - (exp(Vbc/FT) - 1)/B1
+    jac[1][1]=b[2]*(math.exp(Vbc/FT) - 1)/b[1]**2 + GMIN*Vbc/b[1]**2
+    jac[1][2]=(1 - Vbc/b[3])*(-math.exp(Vbc/FT) + math.exp(Vbe/FT)) - (math.exp(Vbc/FT) - 1)/b[1]
 
-
+    return jac
 
 
 
@@ -191,22 +189,12 @@ exit(0)
 
 
 
-
-
-
 def outTransParamPopov (Vin, Vcc):
     #Схема с общей базой!!!!!!!!!
 
 
     W1=1 # напряжение на эмиттере
     W2=2 # напряжение на коллекторе
-
-
-
-
-
-
-
 
     VIN=Vin
     VCC=Vcc
@@ -235,51 +223,32 @@ def outTransParamPopov (Vin, Vcc):
 
 
 
+def testModel():
+    rng=numpy.arange(0.01,2,0.01)
+    #print (outTransParamWErlie(1,2))
+    #TODO ну и три возможные задачи: 1. Можно дальше улучшать модель, доведя до Гуммеля-Пуна
+    #TODO 2. Обязательно попробовать оценку через Гаусса-Ньютона
+    #TODO 3. Сделать модель IGBT или ещё чего-нибудь такого
+    #resrng=[outTransParam(x,0)[1] for x in rng] # изменяем напряжение на базе при постоянном напряжении на колллекторе - снимаем ток коллектора.
+    #в каком
+    #снимем входную ВАХ
+    resrng=[outTransParam(x,5)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на колллекторе - снимаем ток коллектора.
+    #снимем выходную ВАХ выходит непохоже на PSPICE, но похоже на учебник
+    #resrng=[outTransParam(0.2,x)[1] for x in rng] # изменяем напряжение на базе при постоянном напряжении на колллекторе - снимаем ток коллектора.
 
-rng=numpy.arange(0.01,2,0.01)
-
-
-#print (outTransParamWErlie(1,2))
-
-#TODO ну и три возможные задачи: 1. Можно дальше улучшать модель, доведя до Гуммеля-Пуна
-#TODO 2. Обязательно попробовать оценку через Гаусса-Ньютона
-#TODO 3. Сделать модель IGBT или ещё чего-нибудь такого
-
-
-#resrng=[outTransParam(x,0)[1] for x in rng] # изменяем напряжение на базе при постоянном напряжении на колллекторе - снимаем ток коллектора.
-#в каком
-
-
-#снимем входную ВАХ
-resrng=[outTransParam(x,5)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на колллекторе - снимаем ток коллектора.
-
-#снимем выходную ВАХ выходит непохоже на PSPICE, но похоже на учебник
-#resrng=[outTransParam(0.2,x)[1] for x in rng] # изменяем напряжение на базе при постоянном напряжении на колллекторе - снимаем ток коллектора.
-
-
-
-#resrng=[outTransParam(0,x)[1] for x in rng]    #[1] - это ток коллектора
-
-
-# resrng1=[outTransParam(2,x)[1] for x in rng]
-
-#resrng=[outTransParamWErlie(0,x)[1] for x in rng]
-#resrng1=[outTransParamWErlie(2,x)[1] for x in rng]
-
-
-
-
-
-plt.plot(rng , resrng)
-#plt.axis([0.0,1.0,0,5])
-
-plt.grid()
-plt.show()
-#ax.set_xticks(numpy.arange(0,1,0.1))
-#ax.set_yticks(numpy.arange(0,1.,0.1))
-#print (resrng1)
-#print (resrng)
-#plt.plot(rng , resrng1)
-plt.show()
+    #resrng=[outTransParam(0,x)[1] for x in rng]    #[1] - это ток коллектора
+    # resrng1=[outTransParam(2,x)[1] for x in rng]
+    #resrng=[outTransParamWErlie(0,x)[1] for x in rng]
+    #resrng1=[outTransParamWErlie(2,x)[1] for x in rng]
+    plt.plot(rng , resrng)
+    #plt.axis([0.0,1.0,0,5])
+    plt.grid()
+    plt.show()
+    #ax.set_xticks(numpy.arange(0,1,0.1))
+    #ax.set_yticks(numpy.arange(0,1.,0.1))
+    #print (resrng1)
+    #print (resrng)
+    #plt.plot(rng , resrng1)
+    plt.show()
 
 
