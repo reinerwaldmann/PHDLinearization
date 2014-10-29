@@ -5,6 +5,7 @@ import copy
 
 import numpy as np
 
+
 """
 def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
     Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом
@@ -59,6 +60,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
 
             else:
                 B5+=np.dot(dif,jac)
+
             Sk+=np.dot(dif.T,dif)
 
         #print (G.shape, '\n\n\n', B5.shape)

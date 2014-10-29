@@ -228,6 +228,13 @@ def outTransParamPopov (Vin, Vcc):
     return  Ib, Ic
 
 
+def for_filter (x):
+    for val in x['y']:
+        if val>1e50:
+            return False
+            print ("ex")
+    return True
+
 
 def testEstimate():
     """
@@ -239,27 +246,39 @@ def testEstimate():
     funcf=lambda x,b,c: outTransParamErlieFormat (x,b)
 
     c={}
-    Ve=np.array([ [0.0001, 0],
-                     [0, 0.0001] ]  )
+    Ve=np.array([ [0.00001, 0],
+                     [0, 0.00001] ]  )
 
 
     #BF,BR,IS,VA
     #коэфф передачи по току в схеме с оэ нормальный режим, -//- реверсный, ток утечки, напряжение Эрли в активном режиме
     btrue=[120,1,1.28e-15, 1e1]
-    binit=[120,1,1.28e-15, 1e1]
+    binit=[110,1,1.28e-15, 1e1]
 
+
+#РАЗНЫЙ ПОРЯДОК КОЭФФИЦИЕНТОВ, вот что может всё портить!!!!
 
     xstart=[0.01,0.01]
     xend=[10,10]
 
-    N=10
+    N=50
 
     print("performing normal research:")
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
     measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6)
+
+
+    measdata = list(filter(for_filter, measdata))
+
+    # for p in measdata:
+    #     print (p)
+
+
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
     print (gknu)
     print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+    print (gknu[0])
 
 
 
