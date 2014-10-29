@@ -47,7 +47,8 @@ def logTruthness (measdata:list, b:list, Ve,  func, c):
 
     for i in range(len(measdata)):
         measpoint = measdata[i]
-        dif=np.array(measpoint['y'])-func(measpoint['x'],b,c)
+        dif=np.array(measpoint['y'])-np.array(func(measpoint['x'],b,c))
+
         S.append(np.dot(np.dot(dif.T, np.linalg.inv(Ve)), dif))
 
 

@@ -3,8 +3,13 @@ __author__ = 'reiner'
 import math
 
 #import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 import sympy
+
+import Ofiura_Estimation as o_e
+import Ofiura_planning as o_p
+import Ofiura_Qualitat as o_q
+
 
 
 def testTransistorEMModel ():
@@ -98,7 +103,7 @@ def outTransParamWErlie (Vin, Vcc):
 
     return  Ib, Ic
 
-def outTransParamErlieFormat (x,b,c):
+def outTransParamErlieFormat (x,b,c=None):
     """
     :param x: вектор входов (напряженения  база, коллектор)
     :param b: вектор коэффициентов: BF,BR,IS,VA
@@ -134,11 +139,11 @@ def outTransParamErlieFormat (x,b,c):
     Ic=IS*( (math.exp(Vbe/FT)-math.exp(Vbc/FT))*(1-Vbc/VA)-(1/BR)*(math.exp(Vbc/FT)-1))+GMIN*((Vbe-Vbc)*(1-Vbc/VA)-Vbc/BR)
     Ib=IS*( (1/BF)*(math.exp(Vbe/FT)-1)+(1/BR)*(math.exp(Vbc/FT)-1)) + GMIN*(Vbe/BF+Vbc/BR)
 
-    return  Ib, Ic
+    return  [Ib, Ic]
 
 
 
-def outTransParamErlieFormatJAC (x,b,c):
+def outTransParamErlieFormatJAC (x,b,c=None):
     FT=0.026 #тепловой потенциал - он фиксирован для 27С http://cads.narod.ru/kurs/OrCAD.htm
     GMIN=1e-12
 
@@ -148,15 +153,17 @@ def outTransParamErlieFormatJAC (x,b,c):
     Vbe=VIN
     Vbc=VIN-VCC
 
-    jac=numpy.zeros((2, 3))
+    jac=np.zeros((2, 4))
 
     jac[0][0]=-b[2]*(math.exp(Vbe/FT) - 1)/b[0]**2 - GMIN*Vbe/b[0]**2
     jac[0][1]=-b[2]*(math.exp(Vbc/FT) - 1)/b[1]**2 - GMIN*Vbc/b[1]**2
     jac[0][2]=(math.exp(Vbc/FT) - 1)/b[1] + (math.exp(Vbe/FT) - 1)/b[0]
+    jac[0][3]=0
 
     jac[1][0]=0
     jac[1][1]=b[2]*(math.exp(Vbc/FT) - 1)/b[1]**2 + GMIN*Vbc/b[1]**2
     jac[1][2]=(1 - Vbc/b[3])*(-math.exp(Vbc/FT) + math.exp(Vbe/FT)) - (math.exp(Vbc/FT) - 1)/b[1]
+    jac[1][3]=b[2]*Vbc*(-math.exp(Vbc/FT) + math.exp(Vbe/FT))/b[3]**2 + GMIN*Vbc*(-Vbc + Vbe)/b[3]**2
 
     return jac
 
@@ -171,20 +178,20 @@ def getderivative_outTransParamErlieFormatJAC():
     resstr=""
 
     for i in range (0, len(funstr)):
-        for ind in range (0, 3):
+        for ind in range (0, 4):
             #print(sympy.diff(funstr[i],'B{0}'.format(ind)))
 
 
             resstr+=sympy.diff(funstr[i],'B{0}'.format(ind)).__str__()
             resstr+="\n"
+            print ('B{0}'.format(ind))
+
         resstr+="------------------\n"
 
     return resstr
 
 
 
-print(outTransParamErlieFormatJAC (None,None,None))
-exit(0)
 
 
 
@@ -219,6 +226,45 @@ def outTransParamPopov (Vin, Vcc):
     Ib=IS*( (1/BF)*(math.exp(Vbe/FT)-1)+(1/BR)*(math.exp(Vbc/FT)-1)) + GMIN*(Vbe/BF+Vbc/BR)
 
     return  Ib, Ic
+
+
+
+def testEstimate():
+    """
+    Пробуем произвести экстракцию параметров модели по параметрам транзистора Эрли
+    :return:
+    """
+
+    jacf=lambda x,b,c,y: outTransParamErlieFormatJAC (x,b)
+    funcf=lambda x,b,c: outTransParamErlieFormat (x,b)
+
+    c={}
+    Ve=np.array([ [0.0001, 0],
+                     [0, 0.0001] ]  )
+
+
+    #BF,BR,IS,VA
+    #коэфф передачи по току в схеме с оэ нормальный режим, -//- реверсный, ток утечки, напряжение Эрли в активном режиме
+    btrue=[120,1,1.28e-15, 1e1]
+    binit=[120,1,1.28e-15, 1e1]
+
+
+    xstart=[0.01,0.01]
+    xend=[10,10]
+
+    N=10
+
+    print("performing normal research:")
+    startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+    measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6)
+    print (gknu)
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+
+
+
+testEstimate()
 
 
 
