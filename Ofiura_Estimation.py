@@ -85,6 +85,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
                 break
             cond2=Skmu>Sk
 
+
         b=b-deltab*mu
 
         print ("Iteration {0} mu={1} delta={2} deltamu={3} resb={4}".format(numiter, mu, deltab, deltab*mu, b))
@@ -95,6 +96,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
         for i in range (len(b)):
             if math.fabs ((b[i]-bpriv[i])/bpriv[i])>math.pow(10,-1*NSIG):
                 condition=True
+
 
         if numiter>100: #max number of iterations
             log+="GKNUX1: Break due to max number of iteration exceed"
