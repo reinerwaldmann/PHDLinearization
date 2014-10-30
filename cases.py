@@ -247,19 +247,23 @@ def testEstimate():
     measdata = list(filter(for_filter, measdata))
 
 
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
-    print (gknu)
-    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+    #gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
+    #print (gknu)
+    #print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
-    print (gknu[0])
+    #print (gknu[0])
 
 
 
     #aprior plan
     print("Performing aprior plan:")
-    oplan = o_ap.grandApriornPlanning(xstart, xend, N, bstart, bend, c, Ve, jacf, Ntries=5)
-    o_p.writePlanToFile(oplan, 'Apropr plan Erlie')
+    oplan = o_ap.grandApriornPlanning(xstart, xend, 10, bstart, bend, c, Ve, jacf, Ntries=5)
+    o_p.writePlanToFile(oplan, 'Aprior plan Erlie')
     measdata = o_p.makeMeasAccToPlan(funcf, oplan, btrue, c, Ve)
+    filteredmeasdata=list(filter(for_filter, measdata))
+    print ('Plan optimization: measdatalen={0} optimized={1}'.format(len(measdata), len(filteredmeasdata) ))
+
+
 
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
     print (gknu)

@@ -1,9 +1,10 @@
 __author__ = 'vasilev_is'
 
-
 import random
 import math
+
 import numpy as np
+
 import Ofiura_general as o_g
 
 
@@ -195,11 +196,20 @@ def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
     G=np.zeros((len(b),len(b))) #матрица G
 
     for point in expplan:
-        jj=jac(point, b, c, func(point,b,c) if func else None)
+        jj=np.array(jac(point, b, c, func(point,b,c) if func else None))
         #G+=jj*np.linalg.inv(Ve)*jj.T
 
 
         #G+=jj*jj.T
+        print ("head")
+        print (G)
+        print (jj)
+        print (jj.T)
+        print (jj.T.shape, jj.shape)
+
+        print (jj.T*jj)
+        print ("tail")
+
         G+=jj.T*jj
 
 
