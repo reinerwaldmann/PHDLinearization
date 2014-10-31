@@ -199,18 +199,7 @@ def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
         jj=np.array(jac(point, b, c, func(point,b,c) if func else None))
         #G+=jj*np.linalg.inv(Ve)*jj.T
 
-
-        #G+=jj*jj.T
-        print ("head")
-        print (G)
-        print (jj)
-        print (jj.T)
-        print (jj.T.shape, jj.shape)
-
-        print (jj.T*jj)
-        print ("tail")
-
-        G+=jj.T*jj
+        G+=np.dot(jj.T, jj)
 
 
     return np.linalg.inv(G)

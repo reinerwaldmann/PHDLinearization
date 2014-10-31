@@ -73,6 +73,153 @@ def outTransParam (Vin, Vcc):
 
     return  Ib, Ic, Ie
 
+def outTransParamFormat (x,b,c=None):
+     #схема с общим эмиттером
+    VIN=x[0]
+    VCC=x[1]
+
+    #входные напряжения
+    Vbe=VIN
+    Vbc=VIN-VCC
+
+    #параметры (пока не в стандарте)
+    BF=120 #коэфф передачи по току в схеме с оэ нормальный режим
+    BR=1 #коэфф передачи по току в схеме с оэ инверсный режим
+    IS=1.28e-15 #ток утечки
+    FT=0.026 #тепловой потенциал - он фиксирован для 27С http://cads.narod.ru/kurs/OrCAD.htm
+
+    BF=b[0]
+    BR=b[1]
+    IS=b[2]*1e-15
+    FT=0.026 #тепловой потенциал - он фиксирован для 27С http://cads.narod.ru/kurs/OrCAD.htm
+
+    Ict=IS*(math.exp(Vbe/FT)-math.exp(Vbc/FT))
+
+    Icc_sep_BF=(IS/BF)*(math.exp(Vbe/FT)-1)
+    Iec_sep_BR=(IS/BR)*(math.exp(Vbc/FT)-1)
+
+    Ie=-Icc_sep_BF-Ict
+
+    Ib=Icc_sep_BF+Iec_sep_BR
+    Ic=Ict-Iec_sep_BR
+
+
+    return  [Ib, Ic]
+
+def getderivative_outTransParamFormatJAC():
+    """
+    Якобиан по коэфффициентам
+    """
+
+    funstr = ["(b2*1e-15/b0)*(exp(Vbe/FT)-1) + (b2*1e-15/b1)*(exp(Vbc/FT)-1)", "b2*1e-15*(exp(Vbe/FT)-exp(Vbc/FT)) - (b2*1e-15/b1)*(exp(Vbc/FT)-1)"]
+
+    resstr=""
+
+    for i in range (0, len(funstr)):
+        for ind in range (0, 4):
+            #print(sympy.diff(funstr[i],'B{0}'.format(ind)))
+
+
+            resstr+=sympy.diff(funstr[i],'b{0}'.format(ind)).__str__()
+            resstr+="\n"
+            print ('b{0}'.format(ind))
+
+        resstr+="------------------\n"
+
+    return resstr
+
+
+
+def outTransParamFormatJAC (x,b,c=None):
+
+    FT=0.026 #тепловой потенциал - он фиксирован для 27С http://cads.narod.ru/kurs/OrCAD.htm
+    GMIN=1e-12
+
+     #входные напряжения
+    VIN=x[0]
+    VCC=x[1]
+    Vbe=VIN
+    Vbc=VIN-VCC
+
+    jac=np.zeros((2, 3))
+
+
+    #коэфф передачи по току в схеме с оэ нормальный режим, -//- реверсный, ток утечки
+
+
+    jac[0][0]=-1.0e-15*b[2]*(math.exp(Vbe/FT) - 1)/b[0]**2
+    jac[0][1]=-1.0e-15*b[2]*(math.exp(Vbc/FT) - 1)/b[1]**2
+    jac[0][2]=1.0e-15*(math.exp(Vbc/FT) - 1)/b[1] + 1.0e-15*(math.exp(Vbe/FT) - 1)/b[0]
+
+    jac[1][0]=0
+    jac[1][1]=1.0e-15*b[2]*(math.exp(Vbc/FT) - 1)/b[1]**2
+    jac[1][2]=-1.0e-15*math.exp(Vbc/FT) + 1.0e-15*math.exp(Vbe/FT) - 1.0e-15*(math.exp(Vbc/FT) - 1)/b[1]
+
+    print (jac)
+    exit(0)
+
+    return jac
+
+def testEstimate():
+    """
+    Пробуем произвести экстракцию параметров модели по параметрам транзистора Эрли
+    :return:
+    """
+    jacf=lambda x,b,c,y: outTransParamFormatJAC (x,b)
+    funcf=lambda x,b,c: outTransParamFormat (x,b)
+
+    c={}
+    Ve=np.array([ [0.000001, 0],
+                     [0, 0.000001] ]  )
+
+    #BF,BR,IS
+    #коэфф передачи по току в схеме с оэ нормальный режим, -//- реверсный, ток утечки
+    btrue=[120,1,1.28]
+    binit=[110,2,1.28]
+
+    bstart=[100,0.5,1]
+    bend=[125,2,2]
+
+    xstart=[0.001,0.001]
+    xend=[5,5]
+
+    N=50
+
+    print("performing normal research:")
+    startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+    measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
+    #надо добавить скажем априорный план, с фильтрованием точек
+
+    print ('Plan optimization: measdatalen={0} optimized={1}'.format(len(measdata), len(list(filter(for_filter, measdata)) )))
+    measdata = list(filter(for_filter, measdata))
+
+
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
+    print (gknu)
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+    print (gknu[0])
+
+    return
+
+#     aprior plan
+    print("Performing aprior plan:")
+    oplan = o_ap.grandApriornPlanning(xstart, xend, 10, bstart, bend, c, Ve, jacf, Ntries=2)
+    o_p.writePlanToFile(oplan, 'Aprior_plan')
+    measdata = o_p.makeMeasAccToPlan(funcf, oplan, btrue, c, Ve)
+    filteredmeasdata=list(filter(for_filter, measdata))
+    print ('Plan optimization: measdatalen={0} optimized={1}'.format(len(measdata), len(filteredmeasdata) ))
+
+
+
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
+    print (gknu)
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+
+
+
+
 
 
 def outTransParamWErlie (Vin, Vcc):
@@ -143,8 +290,6 @@ def outTransParamErlieFormat (x,b,c=None):
 
     return  [Ib, Ic]
 
-
-
 def outTransParamErlieFormatJAC (x,b,c=None):
     FT=0.026 #тепловой потенциал - он фиксирован для 27С http://cads.narod.ru/kurs/OrCAD.htm
     GMIN=1e-12
@@ -169,8 +314,6 @@ def outTransParamErlieFormatJAC (x,b,c=None):
 
     return jac
 
-
-
 def getderivative_outTransParamErlieFormatJAC():
     """
     Якобиан по коэфффициентам
@@ -194,19 +337,15 @@ def getderivative_outTransParamErlieFormatJAC():
 
 
 
-
-
-
-
 def for_filter (x):
     for val in x['y']:
-        if val>1e50:
+        if val>1e55:
             return False
             print ("ex")
     return True
 
 
-def testEstimate():
+def testEstimateErlie():
     """
     Пробуем произвести экстракцию параметров модели по параметрам транзистора Эрли
     :return:
@@ -247,27 +386,27 @@ def testEstimate():
     measdata = list(filter(for_filter, measdata))
 
 
-    #gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
-    #print (gknu)
-    #print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
+    print (gknu)
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
-    #print (gknu[0])
+    print (gknu[0])
 
 
 
     #aprior plan
-    print("Performing aprior plan:")
-    oplan = o_ap.grandApriornPlanning(xstart, xend, 10, bstart, bend, c, Ve, jacf, Ntries=5)
-    o_p.writePlanToFile(oplan, 'Aprior plan Erlie')
-    measdata = o_p.makeMeasAccToPlan(funcf, oplan, btrue, c, Ve)
-    filteredmeasdata=list(filter(for_filter, measdata))
-    print ('Plan optimization: measdatalen={0} optimized={1}'.format(len(measdata), len(filteredmeasdata) ))
-
-
-
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
-    print (gknu)
-    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+    # print("Performing aprior plan:")
+    # oplan = o_ap.grandApriornPlanning(xstart, xend, 10, bstart, bend, c, Ve, jacf, Ntries=5)
+    # o_p.writePlanToFile(oplan, 'Aprior plan Erlie')
+    # measdata = o_p.makeMeasAccToPlan(funcf, oplan, btrue, c, Ve)
+    # filteredmeasdata=list(filter(for_filter, measdata))
+    # print ('Plan optimization: measdatalen={0} optimized={1}'.format(len(measdata), len(filteredmeasdata) ))
+    #
+    #
+    #
+    # gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
+    # print (gknu)
+    # print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
 
 
@@ -309,3 +448,7 @@ def testModel():
     plt.show()
 
 
+#Метод считает начальное приближение уже весьма хорошим (предлагает слишком маленький шаг)
+#возможная причина - производные по коэффициентам слишком малы. (порядка 10^-19) относительно самих коэффициентов
+#то есть выходные токи сильно больше зависят от напряжений на базе и коллекторе, нежели от каких-то там параметров.
+#выходит, хорошо, когда выходные переменые примерно одинаково зависят от оцениваемых параметров и входных переменых.
