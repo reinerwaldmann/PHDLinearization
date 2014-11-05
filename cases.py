@@ -476,7 +476,7 @@ def outTransParamErlieFormat (x,b,c=None):
 
     BF=b[0]
     BR=b[1]
-    IS=b[2]*1e-15
+    IS=b[2]
 
     FT=0.026 #тепловой потенциал - он фиксирован для 27С http://cads.narod.ru/kurs/OrCAD.htm
     ISZERO=IS
@@ -505,84 +505,27 @@ def outTransParamErlieFormatJAC (x,b,c=None):
 
     jac=np.zeros((2, 4))
 
-    jac[0][0]=-b[2]*1e-15*(math.exp(Vbe/FT) - 1)/b[0]**2 - GMIN*Vbe/b[0]**2
-    jac[0][1]=-b[2]*1e-15*(math.exp(Vbc/FT) - 1)/b[1]**2 - GMIN*Vbc/b[1]**2
+    Is=b[2]
+
+    jac[0][1]=-Is*(math.exp(Vbc/FT) - 1)/b[1]**2 - GMIN*Vbc/b[1]**2
+    jac[0][0]=-Is*(math.exp(Vbe/FT) - 1)/b[0]**2 - GMIN*Vbe/b[0]**2
     jac[0][2]=(math.exp(Vbc/FT) - 1)/b[1] + (math.exp(Vbe/FT) - 1)/b[0]
     jac[0][3]=0
 
     jac[1][0]=0
-    jac[1][1]=b[2]*1e-15*(math.exp(Vbc/FT) - 1)/b[1]**2 + GMIN*Vbc/b[1]**2
+    jac[1][1]=Is*(math.exp(Vbc/FT) - 1)/b[1]**2 + GMIN*Vbc/b[1]**2
     jac[1][2]=(1 - Vbc/b[3])*(-math.exp(Vbc/FT) + math.exp(Vbe/FT)) - (math.exp(Vbc/FT) - 1)/b[1]
-    jac[1][3]=b[2]*1e-15*Vbc*(-math.exp(Vbc/FT) + math.exp(Vbe/FT))/b[3]**2 + GMIN*Vbc*(-Vbc + Vbe)/b[3]**2
+    jac[1][3]=Is*Vbc*(-math.exp(Vbc/FT) + math.exp(Vbe/FT))/b[3]**2 + GMIN*Vbc*(-Vbc + Vbe)/b[3]**2
 
     return jac
 
-def getderivative_outTransParamErlieFormatJAC():
-    """
-    Якобиан по коэфффициентам
-    """
-    funstr=["B2*( (1/B0)*(exp(Vbe/FT)-1)+(1/B1)*(exp(Vbc/FT)-1)) + GMIN*(Vbe/B0+Vbc/B1)", "B2*( (exp(Vbe/FT)-exp(Vbc/FT))*(1-Vbc/B3)-(1/B1)*(exp(Vbc/FT)-1))+GMIN*((Vbe-Vbc)*(1-Vbc/B3)-Vbc/B1)" ]
-
-    resstr=""
-
-    for i in range (0, len(funstr)):
-        for ind in range (0, 4):
-            #print(sympy.diff(funstr[i],'B{0}'.format(ind)))
-
-
-            resstr+=sympy.diff(funstr[i],'B{0}'.format(ind)).__str__()
-            resstr+="\n"
-            print ('B{0}'.format(ind))
-
-        resstr+="------------------\n"
-
-    return resstr
-
-
-
-def for_filter (x):
-    for val in x['y']:
-        if val>1e55:
-            return False
-    return True
-
-
-
-
-def getderivative_outTransParamErlieFormatJAC():
-    """
-    Якобиан по коэфффициентам
-    """
-    funstr=["B2*( (1/B0)*(exp(Vbe/FT)-1)+(1/B1)*(exp(Vbc/FT)-1)) + GMIN*(Vbe/B0+Vbc/B1)", "B2*( (exp(Vbe/FT)-exp(Vbc/FT))*(1-Vbc/B3)-(1/B1)*(exp(Vbc/FT)-1))+GMIN*((Vbe-Vbc)*(1-Vbc/B3)-Vbc/B1)" ]
-
-    resstr=""
-
-    for i in range (0, len(funstr)):
-        for ind in range (0, 4):
-            #print(sympy.diff(funstr[i],'B{0}'.format(ind)))
-
-
-            resstr+=sympy.diff(funstr[i],'B{0}'.format(ind)).__str__()
-            resstr+="\n"
-            print ('B{0}'.format(ind))
-
-        resstr+="------------------\n"
-
-    return resstr
-
-
-
-def for_filter (x):
-    for val in x['y']:
-        if val>1e55:
-            return False
-    return True
-
 
 def testEstimateErlie():
-    #Экстракция весьма чувствительна к начальным знчениям, причём  к некоторым - особенно, к некоторым  - меньше
-    #Даже большие дисперсии переваривает довольно неплохо. В частности, в нашей задаче к b[2] большие требования, ибо оно сильнее влияет на итоговый результат (см. прозводную)
-    #этот b2 вообще толком оценить не может
+
+    #за 14-16 итераций с единичного вектора к результирующему с нулевой ошибкой, несмотря на разные порядки!!! при дисперсии 0.1 на 50 точках при обычном плане (учитывать большее число точек на самом деле)
+    #эпичная победа
+
+
 
     """
     Пробуем произвести экстракцию параметров модели по параметрам транзистора Эрли
@@ -593,18 +536,20 @@ def testEstimateErlie():
     funcf=lambda x,b,c: outTransParamErlieFormat (x,b)
 
     c={}
-    Ve=np.array([ [0.001, 0],
-                     [0, 0.001] ]  )
+    Ve=np.array([ [0.1, 0],
+                     [0, 0.1] ]  )
     #BF,BR,IS,VA
     #коэфф передачи по току в схеме с оэ нормальный режим, -//- реверсный, ток утечки, напряжение Эрли в активном режиме
-    btrue=[120,1,1.28, 10]
-    binit=[115,0.1,1.28, 11]
+    btrue=[120,1,1.28e-15, 10]
+    #binit=[115,0.1,1, 11]
+
+    binit=[1]*len(btrue)
 
     bstart=[100,0.5,1, 5]
     bend=[125,2,2, 15]
 
 
-#РАЗНЫЙ ПОРЯДОК КОЭФФИЦИЕНТОВ, вот что может всё портить!!!!
+
 
     xstart=[0.001,0.001]
     xend=[4,4]
@@ -616,8 +561,10 @@ def testEstimateErlie():
     measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
     #надо добавить скажем априорный план, с фильтрованием точек
 
-    print ('Plan optimization: measdatalen={0} optimized={1}'.format(len(measdata), len(list(filter(for_filter, measdata)) )))
-    measdata = list(filter(for_filter, measdata))
+
+    optimized_measdata=o_p.filterList(measdata, lim=1e55)
+    print ('Plan optimization: measdatalen={0} optimized={1}'.format(len(measdata), len(optimized_measdata )))
+    measdata = optimized_measdata
 
 
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
@@ -629,18 +576,19 @@ def testEstimateErlie():
 
 
     #aprior plan
-    # print("Performing aprior plan:")
-    # oplan = o_ap.grandApriornPlanning(xstart, xend, 10, bstart, bend, c, Ve, jacf, Ntries=5)
-    # o_p.writePlanToFile(oplan, 'Aprior plan Erlie')
-    # measdata = o_p.makeMeasAccToPlan(funcf, oplan, btrue, c, Ve)
-    # filteredmeasdata=list(filter(for_filter, measdata))
-    # print ('Plan optimization: measdatalen={0} optimized={1}'.format(len(measdata), len(filteredmeasdata) ))
-    #
-    #
-    #
-    # gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
-    # print (gknu)
-    # print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+    print("Performing aprior plan:")
+    oplan = o_ap.grandApriornPlanning(xstart, xend, 10, bstart, bend, c, Ve, jacf, Ntries=5)
+    o_p.writePlanToFile(oplan, 'Aprior plan Erlie')
+    measdata = o_p.makeMeasAccToPlan(funcf, oplan, btrue, c, Ve)
+
+    optimized_measdata=o_p.filterList(measdata, lim=1e55)
+    print ('Plan optimization: measdatalen={0} optimized={1}'.format(len(measdata), len(optimized_measdata )))
+    measdata = optimized_measdata
+
+
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=10)
+    print (gknu)
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
 testEstimateErlie()
 
@@ -751,3 +699,25 @@ def testModel():
 #возможная причина - производные по коэффициентам слишком малы. (порядка 10^-19) относительно самих коэффициентов
 #то есть выходные токи сильно больше зависят от напряжений на базе и коллекторе, нежели от каких-то там параметров.
 #выходит, хорошо, когда выходные переменые примерно одинаково зависят от оцениваемых параметров и входных переменых.
+
+
+def getderivative_outTransParamErlieFormatJAC():
+    """
+    Якобиан по коэфффициентам
+    """
+    funstr=["B2*( (1/B0)*(exp(Vbe/FT)-1)+(1/B1)*(exp(Vbc/FT)-1)) + GMIN*(Vbe/B0+Vbc/B1)", "B2*( (exp(Vbe/FT)-exp(Vbc/FT))*(1-Vbc/B3)-(1/B1)*(exp(Vbc/FT)-1))+GMIN*((Vbe-Vbc)*(1-Vbc/B3)-Vbc/B1)" ]
+
+    resstr=""
+
+    for i in range (0, len(funstr)):
+        for ind in range (0, 4):
+            #print(sympy.diff(funstr[i],'B{0}'.format(ind)))
+
+
+            resstr+=sympy.diff(funstr[i],'B{0}'.format(ind)).__str__()
+            resstr+="\n"
+            print ('B{0}'.format(ind))
+
+        resstr+="------------------\n"
+
+    return resstr
