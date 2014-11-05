@@ -14,8 +14,11 @@ import copy
 import numpy as np
 from scipy import optimize
 
-import ApriorPlanning as ap
-import Ofiura_Estimation as est
+
+import Ofiura_Estimation as o_e
+import Ofiura_planning as o_p
+import Ofiura_Qualitat as o_q
+import Ofiura_ApriorPlanning as o_ap
 
 
 def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):
@@ -343,6 +346,9 @@ def jjacf (x,b,c,y, dfdb, dfdy):
 
     q=np.linalg.inv(q)
 
+    print (np.dot(np.linalg.inv(dfdy(y,x,b,c)), dfdb(y,x,b,c)))
+    exit(0)
+
     return np.dot(np.linalg.inv(dfdy(y,x,b,c)), dfdb(y,x,b,c))
     #return np.dot(q,  dfdb(y,x,b,c))
 
@@ -370,9 +376,9 @@ def testNew():
 
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.01, 0, 0],
-                  [0, 0.01, 0],
-                  [0, 0, 0.01]  ]  )
+    Ve=np.array([ [0.0001, 0, 0],
+                  [0, 0.0001, 0],
+                  [0, 0, 0.0001]  ]  )
 
     btrue=[60,60,40]
     bstart=np.array(btrue)-np.array([2]*len(btrue))
@@ -385,11 +391,11 @@ def testNew():
 
     N=30
     print("performing normal research:")
-    startplan =  ap.makeUniformExpPlan(xstart, xend, N)
-    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
-    gknu=est.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6)
+    startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+    measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6)
     print (gknu)
-    print (ap.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
     #TODO: эксперимент с зависимостью от параметров
     #Для обычного (равномерного) плана нарисовываются такие зависимости (регулировочные параметры):

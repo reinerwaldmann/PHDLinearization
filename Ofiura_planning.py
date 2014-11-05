@@ -93,6 +93,21 @@ countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
 """
 
 
+def for_filter (x,lim):
+    for val in x['y']:
+        if val>lim:
+            return False
+    return True
+
+def filterList(inmeasdata, lim=1e55):
+    filt = lambda x: for_filter(x,lim)
+    return list(filter(filt, inmeasdata))
+
+
+
+
+
+
 def writePlanToFile (plan, filename='plan.txt'):
     """
      Пишет план в файл. Значения пишутся в формате python (вектор [])

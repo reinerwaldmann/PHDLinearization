@@ -6,6 +6,11 @@ import numpy as np
 
 import Ofiura_ApriorPlanning as o_ap
 
+import Ofiura_planning as o_p
+import Ofiura_Estimation as o_e
+import Ofiura_Qualitat as o_q
+
+
 def test():
     """
     Тестирует априорное планирование
@@ -29,12 +34,25 @@ def test():
 
     #print (doublesearch ([1, 0.5], [10,10], [9,9], lambda x: x[0]*x[0]+2*x[1]*x[1]+10)) #тестирование поиска
 
-    rs=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=10)
+    rs=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=1)
     print (rs[0])
 
     print ('Experimental plan')
     for r in rs[1]:
         print(r[0], '\t', r[1])
+
+    print(rs[1])
+
+    measdata = o_p.makeMeasAccToPlan(funcf, rs, bend, c, Ve)
+    #надо добавить скажем априорный план, с фильтрованием точек
+
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, bstart, c,NSIG=10)
+    print (gknu)
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+    print (gknu[0])
+
+
 
 
     # plan=makeUniformExpPlan(xstart, xend, N)

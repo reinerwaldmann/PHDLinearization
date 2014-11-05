@@ -53,7 +53,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
 
             dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
             if B5==None:
-                #B5=np.dot(jac,dif)
+
                 B5=np.dot(dif, jac)
 
                 #print (dif.shape, jac.shape)
@@ -61,11 +61,15 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
             else:
                 B5+=np.dot(dif,jac)
 
+
             Sk+=np.dot(dif.T,dif)
 
-        #print (G.shape, '\n\n\n', B5.shape)
+
+
+
 
         deltab=np.dot(np.linalg.inv(G), B5)
+
 
         print ("Sk:",Sk)
 
@@ -77,6 +81,10 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
             Skmu=0
             mu/=2
             for point in measdata:
+
+
+
+
                 dif=np.array(point['y'])-np.array(funcf(point['x'],b-deltab*mu,c))
                 Skmu+=np.dot(dif.T, dif)
             it+=1
@@ -87,6 +95,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
 
 
         b=b-deltab*mu
+
 
         print ("Iteration {0} mu={1} delta={2} deltamu={3} resb={4}".format(numiter, mu, deltab, deltab*mu, b))
 
@@ -139,7 +148,10 @@ def grandCountGN_UltraX (funcf, jacf,  expdatalist:list, kinit:list, NSIG=3):
         PYY=np.zeros((M, 1))
         Tv=lambda x: (np.asmatrix(x)).T
         for i in range(0, N):
-            PP+=np.dot(jacf(expdatalist[i]['x'], k, None), np.transpose(jacf(expdatalist[i]['x'], k, None))  )
+
+
+            PP+=np.dot(jacf(expdatalist[i]['x'], k, None).T, (jacf(expdatalist[i]['x'], k, None))  )
+
             dif = np.array(expdatalist[i]['y'])-np.array(funcf(expdatalist[i]['x'],k))
             Sk+= np.dot(dif.T, dif)
             PYY+=np.dot(jacf(expdatalist[i]['x'], k, None), np.transpose(np.asmatrix(dif)))
