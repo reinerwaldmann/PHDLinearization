@@ -354,6 +354,7 @@ def jjacf (x,b,c,y, dfdb, dfdy):
 
 
 def testNew():
+
     funstr= ["y[0]+y[1]-y[2]", "y[0]*b[0]-y[1]*b[1]-x[0]-x[1]", "y[1]*b[1]+y[2]*b[2]+x[1]"]
     updfunstr=list(map(lambda x: x.replace('[','').replace(']',''),  funstr))
     dfdy=lambda y,x,b,c: np.array( [ [1, 1, -1],
@@ -393,7 +394,7 @@ def testNew():
     print("performing normal research:")
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
     measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6)
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
     print (gknu)
     print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 

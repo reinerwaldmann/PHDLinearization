@@ -547,44 +547,7 @@ def for_filter (x):
     return True
 
 
-def testEstimateErlie():
-    """
-    Пробуем произвести экстракцию параметров модели по параметрам транзистора Эрли
-    :return:
-    """
 
-    jacf=lambda x,b,c,y: outTransParamErlieFormatJAC (x,b)
-    funcf=lambda x,b,c: outTransParamErlieFormat (x,b)
-
-    c={}
-    Ve=np.array([ [0.00001, 0],
-                     [0, 0.00001] ]  )
-
-
-    #BF,BR,IS,VA
-    #коэфф передачи по току в схеме с оэ нормальный режим, -//- реверсный, ток утечки, напряжение Эрли в активном режиме
-    btrue=[120,1,1.28, 10]
-    binit=[115,1,1.28, 11]
-
-
-    bstart=[100,0.5,1, 5]
-    bend=[125,2,2, 15]
-
-    Vbc=VIN-VCC
-
-    jac=np.zeros((2, 4))
-
-    jac[0][0]=-b[2]*1e-15*(math.exp(Vbe/FT) - 1)/b[0]**2 - GMIN*Vbe/b[0]**2
-    jac[0][1]=-b[2]*1e-15*(math.exp(Vbc/FT) - 1)/b[1]**2 - GMIN*Vbc/b[1]**2
-    jac[0][2]=(math.exp(Vbc/FT) - 1)/b[1] + (math.exp(Vbe/FT) - 1)/b[0]
-    jac[0][3]=0
-
-    jac[1][0]=0
-    jac[1][1]=b[2]*1e-15*(math.exp(Vbc/FT) - 1)/b[1]**2 + GMIN*Vbc/b[1]**2
-    jac[1][2]=(1 - Vbc/b[3])*(-math.exp(Vbc/FT) + math.exp(Vbe/FT)) - (math.exp(Vbc/FT) - 1)/b[1]
-    jac[1][3]=b[2]*1e-15*Vbc*(-math.exp(Vbc/FT) + math.exp(Vbe/FT))/b[3]**2 + GMIN*Vbc*(-Vbc + Vbe)/b[3]**2
-
-    return jac
 
 def getderivative_outTransParamErlieFormatJAC():
     """
@@ -617,6 +580,10 @@ def for_filter (x):
 
 
 def testEstimateErlie():
+    #Экстракция весьма чувствительна к начальным знчениям, причём  к некоторым - особенно, к некоторым  - меньше
+    #Даже большие дисперсии переваривает довольно неплохо. В частности, в нашей задаче к b[2] большие требования, ибо оно сильнее влияет на итоговый результат (см. прозводную)
+    #этот b2 вообще толком оценить не может
+
     """
     Пробуем произвести экстракцию параметров модели по параметрам транзистора Эрли
     :return:
@@ -626,19 +593,15 @@ def testEstimateErlie():
     funcf=lambda x,b,c: outTransParamErlieFormat (x,b)
 
     c={}
-    Ve=np.array([ [0.00001, 0],
-                     [0, 0.00001] ]  )
-
-
+    Ve=np.array([ [0.001, 0],
+                     [0, 0.001] ]  )
     #BF,BR,IS,VA
     #коэфф передачи по току в схеме с оэ нормальный режим, -//- реверсный, ток утечки, напряжение Эрли в активном режиме
     btrue=[120,1,1.28, 10]
-    binit=[115,1,1.28, 11]
-
+    binit=[115,0.1,1.28, 11]
 
     bstart=[100,0.5,1, 5]
     bend=[125,2,2, 15]
-
 
 
 #РАЗНЫЙ ПОРЯДОК КОЭФФИЦИЕНТОВ, вот что может всё портить!!!!
@@ -679,45 +642,36 @@ def testEstimateErlie():
     # print (gknu)
     # print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
+testEstimateErlie()
 
-def test():
-    """
-    просто тестируем оценочник на явной фунции. К примеру, на квадратичной
 
-    """
+
+def testSquareFunction():
+#проходит за 9 итераций b=b+deltab*mu
     xstart=[1, 100]
     xend=[20,200]
     N=10
     c={"a":1000}
-
     funcf=lambda x,b,c=None:  [ b[0]+b[1]*x[0]+b[2]*x[1]+b[3]*x[0]*x[1]+b[4]*x[0]**2+b[5]*x[1]**2,   b[6]+b[7]*x[0]+b[8]*x[1]+b[9]*x[0]*x[1]+b[10]*x[0]**2+b[11]*x[1]**2 ]
     jacf = lambda x,b,c=None,y=None: np.array([ [1, x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1], 0, 0, 0, 0, 0, 0],
                                        [0,0,0,0,0,0,1,x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1]] ])
-
     #убрал .T
-
     Ve=np.array([ [0.0001, 0],
                   [0, 0.0001]]  )
     bstart=[0.8,0.4,1.4,0.2,0.9,0.3,1.4,0.2,2.1,3.1,4.1,5.1]
-
-
-
     btrue=  [1.1,0.6,1.6,0.4,1.1,0.6,1.6,0.4,2.5,3.3,4.6,5.6]
 
     bend=list(np.array(btrue)+np.array(btrue)-np.array(bstart))
-
     binit=[1]*len(btrue)
 
-
     N=50
-
-    print("performing normal research:")
-    startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
-    measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c,NSIG=10)
-    print (gknu)
-    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
-    print (gknu[0])
+    # print("performing normal research:")
+    # startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+    # measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
+    # gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c,NSIG=10)
+    # print (gknu)
+    # print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+    # print (gknu[0])
 
     print("performing aprior research:")
     oplan = o_ap.grandApriornPlanning (xstart, xend, 10, bstart, bend, c, Ve, jacf, func=None, Ntries=1)[1]
@@ -731,20 +685,33 @@ def test():
 
 
 
-
-
     # plan=makeUniformExpPlan(xstart, xend, N)
     # func = lambda x,b,c: [x[0]*b[0]+c["a"], x[1]*b[1]+c["a"], x[2]*b[2]+c["a"]]
     # meas = makeMeasAccToPlan(func, plan,  b, c, [0.0001]*3)
     # for x in meas:
     #     print (x)
-test()
+
+def testSimpleFunction ():
+    #проходит, 2 итерации, если  b=b+deltab*mu
 
 
-
-
-
-
+    funcstrdict= {"y1":"u1* (r2+r3)", "y2":"u1* r3"}
+    xstart=[1, 100]
+    xend=[20,200]
+    N=50
+    funcf=lambda x,b,c=None:  [x[1]*x[0]*(b[0]+b[1]), x[0]*b[1]+x[1]*b[0]]
+    jacf = lambda x,b,c=None,y=None: np.array([[x[0]*x[1],x[0]*x[1]],[x[1], x[0]]])
+    Ve=np.array([ [0.00001, 0],
+                  [0, 0.00001]]  )
+    btrue=  [20,30]
+    binit=[1]*len(btrue)
+    print("performing normal research:")
+    startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+    measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, None, Ve)
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, None,NSIG=10)
+    print (gknu)
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, None))
+    print (gknu[0])
 
 
 

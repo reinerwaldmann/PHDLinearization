@@ -73,13 +73,9 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
     outvarstrlist -  список выходных переменных (y1, y2)
     invarstrlist - список входных переменных
     coeffstrlist - список коэффициентов (r1, r2, r3)
-
     #filename - имя файла с результатами эксперимента
-
     vrslst - вывод функции generate, данные эксперимента, в виде списка словарей
     NSIG=5 - количество значащих (точность)
-
-
     """
     log=""#строка, куда пишутся всякие сообщения
 
@@ -94,8 +90,6 @@ def grandCountGN(funcstrdict, invarstrlist, outvarstrlist, coeffstrlist, vrslst,
         la=lambda x: line[x]
         Xs.append(np.array (list (map (la, invarstrlist))))
         Ys.append(np.array (list (map (la, outvarstrlist))))
-
-
 
     #k=np.ones(len(coeffstrlist)) #начальное приближение вектора коэффициентов
 
