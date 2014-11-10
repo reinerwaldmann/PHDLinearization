@@ -2,7 +2,7 @@ __author__ = 'reiner'
 
 import math
 
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import sympy
 
@@ -590,7 +590,6 @@ def testEstimateErlie():
     print (gknu)
     print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
-testEstimateErlie()
 
 
 
@@ -667,17 +666,17 @@ def testSimpleFunction ():
 
 
 def testModel():
-    rng=numpy.arange(0.01,2,0.01)
+    rng=np.arange(0.01,2,0.01)
     #print (outTransParamWErlie(1,2))
-    #TODO ну и три возможные задачи: 1. Можно дальше улучшать модель, доведя до Гуммеля-Пуна
-    #TODO 2. Обязательно попробовать оценку через Гаусса-Ньютона
-    #TODO 3. Сделать модель IGBT или ещё чего-нибудь такого
-    #resrng=[outTransParam(x,0)[1] for x in rng] # изменяем напряжение на базе при постоянном напряжении на колллекторе - снимаем ток коллектора.
-    #в каком
+
     #снимем входную ВАХ
-    resrng=[outTransParam(x,5)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на колллекторе - снимаем ток коллектора.
+    resrng=[outTransParam(x,5)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
     #снимем выходную ВАХ выходит непохоже на PSPICE, но похоже на учебник
-    #resrng=[outTransParam(0.2,x)[1] for x in rng] # изменяем напряжение на базе при постоянном напряжении на колллекторе - снимаем ток коллектора.
+    #resrng=[outTransParam(0.2,x)[1] for x in rng] # изменяем напряжение на коллекторе при постоянном напряжении на базе - снимаем ток коллектора.
+
+
+
+
 
     #resrng=[outTransParam(0,x)[1] for x in rng]    #[1] - это ток коллектора
     # resrng1=[outTransParam(2,x)[1] for x in rng]
@@ -721,3 +720,9 @@ def getderivative_outTransParamErlieFormatJAC():
         resstr+="------------------\n"
 
     return resstr
+
+#Для экстракции параметров
+#testEstimateErlie()
+
+#Для отображения графика
+testModel()
