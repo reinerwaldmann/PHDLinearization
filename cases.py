@@ -674,10 +674,6 @@ def testModel():
     #снимем выходную ВАХ выходит непохоже на PSPICE, но похоже на учебник
     #resrng=[outTransParam(0.2,x)[1] for x in rng] # изменяем напряжение на коллекторе при постоянном напряжении на базе - снимаем ток коллектора.
 
-
-
-
-
     #resrng=[outTransParam(0,x)[1] for x in rng]    #[1] - это ток коллектора
     # resrng1=[outTransParam(2,x)[1] for x in rng]
     #resrng=[outTransParamWErlie(0,x)[1] for x in rng]
@@ -694,35 +690,70 @@ def testModel():
     plt.show()
 
 
-#Метод считает начальное приближение уже весьма хорошим (предлагает слишком маленький шаг)
-#возможная причина - производные по коэффициентам слишком малы. (порядка 10^-19) относительно самих коэффициентов
-#то есть выходные токи сильно больше зависят от напряжений на базе и коллекторе, нежели от каких-то там параметров.
-#выходит, хорошо, когда выходные переменые примерно одинаково зависят от оцениваемых параметров и входных переменых.
-
-
-def getderivative_outTransParamErlieFormatJAC():
+def diode (x,b,c=None):
     """
-    Якобиан по коэфффициентам
+    Простая функция, выводящая ток через диод с параметрами в векторе b и при входном напряжении x[0]
     """
-    funstr=["B2*( (1/B0)*(exp(Vbe/FT)-1)+(1/B1)*(exp(Vbc/FT)-1)) + GMIN*(Vbe/B0+Vbc/B1)", "B2*( (exp(Vbe/FT)-exp(Vbc/FT))*(1-Vbc/B3)-(1/B1)*(exp(Vbc/FT)-1))+GMIN*((Vbe-Vbc)*(1-Vbc/B3)-Vbc/B1)" ]
+    Vd=x[0] #напряжение на диоде
+    Is=b[0]
+    N=b[1]
 
-    resstr=""
+    #FT - температурный потенциал
+    g=1.60217657E-19 #Кл, заряд электрона
+    K=1.380648813E-23 #постоянная Больцмана
+    T=273+27 #температура p-n перехода в Кельвинах
 
-    for i in range (0, len(funstr)):
-        for ind in range (0, 4):
-            #print(sympy.diff(funstr[i],'B{0}'.format(ind)))
+
+    FT=K*T/g #0.0258
 
 
-            resstr+=sympy.diff(funstr[i],'B{0}'.format(ind)).__str__()
-            resstr+="\n"
-            print ('B{0}'.format(ind))
+    FT=0.02586419 #подогнанное по pspice
 
-        resstr+="------------------\n"
+    I=Is*(math.exp(Vd/(FT*N)) -1)
 
-    return resstr
+    return [I]
+
+
+def testDiode():
+
+    b=[1e-14, 1]
+    x=[10]
+
+    print(diode(x=x,b=b))
+
+    print('difference in percents:')
+    pspice=8.19317e153 #10 V
+    #pspice=12.9482 #0.9 V
+    #pspice=9.05161E+069 #5 V
+
+    print(100*(pspice-diode(x=x,b=b)[0])/pspice)
+
+#0.0026638081177255196
+
+
+    return
+
+    rng=np.arange(0.01,1,0.01)
+    #снимем ВАХ
+    resrng=[diode([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
+    plt.plot(rng , resrng)
+    #plt.axis([0.0,1.0,0,5])
+    plt.grid()
+    plt.show()
+
+    plt.show()
+
+
+
+#Для тестирования диода
+testDiode()
+
+
 
 #Для экстракции параметров
 #testEstimateErlie()
 
 #Для отображения графика
-testModel()
+#testModel()
+
+
