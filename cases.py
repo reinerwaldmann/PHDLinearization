@@ -2,9 +2,12 @@ __author__ = 'reiner'
 
 import math
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 import sympy
+
+from scipy import optimize
+
 
 import Ofiura_Estimation as o_e
 import Ofiura_planning as o_p
@@ -744,9 +747,110 @@ def testDiode():
     plt.show()
 
 
+def diodeResistorIMPLICITfunction (x,b,c=None):
+    """
+    Возвращает ток, текущей по цепи
+
+    коэффициенты модели: Ток утечки Is, коэффициент неидеальности N, омическое сопротивление, параллельное диоду R
+    входные параметры: напряжение, приложенное источником к системе резистор-диод
+    +-----------|||||---------->|--------- -
+    Резистор подключен до диода
+    :return:
+    """
+    V=x[0] #напряжение на диоде
+    Is=b[0]
+    N=b[1]
+    R=b[2]
+    FT=0.02586419 #подогнанное по pspice
+
+    dfdy=lambda y,x,b,c: np.array ([[ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]])
+    function=lambda y,x,b,c: [b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0]] #в подготовленном для взятия производной виде
+
+    print(function([1],x,b,c))
+
+    print (optimize.root(function, [1], args=(x,b,c),method='lm', jac=dfdy))
+
+
+    return optimize.root(function, [1], args=(x,b,c),method='lm', jac=dfdy).x
+    #return optimize.root(function, [1], method='lm').x
+
+#funstr = "b0*(exp((x0-y0*b2)/(FT*b1)) -1)-y0" #в подготовленном для взятия производной виде
+
+#print (sympy.diff(funstr,'y0').__str__())
+
+
+#Производные по b
+#exp((-b2*y0 + x0)/(FT*b1)) - 1
+#-b0*(-b2*y0 + x0)*exp((-b2*y0 + x0)/(FT*b1))/(FT*b1**2)
+#-b0*y0*exp((-b2*y0 + x0)/(FT*b1))/(FT*b1)
+
+
+#y0
+#-1 - b0*b2*exp((-b2*y0 + x0)/(FT*b1))/(FT*b1)
+
+
+
+
+
+def testDiodeParameterExtractionIMPLICIT():
+    """
+    пробуем экстрагировать коэффициенты из модели диода
+    коэффициенты модели: Ток утечки Is, коэффициент неидеальности N, омическое сопротивление, параллельное диоду R
+    входные параметры: напряжение, приложенное источником к системе резистор-диод
+    +-----------|||||---------->|--------- -
+    Резистор подключен до диода
+    :return:
+    """
+    FT=0.02586419 #подогнанное по pspice
+
+    dfdb=lambda y,x,b,c: np.array( [ [math.exp((-b[2]*y[0] + x[0])/(FT*b[1])) - 1,
+                                      -b[0]*(-b[2]*y[0] + x[0])*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**2),
+                                      -b[0]*y[0]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]     ])
+    dfdy=lambda y,x,b,c: np.array ([[ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]])
+
+    #возвращает структурную матрицу
+    #jacf=lambda x,b,c,y: jjacf(x,b,c,y,dfdb,dfdy)
+    jacf=lambda x,b,c,y:np.dot(np.linalg.inv(dfdy(y,x,b,c)), dfdb(y,x,b,c))
+
+    #возвращает значение y
+    funcf=lambda x,b,c: diodeResistorIMPLICITfunction (x,b,c=None)
+
+    #теперь попробуем сделать эксперимент.
+    c={}
+    Ve=np.array([ [0.1] ]  )
+
+    btrue=[1e-14, 1, 10]
+    bstart=np.array(btrue)-np.array([2]*len(btrue))
+    bend=np.array(btrue)+np.array([2]*len(btrue))
+    binit=[1,1,1]
+
+    xstart=[0]
+    #xend=[20,60]
+    xend=[2]
+
+    N=50
+    print("performing normal research:")
+    startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+    measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
+    print (gknu)
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+
+
+#тестируем неявную функцию для связки резистор-диод
+b=[1e-14, 1, 0]
+x=[5]
+
+print(diodeResistorIMPLICITfunction (x,b,c=None))
+print(diode(x,b,c=None))
+
+
+#Для экстракции параметров диода
+#testDiodeParameterExtractionIMPLICIT()
 
 #Для тестирования диода
-testDiode()
+#testDiode()
 
 
 
