@@ -54,11 +54,19 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, si
             #print (G.shape, jac.T.shape, jac.shape)
             G+=np.dot(jac.T,jac)
             dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
+
+
+
             if B5==None:
                 B5=np.dot(dif, jac)
             else:
                 B5+=np.dot(dif,jac)
             Sk+=np.dot(dif.T,dif)
+
+
+
+        print(np.linalg.inv(G), B5[:,0])
+
         deltab=np.dot(np.linalg.inv(G), B5)
         print ("Sk:",Sk)
         #mu counting
