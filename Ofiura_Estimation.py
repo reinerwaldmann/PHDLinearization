@@ -32,8 +32,9 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, si
     :param binit:list начальное приближение b
     :param c словарь дополнительных постоянных
     :param NSIG=3 точность (кол-во знаков после запятой)
-    :param sign - если  1, то b=b+deltab*mu, иначе b=b-deltab*mu
+    :param sign - если  1, то b=b+deltab*mu, иначе b=b-deltab*mu. При неявной функции надо ставить sign=0
     :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
+
 
     РАБОЧАЯ GEPRUFT!
     """

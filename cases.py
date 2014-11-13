@@ -755,6 +755,11 @@ def diodeResistorIMPLICITfunction (x,b,c=None):
     входные параметры: напряжение, приложенное источником к системе резистор-диод
     +-----------|||||---------->|--------- -
     Резистор подключен до диода
+
+    ===ОГРАНИЧЕНИЯ===
+    #Сочетание боьльших напряжений  (>1В) и нулевого сопротивления даёт идиотский результат (единицу, то есть метод не отрабатывает)
+    Аналогичное нехорошее поведение может повстречаться и при прочих сочетаниях. Этот момент должно иметь в виду
+
     :return:
     """
     V=x[0] #напряжение на диоде
@@ -767,27 +772,7 @@ def diodeResistorIMPLICITfunction (x,b,c=None):
     function=lambda y,x,b,c=None: [b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0]] #в подготовленном для взятия производной виде
 
 
-    methods=[
-        'hybr',
-        'lm',
-        'broyden1',
-        'broyden2',
-        'anderson',
-        'linearmixing',
-        'excitingmixing',
-        'krylov'
-    ]
-
-    res=dict()
-    for method in methods:
-        try:
-            solx=optimize.root(function, [1], args=(x,b,c), jac=dfdy, method=method).x
-            res[method]=(solx, function(solx,x,b) )
-        except BaseException as e:
-            print(method,'failed')
-
-    return res
-    #return optimize.root(function, [1], method='lm').x
+    return optimize.root(function, [1], args=(x,b,c), jac=dfdy, method='lm').x
 
 #funstr = "b0*(exp((x0-y0*b2)/(FT*b1)) -1)-y0" #в подготовленном для взятия производной виде
 
@@ -834,35 +819,37 @@ def testDiodeParameterExtractionIMPLICIT():
     c={}
     Ve=np.array([ [0.1] ]  )
 
-    btrue=[1e-14, 1, 10]
+    btrue=[1e-14, 1, 1000]
     bstart=np.array(btrue)-np.array([2]*len(btrue))
     bend=np.array(btrue)+np.array([2]*len(btrue))
     binit=[1,1,1]
 
-    xstart=[0]
+    xstart=[0.01]
     #xend=[20,60]
-    xend=[2]
+    xend=[1.2]
 
     N=50
     print("performing normal research:")
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+
+    print (startplan)
+
     measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
+    #как мы помним, в случае неявных функций должно ставить sign=0
+
     print (gknu)
     print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
 
-b=[1e-14, 1, 10]
-#x=[1.5]
-FT=0.02586419 #подогнанное по pspice
+
+testDiodeParameterExtractionIMPLICIT()
 
 
-for x in [[10], [20], [30], [40]]:
-    print('===',x,'===')
-    for key, val  in diodeResistorIMPLICITfunction (x,b,c=None).items():
-        print(key, val)
-    print ('---')
-    print(diode(x,b,c=None))
+
+#print(diodeResistorIMPLICITfunction (x,b,c=None))
+#print(diode(x,b,c=None))
+
 
 
 #Для экстракции параметров диода
