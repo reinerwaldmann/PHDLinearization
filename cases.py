@@ -744,7 +744,7 @@ def testDiode():
     plt.grid()
     plt.show()
 
-    plt.show()
+
 
 
 def diodeResistorIMPLICITfunction (x,b,c=None):
@@ -763,15 +763,30 @@ def diodeResistorIMPLICITfunction (x,b,c=None):
     R=b[2]
     FT=0.02586419 #подогнанное по pspice
 
-    dfdy=lambda y,x,b,c: np.array ([[ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]])
-    function=lambda y,x,b,c: [b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0]] #в подготовленном для взятия производной виде
-
-    print(function([1],x,b,c))
-
-    print (optimize.root(function, [1], args=(x,b,c),method='lm', jac=dfdy))
+    dfdy=lambda y,x,b,c=None: np.array ([[ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]])
+    function=lambda y,x,b,c=None: [b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0]] #в подготовленном для взятия производной виде
 
 
-    return optimize.root(function, [1], args=(x,b,c),method='lm', jac=dfdy).x
+    methods=[
+        'hybr',
+        'lm',
+        'broyden1',
+        'broyden2',
+        'anderson',
+        'linearmixing',
+        'excitingmixing',
+        'krylov'
+    ]
+
+    res=dict()
+    for method in methods:
+        try:
+            solx=optimize.root(function, [1], args=(x,b,c), jac=dfdy, method=method).x
+            res[method]=(solx, function(solx,x,b) )
+        except BaseException as e:
+            print(method,'failed')
+
+    return res
     #return optimize.root(function, [1], method='lm').x
 
 #funstr = "b0*(exp((x0-y0*b2)/(FT*b1)) -1)-y0" #в подготовленном для взятия производной виде
@@ -837,13 +852,17 @@ def testDiodeParameterExtractionIMPLICIT():
     print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
 
+b=[1e-14, 1, 10]
+#x=[1.5]
+FT=0.02586419 #подогнанное по pspice
 
-#тестируем неявную функцию для связки резистор-диод
-b=[1e-14, 1, 0]
-x=[5]
 
-print(diodeResistorIMPLICITfunction (x,b,c=None))
-print(diode(x,b,c=None))
+for x in [[10], [20], [30], [40]]:
+    print('===',x,'===')
+    for key, val  in diodeResistorIMPLICITfunction (x,b,c=None).items():
+        print(key, val)
+    print ('---')
+    print(diode(x,b,c=None))
 
 
 #Для экстракции параметров диода
