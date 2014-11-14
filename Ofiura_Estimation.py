@@ -56,6 +56,11 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, si
             dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
 
 
+            # print(dif, jac)
+            # print('-----')
+            #
+            # print()
+
 
             if B5==None:
                 B5=np.dot(dif, jac)
@@ -64,10 +69,25 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, si
             Sk+=np.dot(dif.T,dif)
 
 
+        #print(np.linalg.inv(G), B5[:,0])
 
-        print(np.linalg.inv(G), B5[:,0])
+        #костыль для диодной задачи
+        if hasattr(B5, 'A1'):
+            B5=B5.A1
 
-        deltab=np.dot(np.linalg.inv(G), B5)
+        try:
+            deltab=np.dot(np.linalg.inv(G), B5)
+        except BaseException as e:
+            print('Error in G:', e)
+            print('G=',G)
+            exit(0)
+
+
+
+
+        print(deltab)
+
+
         print ("Sk:",Sk)
         #mu counting
         mu=4

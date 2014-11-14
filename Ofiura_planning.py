@@ -221,7 +221,16 @@ def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
 
         G+=np.dot(jj.T, jj)
 
+    try:
+        return np.linalg.inv(G)
+    except BaseException as e:
+        print('Fatal error: ',e)
+        print('b vector=',b)
+        print('expplan=',expplan)
+        print('G=',G)
 
-    return np.linalg.inv(G)
+
+        exit(0)
+
 
 

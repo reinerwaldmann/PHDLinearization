@@ -1,17 +1,17 @@
 __author__ = 'reiner'
 import math
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 
 import Ofiura_Estimation as o_e
 import Ofiura_planning as o_p
+import Ofiura_ApriorPlanning as o_ap
+import Ofiura_Qualitat as o_q
 
 """
 Экстрагируем два параметра диода: N, коэфф. неидеальности и Is
 """
-
-
 
 def diode (x,b,c=None):
     """
@@ -20,7 +20,6 @@ def diode (x,b,c=None):
     Vd=x[0] #напряжение на диоде
     Is=b[0]
     N=b[1]
-
     #FT - температурный потенциал
     # g=1.60217657E-19 #Кл, заряд электрона
     # K=1.380648813E-23 #постоянная Больцмана
@@ -28,14 +27,9 @@ def diode (x,b,c=None):
     #
     #
     # FT=K*T/g #0.0258
-
-
     FT=0.02586419 #подогнанное по pspice
-
     I=Is*(math.exp(Vd/(FT*N)) -1)
-
     return [I]
-
 
 def jacdiode (x,b,c=None,y=None):
     """
@@ -70,8 +64,7 @@ def testDiode():
     plt.grid()
     plt.show()
 
-
-def testDiodeParameterExtractionIMPLICIT():
+def testDiodeParameterExtraction():
     """
     пробуем экстрагировать коэффициенты из модели диода
     коэффициенты модели: Ток утечки Is, коэффициент неидеальности N, омическое сопротивление, параллельное диоду R
@@ -86,33 +79,43 @@ def testDiodeParameterExtractionIMPLICIT():
 
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.asmatrix( [0.000001]   )
+    Ve=np.asmatrix( [0.1]   )
 
 
-    btrue=[1e-14, 1]
-    bstart=np.array(btrue)-np.array([2]*len(btrue))
-    bend=np.array(btrue)+np.array([2]*len(btrue))
-    binit=[1e-10,1]
+    btrue=[1.238e-14, 1.8]
+    bstart=np.array(btrue)-np.array(btrue)*0.2
+    bend=np.array(btrue)+np.array(btrue)*0.2
+    binit=[1e-10,1.1]
+
 
     xstart=[0.01]
     #xend=[20,60]
     xend=[2]
 
-    N=50
+    N=30
     print("performing normal research:")
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
 
 
+    o_p.writePlanToFile(startplan)
 
     measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
-
-
-
-
-
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=1)
     #как мы помним, в случае неявных функций должно ставить sign=0
-
     print (gknu[0])
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
-testDiodeParameterExtractionIMPLICIT()
+
+    N=20
+    print("performing aprior plan:")
+    oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6)[1]
+    o_p.writePlanToFile(oplan)
+    measdata = o_p.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=1)
+    print (gknu[0])
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+
+
+
+testDiodeParameterExtraction()
