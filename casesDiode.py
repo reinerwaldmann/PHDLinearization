@@ -1,7 +1,7 @@
 __author__ = 'reiner'
 import math
 
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 
 import Ofiura_Estimation as o_e
@@ -89,12 +89,12 @@ def testDiodeParameterExtraction():
 
 
     xstart=[0.01]
-    #xend=[20,60]
     xend=[2]
 
     N=30
     print("performing normal research:")
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+    print(len(startplan))
 
 
     o_p.writePlanToFile(startplan)
@@ -117,5 +117,5 @@ def testDiodeParameterExtraction():
 
 
 
-
-testDiodeParameterExtraction()
+#testDiode()
+#testDiodeParameterExtraction()

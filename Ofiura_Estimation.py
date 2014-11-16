@@ -120,7 +120,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, si
                 condition=True
 
 
-        if numiter>100: #max number of iterations
+        if numiter>500: #max number of iterations
             log+="GKNUX1: Break due to max number of iteration exceed"
             break
 

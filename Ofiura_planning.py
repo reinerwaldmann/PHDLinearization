@@ -193,6 +193,8 @@ def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilenam
 
     for i in range(len(expplan)):
         y=func(expplan[i],b,c)
+        if y==None: #если функция вернула чушь, то в measdata её не записывать!
+            continue
         #Внесём возмущения:
         if not Ve==None:
             ydisps=np.diag(Ve)
