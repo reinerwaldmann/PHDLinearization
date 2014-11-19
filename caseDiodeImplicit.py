@@ -11,7 +11,7 @@ import Ofiura_Qualitat as o_q
 
 from scipy import optimize
 
-
+import mpmath as mpm
 import mpmath
 
 numnone=0 #количество раз, когда функция вернула None, не справившись с оценкой тока
@@ -83,12 +83,12 @@ def diodeResistorIMPLICITfunction (x,b,c=None):
 def diodeResistorIMPLICITJac (x,b,c,y):
     FT=0.02586419 #подогнанное по pspice
 
-    dfdb=lambda y,x,b,c: np.matrix( [ [math.exp((-b[2]*y[0] + x[0])/(FT*b[1])) - 1,
+    dfdb=lambda y,x,b,c: mpm.matrix( [ [math.exp((-b[2]*y[0] + x[0])/(FT*b[1])) - 1,
                                       -b[0]*(-b[2]*y[0] + x[0])*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**2),
                                       -b[0]*y[0]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]     ])
 
 
-    dfdy=lambda y,x,b,c: np.matrix ([ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])])
+    dfdy=lambda y,x,b,c: mpm.matrix ([ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])])
 
     #возвращает структурную матрицу
     #jacf=lambda x,b,c,y: jjacf(x,b,c,y,dfdb,dfdy)
@@ -98,7 +98,7 @@ def diodeResistorIMPLICITJac (x,b,c,y):
     print(dfdy(y,x,b,c), dfdb(y,x,b,c), np.linalg.inv(dfdy(y,x,b,c) ))
 
 
-    jacf=np.dot(np.linalg.inv(dfdy(y,x,b,c)), dfdb(y,x,b,c))
+    jacf=(dfdy(y,x,b,c)**-1) * dfdb(y,x,b,c)
 
 
 
@@ -189,18 +189,18 @@ FT=0.02586419 #подогнанное по pspice
 
 #dfdy=np.matrix ([ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])])
 
-dfdy= -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])
+# dfdy= -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])
+#
+# print(np.matrix([-1.0000000000037021], dtype=np.longdouble ))
+#
+# print (np.matrix(dfdy, dtype=np.longdouble))
+#
+#
+# print(dfdy)
+# mpmath.mp.dps=50
+# print(mpmath.mpf(dfdy))
 
-print(np.matrix([-1.0000000000037021], dtype=np.longdouble ))
-
-print (np.matrix(dfdy, dtype=np.longdouble))
-
-
-print(dfdy)
-mpmath.mp.dps=50
-print(mpmath.mpf(dfdy))
-
-
-
-
+dfdy=lambda y,x,b,c: mpm.matrix ([ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])])
+c=None
+print(diodeResistorIMPLICITJac (y,x,b,c))
 
