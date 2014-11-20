@@ -118,4 +118,4 @@ def testDiodeParameterExtraction():
 
 
 #testDiode()
-#testDiodeParameterExtraction()
+testDiodeParameterExtraction()

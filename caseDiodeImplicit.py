@@ -26,13 +26,14 @@ numnone=0 #количество раз, когда функция вернула
 #В этом случае рабочая функция должна возвращать none, а создатель плана - вежливо вытряхивать точку из measdata
 
 
-def func(y,x,b,c):
+def func(y1,x,b,c):
     FT=0.02586419 #подогнанное по pspice
+
+    y=[y1]
+
     mm=float(b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0])
 
-    rez=[mm]
-    print(list(map(float,rez)))
-    return list(map(float,rez))
+    return mm
 
 
 
@@ -61,15 +62,25 @@ def diodeResistorIMPLICITfunction (x,b,c=None):
 
     dfdy=lambda y,x,b,c=None: np.array ([[ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]])
     #function=lambda y,x,b,c=None: [b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0]] #в подготовленном для взятия производной виде
-    function=func
-    solvinit=[1]
 
-    solx=optimize.root(function, solvinit, args=(x,b,c), jac=dfdy, method='lm').x
+    function=lambda y: func(y,x,b,c)
 
+    solvinit=1
 
-    if solx-solvinit==[0]*len(solx):
-        numnone+=1
+        #    solx=optimize.root(function, solvinit, args=(x,b,c), jac=dfdy, method='lm').x
+
+    try:
+        solx=[mpm.findroot(function, solvinit,verify=False, solver='secant', verbose=False)]
+    except BaseException as e:
+        print ('Error in findroot=',e)
         return None
+
+
+
+
+    # if solx-solvinit==[0]*len(solx):
+    #     numnone+=1
+    #     return None
 
     return solx
 
@@ -133,7 +144,7 @@ def testDiodeParameterExtractionIMPLICIT():
 
     bstart=np.array(btrue)-np.array(btrue)*0.2
     bend=np.array(btrue)+np.array(btrue)*0.2
-    binit=[1.238e-14, 1.8, 50]
+    binit=[1.e-10, 1.1,1 ]
 
     xstart=[0.01]
     #xend=[20,60]
@@ -147,8 +158,7 @@ def testDiodeParameterExtractionIMPLICIT():
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
     measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
 
-    print('unsuccessful estimations: ',numnone)
-
+    print('unsuccessful estimations: ',numnone, 'Проверка отключена')
 
     gknu=o_e.grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
     #как мы помним, в случае неявных функций должно ставить sign=0
@@ -163,7 +173,7 @@ def testDiodeImplicit():
     rng=np.arange(0.01,1,0.01)
     #снимем ВАХ
     resrng=[diodeResistorIMPLICITfunction ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
-    resrngorig=[casesDiode.diode([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
+#    resrngorig=[casesDiode.diode([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
 
 
     b=[1.238e-14, 1.8, 3000]
@@ -171,7 +181,7 @@ def testDiodeImplicit():
 
     resrng1=[diodeResistorIMPLICITfunction ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
 
-    plt.plot(rng , resrngorig, label='r=0')
+ #   plt.plot(rng , resrngorig, label='r=0')
     plt.plot(rng , resrng, label='r=1000')
     plt.plot(rng , resrng1, label='r=3000')
 
@@ -180,6 +190,26 @@ def testDiodeImplicit():
     #plt.axis([0.0,1.0,0,5])
     plt.grid()
     plt.show()
+
+#
+# arr=np.array([ [1.12119036985864e+20   ,  -17810702.2211106      ,55790.4220433298],
+# [   -17810702.2211106 ,  2.83064845597531e-6 , -8.89259429235405e-9],
+# [    55790.4220433298 , -8.89259429235405e-9 , 2.85048524535594e-11]
+# ])
+#
+# print(np.linalg.inv(arr))
+# #
+# arr=np.matrix ( [-0.348200319644741 , 2.770386958333e-15 , -2.80315327189464e-17] )
+# print(arr.T)
+#
+#
+# print(np.dot(arr.T, arr))
+#
+# print(np.linalg.inv(np.dot(arr.T, arr)))
+#
+
+
+
 
 testDiodeParameterExtractionIMPLICIT()
 
@@ -203,6 +233,8 @@ FT=0.02586419 #подогнанное по pspice
 # print(dfdy)
 # mpmath.mp.dps=50
 # print(mpmath.mpf(dfdy))
+
+
 
 
 

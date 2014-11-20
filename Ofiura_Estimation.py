@@ -156,17 +156,24 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
         m=len(b) #число коэффициентов
         #G=np.zeros((m,m))
         G=mpm.matrix(m)
-        B5=None
+        B5=mpm.matrix(1,m)
+
         bpriv=copy.copy(b)
         Sk=mpm.mpf(0)
         for point in measdata:
             jac=jacf(point['x'],b,c,point['y'])
             #G+=np.dot(jac.T,jac)
+
+
+
             G+=jac.T*jac
+
+
             #dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
             dif=mpm.matrix(point['y'])-mpm.matrix(funcf(point['x'],b,c))
 
-            if B5==None:
+
+            if B5==mpm.matrix(1,m):
                 #B5=np.dot(dif, jac)
                 B5=dif*jac
             else:
@@ -177,10 +184,15 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
 
         try:
             #deltab=np.dot(np.linalg.inv(G), B5)
+
+
             deltab=(G**-1)*B5
         except BaseException as e:
             print('Error in G:', e)
             print('G=',G)
+            print('B5=',B5)
+
+
             exit(0)
 
         print(deltab)
