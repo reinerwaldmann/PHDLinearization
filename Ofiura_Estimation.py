@@ -134,7 +134,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, si
 mpm.dps = 50;
 mpm.pretty = False
 
-def grandCountGN_UltraX_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, sign=1):
+def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, sign=1):
     """
     Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом
     В стандартный поток вывода выводит отладочную информацию по каждой итерации
