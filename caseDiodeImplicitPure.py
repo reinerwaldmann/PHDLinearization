@@ -75,6 +75,8 @@ def diodeResistorIMPLICITfunction (x,b,c=None):
 
     try:
         solx=optimize.root(func, solvinit, args=(x,b,c), jac=dfdy, method='lm').x
+        #http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
+        #http://codereview.stackexchange.com/questions/28207/is-this-the-fastest-way-to-find-the-closest-point-to-a-list-of-points-using-nump
     except BaseException as e:
         print ('Error in findroot=',e)
         numnone+=1
@@ -138,7 +140,9 @@ def testDiodeParameterExtractionIMPLICIT():
 
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.001] ]  )
+    Ve=np.array([ [0.00000001] ]  )
+
+    Ve=None
 
     btrue=[1.238e-14, 1.8, 100]
 
@@ -147,9 +151,9 @@ def testDiodeParameterExtractionIMPLICIT():
     bend=np.array(btrue)+np.array(btrue)*0.2
     binit=[1.1e-10, 1.1,50 ]
 
-    xstart=[0.5]
+    xstart=[0.01]
     #xend=[20,60]
-    xend=[1.1]
+    xend=[1]
 
     N=60
     print("performing normal research:")
@@ -161,21 +165,46 @@ def testDiodeParameterExtractionIMPLICIT():
 
     print('unsuccessful estimations: ',numnone)
 
-    # gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
-    # #как мы помним, в случае неявных функций должно ставить sign=0
-    #
-    # print (gknu[0])
-    #
-    # #plotting Sk graph
-    # #TODO better organize: this code to estimation or somewhere
-    # rng=np.arange(0,len(gknu[3]))
-    # plt.plot(rng , gknu[3], label='Sk drop')
-    # plt.legend(loc='upper left')
-    # plt.ylabel('Sk')
-    # plt.xlabel('Interation')
-    # plt.grid()
-    # plt.show()
 
+
+    planplot1=[x[0] for x in startplan]
+    measplot1=[x['y'][0] for x in measdata]
+
+    print(measdata)
+    print(planplot1 )
+    print(measplot1)
+
+
+    plt.plot(planplot1, measplot1,  'ro')
+
+
+    plt.ylabel('value')
+    plt.xlabel('point')
+    plt.grid()
+    plt.show()
+
+
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
+    #как мы помним, в случае неявных функций должно ставить sign=0
+
+    print (gknu[0])
+
+    #plotting Sk graph
+    #TODO better organize: this code to estimation or somewhere
+    rng=np.arange(0,len(gknu[3]))
+    plt.plot(rng , gknu[3], label='Sk drop')
+    plt.legend(loc='upper left')
+    plt.ylabel('Sk')
+    plt.xlabel('Interation')
+    plt.grid()
+    plt.show()
+
+
+
+
+
+
+    exit(0)
 
     N=10
     print("performing aprior plan:")
@@ -190,17 +219,11 @@ def testDiodeParameterExtractionIMPLICIT():
 
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
     measdata1 = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
-    planplot1=[x[0] for x in startplan]
-    measplot1=[x['y'][0] for x in measdata1]
-
-    plt.plot(planplot, measplot,  'ro')
-    plt.plot(planplot1, measplot1,  'bo')
 
 
-    plt.ylabel('value')
-    plt.xlabel('point')
-    plt.grid()
-    plt.show()
+
+
+
 
 
 
@@ -254,3 +277,9 @@ def testDiodeImplicit():
 #testDiodeImplicit()
 
 testDiodeParameterExtractionIMPLICIT()
+
+def closest_node(node, nodes):
+    nodes = np.asarray(nodes)
+    dist_2 = np.sum((nodes - node)**2, axis=1)
+    return np.argmin(dist_2)
+
