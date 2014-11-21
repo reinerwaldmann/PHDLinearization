@@ -97,13 +97,32 @@ def testDiodeParameterExtraction():
     print(len(startplan))
 
 
-    o_p.writePlanToFile(startplan)
-
     measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
+
+    planplot1=[x[0] for x in startplan]
+    measplot1=[x['y'][0] for x in measdata]
+    plt.plot(planplot1, measplot1,  'bo')
+    plt.show()
+
+
+
+
+
+
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=1)
     #как мы помним, в случае неявных функций должно ставить sign=0
     print (gknu[0])
     print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+      #plotting Sk graph
+    #TODO better organize: this code to estimation or somewhere
+    rng=np.arange(0,len(gknu[3]))
+    plt.plot(rng , gknu[3], label='Sk drop')
+    plt.legend(loc='upper left')
+    plt.ylabel('Sk')
+    plt.xlabel('Interation')
+    plt.grid()
+    plt.show()
 
 
     N=20
@@ -111,11 +130,33 @@ def testDiodeParameterExtraction():
     oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6)[1]
     o_p.writePlanToFile(oplan)
     measdata = o_p.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
+
+
+
+    planplot1=[x[0] for x in oplan]
+    measplot1=[x['y'][0] for x in measdata]
+    plt.plot(planplot1, measplot1,  'bo')
+    plt.show()
+
+
+
+
+
+
+
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=1)
     print (gknu[0])
     print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
-
+         #plotting Sk graph
+    #TODO better organize: this code to estimation or somewhere
+    rng=np.arange(0,len(gknu[3]))
+    plt.plot(rng , gknu[3], label='Sk drop')
+    plt.legend(loc='upper left')
+    plt.ylabel('Sk')
+    plt.xlabel('Interation')
+    plt.grid()
+    plt.show()
 
 #testDiode()
 testDiodeParameterExtraction()
