@@ -1,3 +1,5 @@
+from Ofiura import Ofiura_planning as o_p
+
 __author__ = 'reiner'
 
 import math
@@ -6,13 +8,6 @@ import math
 import numpy as np
 import sympy
 
-from scipy import optimize
-
-
-import Ofiura_Estimation as o_e
-import Ofiura_planning as o_p
-import Ofiura_Qualitat as o_q
-import Ofiura_ApriorPlanning as o_ap
 
 def testTransistorEMModel ():
     #схема с общим эмиттером

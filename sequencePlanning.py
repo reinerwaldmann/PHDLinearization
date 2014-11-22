@@ -1,10 +1,11 @@
+from Ofiura import Ofiura_Estimation as est
+
 __author__ = 'vasilev_is'
 import copy
 
 import numpy as np
 
 import ApriorPlanning as ap
-import Ofiura_Estimation as est
 
 #http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 

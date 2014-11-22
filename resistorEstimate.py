@@ -1,3 +1,4 @@
+from Ofiura import Ofiura_planning as o_p
 
 __author__ = 'vasilev_is'
 
@@ -13,12 +14,6 @@ import copy
 
 import numpy as np
 from scipy import optimize
-
-
-import Ofiura_Estimation as o_e
-import Ofiura_planning as o_p
-import Ofiura_Qualitat as o_q
-import Ofiura_ApriorPlanning as o_ap
 
 
 def grandCountGN_Ultra (funcf, jacf,  expdatalist:list, kinit:list, c, NSIG=3):

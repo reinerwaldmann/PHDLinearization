@@ -1,13 +1,10 @@
 __author__ = 'reiner'
 #попробуем промоделировать что попроще - диод. У него тоже нелинейная характеристика, и притом экспоненциальная
 import math
-import sympy
-import Ofiura_planning as o_p
+
 import numpy as np
 import matplotlib.pyplot as plt
-
 import scipy.optimize
-
 
 
 def func (x,b,c=None):

@@ -1,10 +1,8 @@
+from Ofiura import Ofiura_planning as o_p
+
 __author__ = 'vasilev_is'
 import copy
 
-from scipy import optimize
-
-import Ofiura_general as o_g
-import Ofiura_planning as o_p
 import numpy as np
 
 

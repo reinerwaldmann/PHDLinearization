@@ -1,14 +1,10 @@
+from Ofiura import Ofiura_planning as o_p
+
 __author__ = 'vasilev_is'
 
 
 
 import numpy as np
-
-import Ofiura_ApriorPlanning as o_ap
-
-import Ofiura_planning as o_p
-import Ofiura_Estimation as o_e
-import Ofiura_Qualitat as o_q
 
 
 def test():

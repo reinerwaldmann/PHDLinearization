@@ -1,11 +1,11 @@
+from Ofiura import Ofiura_general as o_g
+
 __author__ = 'vasilev_is'
 
 import random
 import math
 
 import numpy as np
-
-import Ofiura_general as o_g
 
 
 """
