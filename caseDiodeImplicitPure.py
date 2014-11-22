@@ -123,6 +123,8 @@ def diodeResistorIMPLICITJac (x,b,c,y):
     return jacf
 
 
+
+
 def testDiodeParameterExtractionIMPLICIT():
     """
     пробуем экстрагировать коэффициенты из модели диода
@@ -149,7 +151,7 @@ def testDiodeParameterExtractionIMPLICIT():
 
     bstart=np.array(btrue)-np.array(btrue)*0.2
     bend=np.array(btrue)+np.array(btrue)*0.2
-    binit=[1.1e-10, 1.1,50 ]
+    binit=[1.0e-14, 1.7, 90]
 
     xstart=[0.01]
     #xend=[20,60]
@@ -160,49 +162,29 @@ def testDiodeParameterExtractionIMPLICIT():
 
     global numnone
     numnone=0
+
+    #создание стартового плана
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
     measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
 
+
     print('unsuccessful estimations: ',numnone)
 
-
-
-    planplot1=[x[0] for x in startplan]
-    measplot1=[x['y'][0] for x in measdata]
-
-    print(measdata)
-    print(planplot1 )
-    print(measplot1)
-
-
-    plt.plot(planplot1, measplot1,  'ro')
-
-
-    plt.ylabel('value')
-    plt.xlabel('point')
-    plt.grid()
-    plt.show()
+    #вывод точек стартового плана
+    # planplot1=[x[0] for x in startplan]
+    # measplot1=[x['y'][0] for x in measdata]
+    # plt.plot(planplot1, measplot1,  'ro')
+    # plt.ylabel('value')
+    # plt.xlabel('point')
+    # plt.grid()
+    # plt.show()
 
 
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
     #как мы помним, в случае неявных функций должно ставить sign=0
 
     print (gknu[0])
-
-    #plotting Sk graph
-    #TODO better organize: this code to estimation or somewhere
-    rng=np.arange(0,len(gknu[3]))
-    plt.plot(rng , gknu[3], label='Sk drop')
-    plt.legend(loc='upper left')
-    plt.ylabel('Sk')
-    plt.xlabel('Interation')
-    plt.grid()
-    plt.show()
-
-
-
-
-
+    o_q.plotSkGraph(gknu)
 
     exit(0)
 
@@ -221,15 +203,11 @@ def testDiodeParameterExtractionIMPLICIT():
     measdata1 = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
 
 
-
-
-
-
-
-
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=1)
     print (gknu[0])
     print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+
 
 
         #plotting Sk graph

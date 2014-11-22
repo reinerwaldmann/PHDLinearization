@@ -3,6 +3,7 @@ __author__ = 'vasilev_is'
 import math
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 """
 logTruthness (measdata:list, b:list, Ve,  func, c):
@@ -88,3 +89,13 @@ def getQualitat(measdata:list, b:list, Ve,  func, c):
     return "Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков\n", logTruthness (measdata, b, Ve,  func, c), averageDif(measdata, b, Ve,  func, c)
 
 
+
+def plotSkGraph(gknu):
+    #plotting Sk graph
+    rng=np.arange(0,len(gknu[3]))
+    plt.plot(rng , gknu[3], label='Sk drop')
+    plt.legend(loc='upper right')
+    plt.ylabel('Sk')
+    plt.xlabel('Interation')
+    plt.grid()
+    plt.show()
