@@ -5,6 +5,7 @@ import copy
 
 import numpy as np
 
+import Ofiura.Ofiura_general as o_g
 
 """
 def countMeanVbForAprior_S4000(expplan:list, bstart:list, bend:list, c, Ve, jac, func=None):

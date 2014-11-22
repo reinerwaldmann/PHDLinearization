@@ -9,7 +9,11 @@ import numpy as np
 from scipy import optimize
 
 
-
+import Ofiura.Ofiura_Estimation as o_e
+import Ofiura.Ofiura_ApriorPlanning as o_ap
+import Ofiura.Ofiura_planning as o_p
+import Ofiura.Ofiura_Qualitat as o_q
+import Ofiura.Ofiura_Plotting as o_pl
 
 
 numnone=0 #количество раз, когда функция вернула None, не справившись с оценкой тока
@@ -183,7 +187,7 @@ def testDiodeParameterExtractionIMPLICIT():
     #как мы помним, в случае неявных функций должно ставить sign=0
 
     print (gknu[0])
-    o_q.plotSkGraph(gknu)
+    o_pl.plotSkGraph(gknu)
 
     exit(0)
 

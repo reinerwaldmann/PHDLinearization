@@ -20,12 +20,21 @@ def peval(x, p):
     return p[0] * sin(2 * pi * p[1] * x + p[2])
 
 
-p0 = [8, 1 / 2.3e-2, pi / 3]
-#print(array(p0))
+# p0 = [8, 1 / 2.3e-2, pi / 3]
+# #print(array(p0))
+#
+#
+# plsq = leastsq(residuals, p0, args=(y_meas, x))
+# print(plsq[0])
+#
+# print(array([A, k, theta]))
+#
 
 
-plsq = leastsq(residuals, p0, args=(y_meas, x))
-print(plsq[0])
 
-print(array([A, k, theta]))
+#моделируем погрешность измерения
+
+median=10 #истинное значение
+relError=0.1 #доля ошибки, то есть 10%
+
 

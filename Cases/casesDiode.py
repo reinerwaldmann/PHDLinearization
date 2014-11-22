@@ -6,6 +6,14 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 
+
+import Ofiura.Ofiura_Estimation as o_e
+import Ofiura.Ofiura_ApriorPlanning as o_ap
+import Ofiura.Ofiura_planning as o_p
+import Ofiura.Ofiura_Qualitat as o_q
+
+
+
 """
 Экстрагируем два параметра диода: N, коэфф. неидеальности и Is
 """
@@ -155,5 +163,5 @@ def testDiodeParameterExtraction():
     plt.grid()
     plt.show()
 
-#testDiode()
-testDiodeParameterExtraction()
+testDiode()
+#testDiodeParameterExtraction()
