@@ -60,7 +60,7 @@ def countMeanVbForAprior_S4000(expplan:list, bstart:list, bend:list, c, Ve, jac,
 
     return DS, SD
 
-def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list, c, Ve, jac, func=None, Ntries=30):
+def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list, c, Ve, jac, func=None, Ntries=30, verbosePlan=False):
     """
     Реализует априорное планирование эксперимента
     :param xstart: начало диапазона x (вектор)
@@ -71,6 +71,7 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
     :param c: словарь дополнительных переменных
     :param Ve: Ковариационная матрица y, реально её диагональ (вектор)
     :param jac: Якобиан функции, принимает на вход x,b,c,y
+    :param verbosePlan: если true, пишет все планы в файлы, иначе только оптимальный
     :return: кортеж: 0: оптимизированное значение определителя Vb, 1: оптимальный план эксперимента
     """
 
@@ -78,32 +79,40 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
     planopt=None
 
     for i in range(0,Ntries):
-        plan = o_p.makeRandomUniformExpPlan(xstart, xend, N)
-        unopt=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
-        #оптимизация
-        for j in range(N):
-            xdot=copy.deepcopy(plan[j])
-            function = lambda x: countMeanVbForAprior_S4000(o_g.replaceInList(plan,j,x), bstart, bend, c, Ve, jac, func)[0]
+        try:
+            plan = o_p.makeRandomUniformExpPlan(xstart, xend, N)
+            unopt=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
+            #оптимизация
+            for j in range(N):
+                xdot=copy.deepcopy(plan[j])
+                function = lambda x: countMeanVbForAprior_S4000(o_g.replaceInList(plan,j,x), bstart, bend, c, Ve, jac, func)[0]
 
-            boundsarr=list()
-            for k in range(len(xstart)):
-                boundsarr.append((xstart[k],xend[k]))
+                boundsarr=list()
+                for k in range(len(xstart)):
+                    boundsarr.append((xstart[k],xend[k]))
 
-            #sol = optimize.minimize (function, xdot, bounds=boundsarr)
-            #plan[j]=sol.x
-            #В этом варианте не работает, хоть результат и проходит быстрее
+                #sol = optimize.minimize (function, xdot, bounds=boundsarr)
+                #plan[j]=sol.x
+                #В этом варианте не работает, хоть результат и проходит быстрее
 
-            plan[j]=o_g.doublesearch(xstart, xend, xdot, function)
-
-
-        dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
+                plan[j]=o_g.doublesearch(xstart, xend, xdot, function)
 
 
+            dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
 
-        print ("unoptimized-optimized:",unopt, dcurr)
-        if dcurr<dopt or planopt==None:
-            dopt=dcurr
-            planopt=plan
-        #o_p.writePlanToFile(plan, "{0}plan.txt".format(i))
+
+
+            print ("unoptimized-optimized:",unopt, dcurr)
+            if dcurr<dopt or planopt==None:
+                dopt=dcurr
+                planopt=plan
+
+
+            if (verbosePlan):
+                o_p.writePlanToFile(plan, "{0}plan.txt".format(i))
+
+        except BaseException as e:
+            print ('This try failed, due to exception e=',e)
+
     return dopt, planopt
 

@@ -1,13 +1,9 @@
-from Ofiura import Ofiura_planning as o_p
-
 __author__ = 'reiner'
 import math
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 from scipy import optimize
-
 
 import Ofiura.Ofiura_Estimation as o_e
 import Ofiura.Ofiura_ApriorPlanning as o_ap
@@ -30,16 +26,12 @@ numnone=0 #количество раз, когда функция вернула
 
 def func(y,x,b,c):
     FT=0.02586419 #подогнанное по pspice
-
-
-
     mm=float(b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0])
 
     return [mm]
 
 
-resultsOfEstimation=dict() #глобальный словарь всех результатов вычислений. Из него выбирается начальное приблжение
-#вектор x к вектору
+
 
 def diodeResistorIMPLICITfunction (x,b,c=None):
     """
@@ -103,8 +95,19 @@ def diodeResistorIMPLICITfunction (x,b,c=None):
 #-1 - b0*b2*exp((-b2*y0 + x0)/(FT*b1))/(FT*b1)
 
 
+def diodeResistorIMPLICITfunction_logwrapper (x,b,c=None):
+    return list(map(math.log, diodeResistorIMPLICITfunction(x,b)))
+
+
+
+
+
+
 def diodeResistorIMPLICITJac (x,b,c,y):
     FT=0.02586419 #подогнанное по pspice
+
+
+
 
     dfdb=lambda y,x,b,c: np.matrix( [ [math.exp((-b[2]*y[0] + x[0])/(FT*b[1])) - 1,
                                       -b[0]*(-b[2]*y[0] + x[0])*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**2),
@@ -148,20 +151,27 @@ def testDiodeParameterExtractionIMPLICIT():
 
     #возвращает значение y
     funcf=diodeResistorIMPLICITfunction
+
+
     jacf = diodeResistorIMPLICITJac
 
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.00000001] ]  )
+    Ve=np.array([ [0.00001] ]  )
 
-    Ve=None
+
+
+    #Ve=None
 
     btrue=[1.238e-14, 1.8, 100]
 
 
     bstart=np.array(btrue)-np.array(btrue)*0.2
     bend=np.array(btrue)+np.array(btrue)*0.2
+
     binit=[1.0e-14, 1.7, 90]
+    #binit=[1.238e-14, 1.8, 100]
+
 
     xstart=[0.01]
     #xend=[20,60]
@@ -175,31 +185,42 @@ def testDiodeParameterExtractionIMPLICIT():
 
     #создание стартового плана
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
-    measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c, Ve)
 
 
+    o_pl.plotPlanAndMeas2D(measdata, 'Normal Uniform Disp{0} measdata'.format(Ve))
+
+    #начерталово графика плана измерения и графика без дисперсии, по графикам видно, что дисперсия хороша
+    # planplot1=[x['x'][0] for x in measdata]
+    # measplot1=[x['y'][0] for x in measdata]
+    # plt.plot(planplot1, measplot1,  'ro')
+    # measdata_pure = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c, None)
+    # measplot2=[x['y'][0] for x in measdata_pure]
+    # plt.plot(planplot1, measplot2)
+    # plt.ylabel('value')
+    # plt.xlabel('point')
+    # plt.grid()
+    # plt.show()
+    #
+    # exit(0)
     print('unsuccessful estimations: ',numnone)
-
-
-
 
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
     #как мы помним, в случае неявных функций должно ставить sign=0
 
     print (gknu[0])
-    o_pl.plotSkGraph(gknu)
+    o_pl.plotSkGraph(gknu, 'Normal Research Sk drop')
 
-    exit(0)
 
-    N=10
+    N=30
     print("performing aprior plan:")
-    #oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6)[1]
-    #o_p.writePlanToFile(oplan)
-    oplan=o_p.readPlanFromFile() #переключение на чтение априорного плана из файла
-    measdata = o_p.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
-    planplot=[x[0] for x in oplan]
-    measplot=[x['y'][0] for x in measdata]
+    oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True)[1]
+    o_p.writePlanToFile(oplan)
+    #oplan=o_p.readPlanFromFile() #переключение на чтение априорного плана из файла
 
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
+
+    o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
 
 
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
@@ -210,16 +231,10 @@ def testDiodeParameterExtractionIMPLICIT():
     print (gknu[0])
     print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
+    o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
 
 
 
-        #plotting Sk graph
-    #TODO better organize: this code to estimation or somewhere
-    rng=np.arange(0,len(gknu[3]))
-    plt.plot(rng , gknu[3], label='Sk drop')
-    plt.legend(loc='upper left')
-    plt.ylabel('Sk')
-    plt.xlabel('Interation')
 
 
 

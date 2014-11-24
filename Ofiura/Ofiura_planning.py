@@ -205,6 +205,103 @@ def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilenam
         res.append(curdict)
     return res
 
+
+
+def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilename="", listOfOutvars=None):
+    """
+
+    :param func: векторная функция
+    :param expplan: план эксперимента (список значений вектора x)
+    :param b: вектор b
+    :param c: вектор c
+    :param Ve: ковариационная матрица (np.array)
+    :param n: объём выборки y
+    :param outfilename: имя выходного файла, куда писать план
+    :param listOfOutvars: список выносимых переменных
+    :return: список экспериментальных данных в формате списка словарей 'x':..., 'y':...
+    """
+    res = list()
+
+    for i in range(len(expplan)):
+        y=func(expplan[i],b,c)
+        if y==None: #если функция вернула чушь, то в measdata её не записывать!
+            continue
+        #Внесём возмущения:
+        if not Ve==None:
+            ydisps=np.diag(Ve)
+            for k in range(len(y)):
+                y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
+        curdict = {'x':expplan[i], 'y':y}
+        #res[i]["y"]=y
+        res.append(curdict)
+    return res
+
+#FIXME функция makeMeasAccToPlan_lognorm и makeMeasAccToPlan работает в общем  неверно, если говорить об ошибках. И лишь в частном случае диагональной
+#ковариационной матрицы ошибок таки правильно, да.
+#Как починить? Для каждой точки генерируем вектор случайных величин, коррелированных по матрице с матожиданием 0. Функция делается допиливанием
+# generrandvals (M, cov_ksi, nvol=1000). К логарифмированному току прибавляем то, что получилось. Обратно экспоненцируем (как запилено в lognorm)
+
+
+
+#генерирует список случайных чисел м=0 д=1
+def generlist (n):
+    r=list()
+    for x in range (0,n):
+        r.append(random.gauss(0,1))
+    return r
+
+
+
+def generrandvals (M, cov_ksi, nvol=1000):
+    """
+    генерирует кортеж случайных последовательностей, коррелированных по матрице и с матожиданием во вх. параметрах
+    """
+    M_ksi=np.array(M)
+    #проверка корректности:
+
+    if (np.linalg.det (cov_ksi) <0 ):
+        print ("Определитель матрицы меньше  0")
+        return None
+
+
+    n=len(M_ksi)  #размерность вектора
+    U=list() #генерация случайного вектора U
+
+
+    for x in range (0,nvol):
+        U.append(generlist(n))
+
+    A=np.linalg.cholesky(cov_ksi)
+
+    ksi=list()
+    for i in range (0, nvol):
+        ksi.append( np.dot(A, np.array(U[i]).T)+M_ksi.T)
+
+    #ksi - список значений случайных векторов, значения векторов коррелированы (значение - вектор)
+
+    #эта часть разбрасывает значения аккуратно по спискам, так, что получается список векторов (вектор - значение)
+
+    res=list()
+    for i in range (0, n):
+        res.append(list())
+
+    for ni in range (0,nvol):
+        for i in range (0, n):
+            res[i].append (ksi [ni][i])
+
+    XX=np.array(res)
+    COVTEST=np.cov(XX, bias=-1)
+
+    MTEST=list(map (np.mean, res))
+
+    return res, COVTEST, MTEST
+
+
+
+
+
+
+
 def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
     """
     :param expplan: план эксперимента
