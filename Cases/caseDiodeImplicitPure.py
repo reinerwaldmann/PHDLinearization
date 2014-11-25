@@ -157,7 +157,7 @@ def testDiodeParameterExtractionIMPLICIT():
 
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.00001] ]  )
+    Ve=np.array([ [0.000001] ]  )
 
 
 
@@ -169,28 +169,65 @@ def testDiodeParameterExtractionIMPLICIT():
     bstart=np.array(btrue)-np.array(btrue)*0.2
     bend=np.array(btrue)+np.array(btrue)*0.2
 
-    binit=[1.0e-14, 1.7, 90]
+    binit=[1.0e-14, 1.7, 70]
     #binit=[1.238e-14, 1.8, 100]
 
 
     xstart=[0.01]
     #xend=[20,60]
-    xend=[1]
-
-    N=60
-    print("performing normal research:")
-
-    global numnone
-    numnone=0
-
-    #создание стартового плана
+    xend=[1.5]
+    N=30
+    # N=60
+    # print("performing normal research:")
+    #
+    # global numnone
+    # numnone=0
+    # #создание стартового плана
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c, Ve)
-
-
     o_pl.plotPlanAndMeas2D(measdata, 'Normal Uniform Disp{0} measdata'.format(Ve))
+    # print('unsuccessful estimations: ',numnone)
+    # gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
+    # #как мы помним, в случае неявных функций должно ставить sign=0
+    # print (gknu[0])
+    # o_pl.plotSkGraph(gknu, 'Normal Research Sk drop')
+    # print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
-    #начерталово графика плана измерения и графика без дисперсии, по графикам видно, что дисперсия хороша
+    N=30
+    print("performing aprior plan:")
+    #oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True)[1]
+    #o_p.writePlanToFile(oplan)
+    oplan=o_p.readPlanFromFile() #переключение на чтение априорного плана из файла
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
+    o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=50, sign=1)
+    print (gknu[0])
+    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+    o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
+
+
+
+    # while (True):
+    #     try:
+    #         N=30
+    #         print("performing aprior plan:")
+    #         oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True)[1]
+    #         o_p.writePlanToFile(oplan)
+    #         #oplan=o_p.readPlanFromFile() #переключение на чтение априорного плана из файла
+    #         measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
+    #         #o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
+    #         gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=1)
+    #         print (gknu[0])
+    #         print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+    #         o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
+    #         return
+    #     except BaseException as e:
+    #         pass
+
+
+
+
+#начерталово графика плана измерения и графика без дисперсии, по графикам видно, что дисперсия хороша
     # planplot1=[x['x'][0] for x in measdata]
     # measplot1=[x['y'][0] for x in measdata]
     # plt.plot(planplot1, measplot1,  'ro')
@@ -203,47 +240,13 @@ def testDiodeParameterExtractionIMPLICIT():
     # plt.show()
     #
     # exit(0)
-    print('unsuccessful estimations: ',numnone)
-
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
-    #как мы помним, в случае неявных функций должно ставить sign=0
-
-    print (gknu[0])
-    o_pl.plotSkGraph(gknu, 'Normal Research Sk drop')
-
-
-    N=30
-    print("performing aprior plan:")
-    oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True)[1]
-    o_p.writePlanToFile(oplan)
-    #oplan=o_p.readPlanFromFile() #переключение на чтение априорного плана из файла
-
-    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
-
-    o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
-
-
-    startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
-    measdata1 = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
-
-
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=1)
-    print (gknu[0])
-    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
-
-    o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
-
-
-
-
-
 
 
 def testDiodeImplicit():
 
     b=[1.238e-14, 1.8, 1000]
     #0.0026638081177255196
-    rng=np.arange(0.01,1,0.01)
+    rng=np.arange(0.01,1.5,0.01)
     #снимем ВАХ
     resrng=[diodeResistorIMPLICITfunction ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
 #    resrngorig=[casesDiode.diode([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.

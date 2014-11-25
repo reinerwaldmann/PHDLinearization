@@ -5,7 +5,7 @@ import copy
 
 import numpy as np
 
-import ApriorPlanning as ap
+
 
 #http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 
@@ -70,7 +70,7 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
 
 def test():
     """
-    Тестирует априорное планирование
+    Тестирует последовательное планирование
     :return:
     """
     xstart=[1, 100]
