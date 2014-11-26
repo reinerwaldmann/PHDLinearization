@@ -79,13 +79,17 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
     dopt=100000000
     planopt=None
 
-    for i in range(0,Ntries):
+    Ntries1=Ntries
+    if initplan!=None:
+        Ntries1=1
+
+
+    for i in range(0,Ntries1):
         try:
             if initplan==None:
                 plan = o_p.makeRandomUniformExpPlan(xstart, xend, N)
             else:
                 plan = initplan
-                i=Ntries
             unopt=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
             #оптимизация
             for j in range(N):
@@ -101,6 +105,7 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
                 #В этом варианте не работает, хоть результат и проходит быстрее
 
                 plan[j]=o_g.doublesearch(xstart, xend, xdot, function)
+
 
 
             dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]

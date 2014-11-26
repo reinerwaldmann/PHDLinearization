@@ -176,7 +176,7 @@ def testDiodeParameterExtractionIMPLICIT():
     xstart=[0.01]
     #xend=[20,60]
     xend=[1.5]
-    N=30
+    N=10
     # N=60
     # print("performing normal research:")
     #
@@ -193,7 +193,7 @@ def testDiodeParameterExtractionIMPLICIT():
     # o_pl.plotSkGraph(gknu, 'Normal Research Sk drop')
     # print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
-    N=30
+    #N=30
     # print("performing aprior plan:")
     # # oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True)[1]
     # o_p.writePlanToFile(oplan)
