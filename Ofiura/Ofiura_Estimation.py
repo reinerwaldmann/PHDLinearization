@@ -6,7 +6,6 @@ import copy
 import numpy as np
 
 
-
 """
 def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
     Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом
@@ -25,7 +24,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
 
 
 
-def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, sign=1):
+def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False):
     """
     Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом
     В стандартный поток вывода выводит отладочную информацию по каждой итерации
@@ -35,12 +34,14 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, si
     :param binit:list начальное приближение b
     :param c словарь дополнительных постоянных
     :param NSIG=3 точность (кол-во знаков после запятой)
-    :param sign - если  1, то b=b+deltab*mu, иначе b=b-deltab*mu. При неявной функции надо ставить sign=0
+    :param implicit True если функция - неявная, иначе false
     :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
 
 
     РАБОЧАЯ GEPRUFT!
     """
+    #sign - если  1, то b=b+deltab*mu, иначе b=b-deltab*mu. При неявной функции надо ставить sign=0
+    sign=0 if implicit else 1
 
     Sklist=list()
     b=binit

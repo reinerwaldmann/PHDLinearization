@@ -1,16 +1,15 @@
-from Ofiura import Ofiura_Estimation as est
-
 __author__ = 'vasilev_is'
 import copy
 
 import numpy as np
 
+import Ofiura.Ofiura_planning as o_p
+import Ofiura.Ofiura_Estimation as o_e
+import Ofiura.Ofiura_general as o_g
 
 
 #http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
-
-
-def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=3, smallestdetVb=1e-6):
+def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=3, smallestdetVb=1e-6, implicit=False, lognorm=False):
     """
     Осуществляет последовательное планирование и оценку коэффициентов модели
     :param xstart: начало диапазона x
@@ -24,28 +23,30 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
     :param funcf: функция, возвращающая значение модели, входящие x,b,c
     :param initplan: - начальный план
     :param NSIG:
+    :param implicit - неявность функции. Если функция неявна, то в gknu sign=0
+    :param lognorm - требуется ли использование логнорм для получения измеренных данных
     :return: k, число итераций, лог
     Для переделывания на реальные измерения btrue=None и функции моделирования переводятся на измерительные
     """
-    startplan = initplan if initplan else ap.makeUniformExpPlan(xstart, xend, N)
+    startplan = initplan if initplan else o_p.makeUniformExpPlan(xstart, xend, N)
     origplan = copy.copy(startplan)
-    measdata = ap.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c, Ve) if lognorm else o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
     log=""
     b=binit
     for numiter in range(100): #ограничитель цикла - если выход произошёл по ограничению, значит, возможна ошибка
 
-        estim=est.grandCountGN_UltraX1(funcf, jacf, measdata, b, c, NSIG) #получили оценку b binit=b
+        estim=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, b, c, NSIG, implicit=implicit) #получили оценку b binit=b
         b=estim[0]
         Sk=estim[1]
-
-        Vb=ap.countVbForPlan(startplan, b,  c, Ve, jacf, funcf) #TODO: проработать вопрос с неявными функциями в данном случае!
-        #Возможно, надлежит сделать эту функцию универсальной - принимающей и план эксперимента, и measdata.
+        #Vb=o_ap.countVbForPlan(startplan, b,  c, Ve, jacf, funcf)
+        Vb=o_p.countVbForMeasdata(b,  c, Ve, jacf, measdata)
         #посчитали определитель
-
         detVb=np.linalg.det(Vb)
 
         print ("iteration: {0}\nb={1}\ndetVb={2}\nSk={3}".format(numiter, b, detVb, Sk))
 
+
+        #FIXME очень стрёмное условие выхода
         if detVb>0 and detVb<smallestdetVb: #если определитель меньше 10^-6
             return b, numiter, Sk, startplan, origplan, log #то всё вернуть
 
@@ -56,10 +57,14 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
             xdot[i]=xstart[i]+(xend[i]-xstart[i])/2
 
         #объектная функция
-        function = lambda x: np.linalg.det(ap.countVbForPlan(ap.appendToList(startplan, x),b,c,Ve,jacf, funcf))
+        function = lambda x: np.linalg.det(o_p.countVbForPlan(o_g.appendToList(startplan, x),b,c,Ve,jacf, funcf))
+        #FIXME здесь важный момент - под func обычно понимается бездисперсионная функция, что в данном случае неверно.
+        #function и measure есть разные функции - первая даёт идеальный результат, вторая - с дисперсией
+        #создать функцию, которая будет возвращать полученные от func данные, налагая дисперсию.
+
         #каждый раз будет пытаться добавить в план точку и вернуть определитель с добавленной точкой
 
-        xdot=ap.doublesearch (xstart, xend, xdot, function) #оптимизировали значение точки
+        xdot=o_g.doublesearch (xstart, xend, xdot, function) #оптимизировали значение точки
 
         startplan.append(xdot)
         measdata.append({'x':xdot, 'y':funcf(xdot,b,c)})

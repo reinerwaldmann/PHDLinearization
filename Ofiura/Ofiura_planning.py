@@ -323,13 +323,38 @@ def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
     try:
         return np.linalg.inv(G)
     except BaseException as e:
-        print('Fatal error: ',e)
+        print('Fatal error in countVbForPlan: ',e)
         print('b vector=',b)
         print('expplan=',expplan)
         print('G=',G)
-
-
         exit(0)
 
+def countVbForMeasdata(b:list,  c:dict, Ve, jac, measdata):
+    """
+    Для неявных функций актуальным является значение y. В некоторых случаях (напр. при последовательном планировании)
+    y уже просчитан, и нет нужды его считать снова, задавая функцию.
+    :param expplan: план эксперимента
+    :param b: b (вектор коэффициентов)
+    :param b: b (вектор коэффициентов)
+    :param c: словарь доп. параметров
+    :param Ve: ковариационная матрица ошибок экспериментов np.array
+    :param jac: функция якобиана (на входе x,b,c=None, y=None), возвращать должно np.array
+    :param measdata: данные измерений
+    :return: значение определителя для данного плана эксперимента
+    """
+    G=np.zeros((len(b),len(b))) #матрица G
+
+    for point in measdata:
+        jj=jac(point['x'], b, c, point['y'])
+        #G+=jj*np.linalg.inv(Ve)*jj.T
+        G+=np.dot(jj.T, jj)
+    try:
+        return np.linalg.inv(G)
+    except BaseException as e:
+        print('Fatal error in countVbForMeasdata: ',e)
+        print('b vector=',b)
+        print('current point=',point)
+        print('G=',G)
+        exit(0)
 
 
