@@ -60,7 +60,7 @@ def countMeanVbForAprior_S4000(expplan:list, bstart:list, bend:list, c, Ve, jac,
 
     return DS, SD
 
-def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list, c, Ve, jac, func=None, Ntries=30, verbosePlan=False):
+def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list, c, Ve, jac, func=None, Ntries=30, verbosePlan=False, initplan=None):
     """
     Реализует априорное планирование эксперимента
     :param xstart: начало диапазона x (вектор)
@@ -72,6 +72,7 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
     :param Ve: Ковариационная матрица y, реально её диагональ (вектор)
     :param jac: Якобиан функции, принимает на вход x,b,c,y
     :param verbosePlan: если true, пишет все планы в файлы, иначе только оптимальный
+    :param initplan: начальный план. По умолчанию случаен, но может быть задан (в этом случае делается одна попытка)
     :return: кортеж: 0: оптимизированное значение определителя Vb, 1: оптимальный план эксперимента
     """
 
@@ -80,7 +81,11 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
     for i in range(0,Ntries):
         try:
-            plan = o_p.makeRandomUniformExpPlan(xstart, xend, N)
+            if initplan==None:
+                plan = o_p.makeRandomUniformExpPlan(xstart, xend, N)
+            else:
+                plan = initplan
+                i=Ntries
             unopt=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
             #оптимизация
             for j in range(N):

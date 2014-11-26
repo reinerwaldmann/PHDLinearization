@@ -194,12 +194,20 @@ def testDiodeParameterExtractionIMPLICIT():
     # print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
     N=30
-    print("performing aprior plan:")
-    #oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True)[1]
-    #o_p.writePlanToFile(oplan)
-    oplan=o_p.readPlanFromFile() #переключение на чтение априорного плана из файла
+    # print("performing aprior plan:")
+    # # oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True)[1]
+    # o_p.writePlanToFile(oplan)
+
+    print("performing aprior plan with uniform as initplan:")
+    #скармливаем оптимизатору стартовый план
+    oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True, initplan=startplan)[1]
+    o_p.writePlanToFile(oplan)
+
+    #oplan=o_p.readPlanFromFile() #переключение на чтение априорного плана из файла
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
     o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
+
+
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=50, sign=1)
     print (gknu[0])
     print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
