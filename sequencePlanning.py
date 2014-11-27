@@ -13,6 +13,7 @@ import Ofiura.Ofiura_Qualitat as o_q
 
 
 
+
 #http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=10, smallestdetVb=1e-6, implicit=False, lognorm=False, dotlim=100):
     """
@@ -42,6 +43,8 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
     for numiter in range(dotlim): #ограничитель цикла - если выход произошёл по ограничению, значит, возможна ошибка
 
         estim=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, b, c, NSIG, implicit=implicit, verbose=False) #получили оценку b binit=b
+        #FIXME у этой функции и impl есть 2 разницы: binit и measdata. binit не дал никаких результатов, надо исследовать measdata
+
 
         b=estim[0]
         Sk=estim[1]
@@ -189,7 +192,9 @@ def test():
     gknu=seqplanb[6]
     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
     o_pl.plotSkGraph(gknu,'sequence plan')
-    print (gknu[0])
+    #print (gknu[0])
+    o_q.printGKNUNeat(gknu)
+
 
 
     # print (seqplanb[7])
@@ -200,13 +205,12 @@ def test():
 
     print("\n\nperforming sequence plan gknu impl:")
     gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
-
-
-
-
+    o_q.printGKNUNeat(gknu)
     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
     o_pl.plotSkGraph(gknu,'sequence plan gknu impl')
-    print (gknu[0])
+
+
+#    print (gknu[0])
 
 
 

@@ -100,6 +100,8 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
 
         b=b+deltab*mu if sign else b-deltab*mu
 
+        #Sk=Skmu
+
         Sklist.append(Sk)
         if verbose:
             print ("Sk:",Sk)
@@ -118,7 +120,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
             break
 
 
-    return b, numiter, log, Sklist
+    return b, numiter, log, Sklist, Sk
 
 
 

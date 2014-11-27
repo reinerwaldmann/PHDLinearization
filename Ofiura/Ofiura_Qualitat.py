@@ -105,3 +105,14 @@ def printQualitatNeat(measdata:list, b:list, Ve,  func, c):
     print (t)
 
 
+def printGKNUNeat(gknu):
+    """
+     USES PRETTYTABLE
+     """
+    t=PrettyTable(['b','Количество итераций', 'log', 'Skmu'])
+    t.add_row([gknu[0],gknu[1],gknu[2],gknu[4]])
+    print (t)
+
+
+
+
