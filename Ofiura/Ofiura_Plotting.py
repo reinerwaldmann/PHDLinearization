@@ -28,3 +28,26 @@ def plotSkGraph(gknu, title=''):
     plt.xlabel('Interation')
     plt.grid()
     plt.show()
+
+
+def cutPlanToTwoList(plan):
+    _1=list()
+    _2=list()
+    for point in plan:
+        _1.append(point[0])
+        _2.append(point[1])
+    return _1, _2
+
+
+
+def plotPlan(plan, title=''):
+    _1,_2=cutPlanToTwoList(plan)
+    plt.plot(_1, _2,  'bo')
+    plt.legend(loc='upper right')
+    plt.title(title)
+    plt.ylabel('-1')
+    plt.xlabel('_2')
+    plt.grid()
+    plt.show()
+
+

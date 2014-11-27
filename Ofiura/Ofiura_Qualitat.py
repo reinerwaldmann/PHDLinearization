@@ -3,7 +3,7 @@ __author__ = 'vasilev_is'
 import math
 
 import numpy as np
-
+from prettytable import PrettyTable
 
 """
 logTruthness (measdata:list, b:list, Ve,  func, c):
@@ -72,9 +72,10 @@ def averageDif(measdata:list, b:list, Ve,  func, c):
     :param c словарь дополнительных постоянных
     :return: среднее, дисперсия, стандартное отклонение
     """
+
     diflist=list()
     for measpoint in measdata:
-        diflist.append(np.array(measpoint['y'])-func(measpoint['x'],b,c))
+        diflist.append(np.abs(np.array(measpoint['y'])-func(measpoint['x'],b,c)))
     return np.average(diflist), np.var(diflist), math.sqrt(np.var(diflist))
 
 def getQualitat(measdata:list, b:list, Ve,  func, c):
@@ -87,4 +88,20 @@ def getQualitat(measdata:list, b:list, Ve,  func, c):
     :return: Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков
     """
     return "Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков\n", logTruthness (measdata, b, Ve,  func, c), averageDif(measdata, b, Ve,  func, c)
+
+
+def printQualitatNeat(measdata:list, b:list, Ve,  func, c):
+    """
+    USES PRETTYTABLE
+    :param measdata: список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
+    :param b: вектор коэфф
+    :param Ve:  Ve ковар. матрица измеренных данных
+    :param funcf callable функция, параметры по формату x,b,c
+    :param c словарь дополнительных постоянных
+    :return: Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков
+    """
+    t=PrettyTable (['Среднее логарифма правдоподобия','Дисперсия лп', 'Сигма лп', 'Среднее остатков', 'Дисп. остатков', 'Сигма остатков'])
+    t.add_row(list(logTruthness (measdata, b, Ve,  func, c))+list(averageDif(measdata, b, Ve,  func, c))  )
+    print (t)
+
 
