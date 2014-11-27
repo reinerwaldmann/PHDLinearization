@@ -8,13 +8,13 @@ import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Estimation as o_e
 import Ofiura.Ofiura_general as o_g
 import Ofiura.Ofiura_Plotting as o_pl
-import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_Qualitat as o_q
 
 
 
+
 #http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
-def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=10, smallestdetVb=1e-6, implicit=False, lognorm=False):
+def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=10, smallestdetVb=1e-6, implicit=False, lognorm=False, dotlim=100):
     """
     Осуществляет последовательное планирование и оценку коэффициентов модели
     :param xstart: начало диапазона x
@@ -39,7 +39,7 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
     log=""
     b=binit
     prevdetVb=None
-    for numiter in range(100): #ограничитель цикла - если выход произошёл по ограничению, значит, возможна ошибка
+    for numiter in range(dotlim): #ограничитель цикла - если выход произошёл по ограничению, значит, возможна ошибка
 
         estim=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, b, c, NSIG, implicit=implicit, verbose=False) #получили оценку b binit=b
 
@@ -59,7 +59,7 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
 
         #if detVb>0 and detVb<smallestdetVb: #если определитель меньше 10^-6
         if condition:
-            return b, numiter, Sk, startplan, origplan, log, estim #то всё вернуть
+            return b, numiter, Sk, startplan, origplan, log, estim, measdata #то всё вернуть
 
         #иначе поиск следующей точки плана
 
@@ -78,10 +78,17 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
         xdot=o_g.doublesearch (xstart, xend, xdot, function) #оптимизировали значение точки
 
         startplan.append(xdot)
-        measdata.append({'x':xdot, 'y':funcf(xdot,b,c)})
+        #measdata.append({'x':xdot, 'y':funcf(xdot,b,c)})
+
+        ymeas=o_p.makeMeasOneDot_lognorm(funcf, xdot, btrue, c, Ve) if lognorm else o_p.makeMeasOneDot(funcf, xdot, btrue, c, Ve)
+        measdata.append({'x':xdot, 'y':ymeas})
+        #measdata = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c, Ve) if lognorm else o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
+
+
+
 
     #окончание этого цикла "естественным путём" говорит о том, что превышено максимальное число итераций
-    return b, 100, Sk, startplan, origplan, log+"ERROR: maximum number of iterations archieved", estim #то всё вернуть
+    return b, dotlim, Sk, startplan, origplan, log+"ERROR: maximum number of iterations archieved", estim, measdata
 
 
 def test():
@@ -144,38 +151,39 @@ def test():
 
     N=10
 
-    print ("\n\nperforming random planning:")
-    randplan=o_p.makeRandomUniformExpPlan(xstart, xend, N)
-    o_pl.plotPlan(randplan,'Random Plan')
-    measdata = o_p.makeMeasAccToPlan(funcf, randplan, btrue, c,Ve )
-    gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
-    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
-    o_pl.plotSkGraph(gknu,'random plan')
-    print (gknu[0])
+    # print ("\n\nperforming random planning:")
+    # randplan=o_p.makeRandomUniformExpPlan(xstart, xend, N)
+    # o_pl.plotPlan(randplan,'Random Plan')
+    # measdata = o_p.makeMeasAccToPlan(funcf, randplan, btrue, c,Ve )
+    # gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
+    # o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    # o_pl.plotSkGraph(gknu,'random plan')
+    # print (gknu[0])
+    #
+    #
+    #
+    # print ("\n\nperforming uniform planning:")
+    # unifplan=o_p.makeUniformExpPlan(xstart, xend, N)
+    # o_pl.plotPlan(unifplan,'Uniform Plan')
+    # measdata = o_p.makeMeasAccToPlan(funcf, unifplan, btrue, c,Ve )
+    # gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
+    # o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    # o_pl.plotSkGraph(gknu,'uniform plan')
+    # print (gknu[0])
+    #
+    # print ("\n\nperforming aprior planning:")
+    # oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=5)[1]
+    # o_pl.plotPlan(oplan,'Aprior Plan')
+    # measdata = o_p.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
+    # gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
+    # o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    # o_pl.plotSkGraph(gknu,'aprior plan')
+    # print (gknu[0])
 
-
-
-    print ("\n\nperforming uniform planning:")
-    unifplan=o_p.makeUniformExpPlan(xstart, xend, N)
-    o_pl.plotPlan(unifplan,'Uniform Plan')
-    measdata = o_p.makeMeasAccToPlan(funcf, unifplan, btrue, c,Ve )
-    gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
-    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
-    o_pl.plotSkGraph(gknu,'uniform plan')
-    print (gknu[0])
-
-    print ("\n\nperforming aprior planning:")
-    oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=5)[1]
-    o_pl.plotPlan(oplan,'Aprior Plan')
-    measdata = o_p.makeMeasAccToPlan(funcf, oplan, btrue, c,Ve )
-    gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
-    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
-    o_pl.plotSkGraph(gknu,'aprior plan')
-    print (gknu[0])
 
 
     print("\n\nperforming sequence plan:")
-    seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=o_p.makeRandomUniformExpPlan(xstart, xend, 5))
+    seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=o_p.makeRandomUniformExpPlan(xstart, xend, 5), dotlim=100)
     o_pl.plotPlan(seqplanb[3],'Sequence Plan')
     measdata = o_p.makeMeasAccToPlan(funcf, seqplanb[3], btrue, c,Ve)
     gknu=seqplanb[6]
@@ -183,8 +191,19 @@ def test():
     o_pl.plotSkGraph(gknu,'sequence plan')
     print (gknu[0])
 
+
+    # print (seqplanb[7])
+    # print('\n\n')
+    # print (measdata)
+
+
+
     print("\n\nperforming sequence plan gknu impl:")
     gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
+
+
+
+
     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
     o_pl.plotSkGraph(gknu,'sequence plan gknu impl')
     print (gknu[0])
@@ -207,9 +226,7 @@ def test():
     #     print (x)
     #
 
-    seqplanplan=seqplanb[3]
 
-    o_pl.plotPlan(seqplanplan,'Sequential Plan')
 
 
 

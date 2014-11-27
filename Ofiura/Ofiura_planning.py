@@ -205,6 +205,60 @@ def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilenam
         res.append(curdict)
     return res
 
+def makeMeasOneDot(func, xdot, b:list, c:dict, Ve=[]):
+    """
+
+    :param func: векторная функция
+    :param expplan: план эксперимента (список значений вектора x)
+    :param b: вектор b
+    :param c: вектор c
+    :param Ve: ковариационная матрица (np.array)
+    :param n: объём выборки y
+    :param outfilename: имя выходного файла, куда писать план
+    :param listOfOutvars: список выносимых переменных
+    :return: список экспериментальных данных в формате списка словарей 'x':..., 'y':...
+    """
+
+
+    y=func(xdot,b,c)
+    if y==None: #если функция вернула чушь, то в measdata её не записывать!
+        return None
+    #Внесём возмущения:
+    if not Ve==None:
+        ydisps=np.diag(Ve)
+        for k in range(len(y)):
+            y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
+    return y
+    #res[i]["y"]=y
+
+
+
+def makeMeasOneDot_lognorm(func, xdot, b:list, c:dict, Ve=[]):
+    """
+
+    :param func: векторная функция
+    :param expplan: план эксперимента (список значений вектора x)
+    :param b: вектор b
+    :param c: вектор c
+    :param Ve: ковариационная матрица (np.array)
+    :param n: объём выборки y
+    :param outfilename: имя выходного файла, куда писать план
+    :param listOfOutvars: список выносимых переменных
+    :return: список экспериментальных данных в формате списка словарей 'x':..., 'y':...
+    """
+
+
+    y=func(xdot,b,c)
+    if y==None: #если функция вернула чушь, то в measdata её не записывать!
+        return None
+    #Внесём возмущения:
+    if not Ve==None:
+        ydisps=np.diag(Ve)
+        for k in range(len(y)):
+            #y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
+            y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
+    return y
+
 
 
 def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilename="", listOfOutvars=None):
@@ -235,6 +289,11 @@ def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, ou
         #res[i]["y"]=y
         res.append(curdict)
     return res
+
+
+
+
+
 
 #FIXME функция makeMeasAccToPlan_lognorm и makeMeasAccToPlan работает в общем  неверно, если говорить об ошибках. И лишь в частном случае диагональной
 #ковариационной матрицы ошибок таки правильно, да.
