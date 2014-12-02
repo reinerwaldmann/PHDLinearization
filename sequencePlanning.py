@@ -14,8 +14,9 @@ import Ofiura.Ofiura_Qualitat as o_q
 
 
 
+
 #http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
-def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=10, smallestdetVb=1e-6, implicit=False, lognorm=False, dotlim=100):
+def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=10, smallestdetVb=1e-6, implicit=False, lognorm=False, dotlim=100, verbose=False):
     """
     Осуществляет последовательное планирование и оценку коэффициентов модели
     :param xstart: начало диапазона x
@@ -34,7 +35,7 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
     :return: k, число итераций, лог
     Для переделывания на реальные измерения btrue=None и функции моделирования переводятся на измерительные
     """
-    startplan = initplan if initplan else o_p.makeUniformExpPlan(xstart, xend, N)
+    startplan = initplan if initplan else o_p.makeRandomUniformExpPlan(xstart, xend, N)
     origplan = copy.copy(startplan)
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c, Ve) if lognorm else o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
     log=""
@@ -43,23 +44,18 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
     for numiter in range(dotlim): #ограничитель цикла - если выход произошёл по ограничению, значит, возможна ошибка
 
         estim=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, b, c, NSIG, implicit=implicit, verbose=False) #получили оценку b binit=b
-        #FIXME у этой функции и impl есть 2 разницы: binit и measdata. binit не дал никаких результатов, надо исследовать measdata
-
-
+        #measdata почему-то разная, причины неизвестны.
         b=estim[0]
         Sk=estim[1]
-        #Vb=o_ap.countVbForPlan(startplan, b,  c, Ve, jacf, funcf)
         Vb=o_p.countVbForMeasdata(b,  c, Ve, jacf, measdata)
         #посчитали определитель
         detVb=np.linalg.det(Vb)
 
-        print ("Sequence Plan Iteration: {0}\nb={1}\ndetVb={2}\nprevdetVb={3} \nSk={4}".format(numiter, b, detVb, prevdetVb, Sk))
-
-
+        if verbose:
+            print ("Sequence Plan Iteration: {0}\nb={1}\ndetVb={2}\nprevdetVb={3} \nSk={4}".format(numiter, b, detVb, prevdetVb, Sk))
 
         condition=prevdetVb!=None and math.fabs(detVb-prevdetVb)/prevdetVb<math.pow(10,-1) #если вышли на плато
         prevdetVb=detVb
-
         #if detVb>0 and detVb<smallestdetVb: #если определитель меньше 10^-6
         if condition:
             return b, numiter, Sk, startplan, origplan, log, estim, measdata #то всё вернуть
@@ -71,8 +67,11 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
             xdot[i]=xstart[i]+(xend[i]-xstart[i])/2
 
         #объектная функция
-        function = lambda x: np.linalg.det(o_p.countVbForPlan(o_g.appendToList(startplan, x),b,c,Ve,jacf, funcf))
-        #FIXME здесь важный момент - под func обычно понимается бездисперсионная функция, что в данном случае неверно.
+        measure=lambda x,b,c:o_p.makeMeasOneDot_lognorm(funcf, x, b, c, Ve) if lognorm else o_p.makeMeasOneDot(funcf, xdot, b, c, Ve)
+
+        function = lambda x: np.linalg.det(o_p.countVbForPlan(o_g.appendToList(startplan, x),b,c,Ve,jacf, measure))
+        #funcf заменено на measure, которая добавляет дисперсию.
+
         #function и measure есть разные функции - первая даёт идеальный результат, вторая - с дисперсией
         #создать функцию, которая будет возвращать полученные от func данные, налагая дисперсию.
         #каждый раз будет пытаться добавить в план точку и вернуть определитель с добавленной точкой
@@ -185,15 +184,16 @@ def test():
 
 
 
-    print("\n\nperforming sequence plan:")
+    #print("\n\nperforming sequence plan:")
     seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=o_p.makeRandomUniformExpPlan(xstart, xend, 5), dotlim=100)
     o_pl.plotPlan(seqplanb[3],'Sequence Plan')
     measdata = o_p.makeMeasAccToPlan(funcf, seqplanb[3], btrue, c,Ve)
-    gknu=seqplanb[6]
-    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
-    o_pl.plotSkGraph(gknu,'sequence plan')
+
+    #gknu=seqplanb[6]
+    #o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    #o_pl.plotSkGraph(gknu,'sequence plan')
     #print (gknu[0])
-    o_q.printGKNUNeat(gknu)
+    #o_q.printGKNUNeat(gknu)
 
 
 
@@ -201,13 +201,17 @@ def test():
     # print('\n\n')
     # print (measdata)
 
-
+#поскольку выяснить, где злой косяк не представляется возможным, то применяем seqplan как обычный метод планирования.
 
     print("\n\nperforming sequence plan gknu impl:")
     gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
     o_q.printGKNUNeat(gknu)
     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
     o_pl.plotSkGraph(gknu,'sequence plan gknu impl')
+
+
+#И самый огонь - последовательный план с априорным в затравке!
+
 
 
 #    print (gknu[0])
@@ -289,5 +293,4 @@ def test1():
 
 #test1()
 
-#Зачем функция оптимизации плана эксперимента добавляет те точки, которые уже в плане эксперимента есть? Наиболее опорные что ли?
-
+#

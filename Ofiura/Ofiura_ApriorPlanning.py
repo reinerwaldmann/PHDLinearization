@@ -76,10 +76,12 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
     :return: кортеж: 0: оптимизированное значение определителя Vb, 1: оптимальный план эксперимента
     """
 
+#Апдейт: теперь по умолчанию в список планов заряжается равномерный
+
     dopt=100000000
     planopt=None
 
-    Ntries1=Ntries
+    Ntries1=Ntries+1
     if initplan!=None:
         Ntries1=1
 
@@ -87,7 +89,7 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
     for i in range(0,Ntries1):
         try:
             if initplan==None:
-                plan = o_p.makeRandomUniformExpPlan(xstart, xend, N)
+                plan = o_p.makeUniformExpPlan(xstart, xend, N) if i==0 else o_p.makeRandomUniformExpPlan(xstart, xend, N)
             else:
                 plan = initplan
             unopt=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
@@ -110,9 +112,7 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
             dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
 
-
-
-            print ("unoptimized-optimized:",unopt, dcurr)
+            print ("{0} unoptimized-optimized:".format('uniform' if i==0 else ''),unopt, dcurr)
             if dcurr<dopt or planopt==None:
                 dopt=dcurr
                 planopt=plan
