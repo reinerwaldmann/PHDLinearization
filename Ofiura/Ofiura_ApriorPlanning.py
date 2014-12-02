@@ -61,7 +61,7 @@ def countMeanVbForAprior_S4000(expplan:list, bstart:list, bend:list, c, Ve, jac,
 
     return DS, SD
 
-def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list, c, Ve, jac, func=None, Ntries=30, verbosePlan=False, initplan=None):
+def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list, c, Ve, jac, func=None, Ntries=30, verbosePlan=False, initplan=None, verbose=False):
     """
     Реализует априорное планирование эксперимента
     :param xstart: начало диапазона x (вектор)
@@ -74,6 +74,7 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
     :param jac: Якобиан функции, принимает на вход x,b,c,y
     :param verbosePlan: если true, пишет все планы в файлы, иначе только оптимальный
     :param initplan: начальный план. По умолчанию случаен, но может быть задан (в этом случае делается одна попытка)
+    :param verbose: выдавать ли в консоль информацию optimized-original
     :return: кортеж: 0: оптимизированное значение определителя Vb, 1: оптимальный план эксперимента
     """
 
@@ -87,12 +88,18 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
         Ntries1=1
 
 
+    if verbose:
+        print('\n\nДанные априорного планирования:')
+        print('Неоптимизированное-оптимизированное значение среднего det(Vb)')
+
     for i in range(0,Ntries1):
         try:
             if initplan==None:
                 m=len(xstart) #длина вектора входных параметров
                 plan = o_p.makeUniformExpPlan(xstart, xend, N**(1/float(m))) if i==0 else o_p.makeRandomUniformExpPlan(xstart, xend, N)
 
+                if verbose:
+                    print('plan length:', len(plan))
 
             else:
                 plan = initplan
@@ -116,7 +123,8 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
             dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
 
-            print ("{0} unoptimized-optimized:".format('uniform' if i==0 else ''),unopt, dcurr)
+            if verbose:
+                print ("{0} unoptimized-optimized:".format('uniform' if i==0 else ''),unopt, dcurr)
             if dcurr<dopt or planopt==None:
                 dopt=dcurr
                 planopt=plan

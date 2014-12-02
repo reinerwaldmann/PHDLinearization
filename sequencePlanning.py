@@ -15,7 +15,6 @@ import Ofiura.Ofiura_ApriorPlanning as o_ap
 
 
 
-
 #http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=10, smallestdetVb=1e-6, implicit=False, lognorm=False, dotlim=100, verbose=False):
     """
@@ -55,11 +54,11 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
         if verbose:
             print ("Sequence Plan Iteration: {0}\nb={1}\ndetVb={2}\nprevdetVb={3} \nSk={4}".format(numiter, b, detVb, prevdetVb, Sk))
 
-        condition=prevdetVb!=None and math.fabs(detVb-prevdetVb)/prevdetVb<math.pow(10,-1) #если вышли на плато
+        condition=prevdetVb!=None and math.fabs(detVb-prevdetVb)/prevdetVb<math.pow(10,-2) #если вышли на плато
         prevdetVb=detVb
-        #if detVb>0 and detVb<smallestdetVb: #если определитель меньше 10^-6
+
         if condition:
-            return b, numiter, Sk, startplan, origplan, log, estim, measdata #то всё вернуть
+            return b, numiter, Sk, startplan, origplan, log, estim, measdata, detVb #то всё вернуть
 
         #иначе поиск следующей точки плана
 
@@ -91,7 +90,10 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
 
 
     #окончание этого цикла "естественным путём" говорит о том, что превышено максимальное число итераций
-    return b, dotlim, Sk, startplan, origplan, log+"ERROR: maximum number of iterations archieved", estim, measdata
+    return b, dotlim, Sk, startplan, origplan, log+"ERROR: maximum number of iterations archieved", estim, measdata, detVb
+
+
+
 
 
 def test():
@@ -152,7 +154,7 @@ def test():
     # print (ap.logTruthness (measdata, gknu[0], Ve,  funcf, c))
     #
 
-    N=10
+    N=16
 
     # print ("\n\nperforming random planning:")
     # randplan=o_p.makeRandomUniformExpPlan(xstart, xend, N)
@@ -186,7 +188,7 @@ def test():
 
 
     #print("\n\nperforming sequence plan:")
-    seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=o_p.makeRandomUniformExpPlan(xstart, xend, 5), dotlim=100)
+    seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=o_p.makeRandomUniformExpPlan(xstart, xend, 5), dotlim=500)
     o_pl.plotPlan(seqplanb[3],'Sequence Plan')
     measdata = o_p.makeMeasAccToPlan(funcf, seqplanb[3], btrue, c,Ve)
 
@@ -208,6 +210,8 @@ def test():
     gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
     o_q.printGKNUNeat(gknu)
     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    o_q.printSeqPlanData(seqplanb)
+
     o_pl.plotSkGraph(gknu,'sequence plan gknu impl')
 
 
@@ -216,12 +220,16 @@ def test():
 #И самый огонь - последовательный план с априорным в затравке!
     print("\n\nperforming sequence plan with aprior as seed:")
     oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=5)[1] #сперва строим априорный план на 10 точек
-    seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100) #теперь последовательный с лимитом на 100 точек лишних
+    seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=500) #теперь последовательный с лимитом на 100 точек лишних
     measdata = o_p.makeMeasAccToPlan(funcf, seqplanb[3], btrue, c,Ve)
     gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
     o_q.printGKNUNeat(gknu)
     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    o_q.printSeqPlanData(seqplanb)
+    #print('Последовательное планирование добавило {0} точек'.format(seqplanb[1]))
+
     o_pl.plotSkGraph(gknu,'performing sequence plan with aprior as seed:')
+
 
 
 

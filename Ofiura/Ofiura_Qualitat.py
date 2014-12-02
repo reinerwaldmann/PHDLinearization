@@ -92,6 +92,7 @@ def getQualitat(measdata:list, b:list, Ve,  func, c):
 
 def printQualitatNeat(measdata:list, b:list, Ve,  func, c):
     """
+    Выводит таблицу показателей качества оценки
     USES PRETTYTABLE
     :param measdata: список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
     :param b: вектор коэфф
@@ -100,17 +101,32 @@ def printQualitatNeat(measdata:list, b:list, Ve,  func, c):
     :param c словарь дополнительных постоянных
     :return: Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков
     """
+
     t=PrettyTable (['Среднее логарифма правдоподобия','Дисперсия лп', 'Сигма лп', 'Среднее остатков', 'Дисп. остатков', 'Сигма остатков'])
     t.add_row(list(logTruthness (measdata, b, Ve,  func, c))+list(averageDif(measdata, b, Ve,  func, c))  )
+    print('Показатели качества оценки')
     print (t)
 
 
 def printGKNUNeat(gknu):
     """
+    Выводит таблицу результатов работы метода оценки
      USES PRETTYTABLE
      """
     t=PrettyTable(['b','Количество итераций', 'log', 'Skmu'])
     t.add_row([gknu[0],gknu[1],gknu[2],gknu[4]])
+    print('Данные оценки')
+    print (t)
+
+
+def printSeqPlanData(seq):
+    """
+    Выводит таблицу результатов работы метода последовательного планирования
+     USES PRETTYTABLE
+     """
+    t=PrettyTable(['Число итераций - число добавленных точек','Sk', 'Логи', 'detVb'])
+    t.add_row([seq[1], seq[2], seq[5], seq[8]])
+    print('Данные работы последовательного плана')
     print (t)
 
 
