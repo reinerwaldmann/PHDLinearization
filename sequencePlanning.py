@@ -9,6 +9,7 @@ import Ofiura.Ofiura_Estimation as o_e
 import Ofiura.Ofiura_general as o_g
 import Ofiura.Ofiura_Plotting as o_pl
 import Ofiura.Ofiura_Qualitat as o_q
+import Ofiura.Ofiura_ApriorPlanning as o_ap
 
 
 
@@ -210,7 +211,20 @@ def test():
     o_pl.plotSkGraph(gknu,'sequence plan gknu impl')
 
 
+
+
 #И самый огонь - последовательный план с априорным в затравке!
+    print("\n\nperforming sequence plan with aprior as seed:")
+    oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=5)[1] #сперва строим априорный план на 10 точек
+    seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100) #теперь последовательный с лимитом на 100 точек лишних
+    measdata = o_p.makeMeasAccToPlan(funcf, seqplanb[3], btrue, c,Ve)
+    gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
+    o_q.printGKNUNeat(gknu)
+    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    o_pl.plotSkGraph(gknu,'performing sequence plan with aprior as seed:')
+
+
+
 
 
 

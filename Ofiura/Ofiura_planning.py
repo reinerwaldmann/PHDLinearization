@@ -150,7 +150,7 @@ def makeUniformExpPlan(xstart:list, xend:list, N:int):
     for i in range (len(xstart)):
         evalstr+="\t"*i+"for x{0} in numpy.arange(xstart[{0}], xend[{0}], xstep[{0}]):\n".format(i)
         lststr+="x{0}".format(i)+("," if i+1<len(xstart) else "")
-    evalstr+="\t"*(i+1)+"res.append(("+lststr+"))"
+    evalstr+="\t"*(i+1)+"res.append(["+lststr+"])"
 
     #print (evalstr)
     exec(evalstr,  locals()) #исполняет полученную сроку, собсна, формирует список входных переменных
@@ -161,6 +161,8 @@ def makeUniformExpPlan(xstart:list, xend:list, N:int):
     if len(xstart)==1:
         for i in range (0, len(res)):
             res[i]=[res[i],]
+
+
 
     return res
 

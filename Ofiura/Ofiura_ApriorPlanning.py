@@ -6,6 +6,7 @@ import copy
 import numpy as np
 
 import Ofiura.Ofiura_general as o_g
+import traceback
 
 """
 def countMeanVbForAprior_S4000(expplan:list, bstart:list, bend:list, c, Ve, jac, func=None):
@@ -89,7 +90,10 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
     for i in range(0,Ntries1):
         try:
             if initplan==None:
-                plan = o_p.makeUniformExpPlan(xstart, xend, N) if i==0 else o_p.makeRandomUniformExpPlan(xstart, xend, N)
+                m=len(xstart) #длина вектора входных параметров
+                plan = o_p.makeUniformExpPlan(xstart, xend, N**(1/float(m))) if i==0 else o_p.makeRandomUniformExpPlan(xstart, xend, N)
+
+
             else:
                 plan = initplan
             unopt=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
@@ -123,6 +127,8 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
         except BaseException as e:
             print ('This try failed, due to exception e=',e)
+            tb = traceback.format_exc()
+            print(tb)
 
     return dopt, planopt
 
