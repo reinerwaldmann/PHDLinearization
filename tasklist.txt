@@ -75,6 +75,9 @@ Iteration 143 mu=2.0 delta=[  1.88113508e-21   8.30752240e-09] deltamu=[  3.7622
  - o_p, makeMeasAccToPlan(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilename="", listOfOutvars=None) и ему подобные
  - o_sp, использующие вышеприведённые функции
 
+Помозговать над улучшением критериев окончания последовательного плана
+
+
 
 
 

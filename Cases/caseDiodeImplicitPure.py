@@ -218,7 +218,7 @@ def testDiodeParameterExtractionIMPLICIT():
     o_q.printSeqPlanData(seqplanb)
 
     #получаем данные измерения по этому последовательному плану
-    measdata = o_p.makeMeasAccToPlan(funcf, seqplanb[3], btrue, c,Ve)
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, seqplanb[3], btrue, c,Ve)
     #чертим эти  данные
     o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
     #оценка

@@ -12,6 +12,7 @@ import Ofiura.Ofiura_ApriorPlanning as o_ap
 
 
 
+
 #http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
 def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=10, smallestdetVb=1e-6, implicit=False, lognorm=False, dotlim=500, verbose=False):
     """
@@ -54,7 +55,7 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
         if verbose:
             print ("Sequence Plan Iteration: {0}\nb={1}\ndetVb={2}\nprevdetVb={3} \nSk={4}".format(numiter, b, detVb, prevdetVb, Sk))
 
-        condition=prevdetVb!=None and math.fabs(detVb-prevdetVb)/prevdetVb<math.pow(10,-1) #если вышли на плато
+        condition=prevdetVb!=None and math.fabs(detVb-prevdetVb)/prevdetVb<math.pow(10,-2) #если вышли на плато
         prevdetVb=detVb
 
         if condition:
