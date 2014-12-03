@@ -1,11 +1,8 @@
-from Ofiura import Ofiura_planning as o_p
-
 __author__ = 'reiner'
 import math
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 
 import Ofiura.Ofiura_Estimation as o_e
 import Ofiura.Ofiura_ApriorPlanning as o_ap
@@ -86,7 +83,6 @@ def testDiodeParameterExtraction():
     c={}
     Ve=np.asmatrix( [0.1]   )
 
-
     btrue=[1.238e-14, 1.8]
     bstart=np.array(btrue)-np.array(btrue)*0.2
     bend=np.array(btrue)+np.array(btrue)*0.2
@@ -101,17 +97,11 @@ def testDiodeParameterExtraction():
     startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
     print(len(startplan))
 
-
     measdata = o_p.makeMeasAccToPlan(funcf, startplan, btrue, c, Ve)
-
     planplot1=[x[0] for x in startplan]
     measplot1=[x['y'][0] for x in measdata]
     plt.plot(planplot1, measplot1,  'bo')
     plt.show()
-
-
-
-
 
 
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=1)
@@ -142,8 +132,6 @@ def testDiodeParameterExtraction():
     measplot1=[x['y'][0] for x in measdata]
     plt.plot(planplot1, measplot1,  'bo')
     plt.show()
-
-
 
 
 

@@ -10,7 +10,7 @@ import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
 import Ofiura.Ofiura_Plotting as o_pl
-
+import Ofiura.Ofiura_SequencePlanning as o_sp
 
 numnone=0 #количество раз, когда функция вернула None, не справившись с оценкой тока
 
@@ -148,30 +148,17 @@ def testDiodeParameterExtractionIMPLICIT():
     :return:
     """
 
-
     #возвращает значение y
     funcf=diodeResistorIMPLICITfunction
-
-
     jacf = diodeResistorIMPLICITJac
-
     #теперь попробуем сделать эксперимент.
     c={}
     Ve=np.array([ [0.000001] ]  )
-
-
-
-    #Ve=None
-
     btrue=[1.238e-14, 1.8, 100]
-
-
     bstart=np.array(btrue)-np.array(btrue)*0.2
     bend=np.array(btrue)+np.array(btrue)*0.2
-
     binit=[1.0e-14, 1.7, 70]
     #binit=[1.238e-14, 1.8, 100]
-
 
     xstart=[0.01]
     #xend=[20,60]
@@ -183,9 +170,9 @@ def testDiodeParameterExtractionIMPLICIT():
     # global numnone
     # numnone=0
     # #создание стартового плана
-    startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
-    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c, Ve)
-    o_pl.plotPlanAndMeas2D(measdata, 'Normal Uniform Disp{0} measdata'.format(Ve))
+    #startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+    #measdata = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c, Ve)
+    #o_pl.plotPlanAndMeas2D(measdata, 'Normal Uniform Disp{0} measdata'.format(Ve))
     # print('unsuccessful estimations: ',numnone)
     # gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
     # #как мы помним, в случае неявных функций должно ставить sign=0
@@ -198,20 +185,56 @@ def testDiodeParameterExtractionIMPLICIT():
     # # oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True)[1]
     # o_p.writePlanToFile(oplan)
 
-    print("performing aprior plan with uniform as initplan:")
-    #скармливаем оптимизатору стартовый план
-    oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True, initplan=startplan)[1]
-    o_p.writePlanToFile(oplan)
+    print("performing aprior plan:")
 
-    #oplan=o_p.readPlanFromFile() #переключение на чтение априорного плана из файла
+#примитивная попытка автоматизировать, риальни надо кешировать в файл под хешем параметров
+    try:
+        oplan=o_p.readPlanFromFile() #переключение на чтение априорного плана из файла
+    except BaseException as e:
+        oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True, verbose=True)[1]
+        o_p.writePlanToFile(oplan)
+
+    #получаем измеренные данные
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
+    #чертим эти данные
     o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
 
+    #оценка
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=50, implicit=True)
 
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=50, sign=1)
-    print (gknu[0])
-    print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+    #вывод данных оценки - данные, квалитат, дроп
+    o_q.printGKNUNeat(gknu)
+    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
     o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
+
+
+    print ("performing sequence plan with aprior as seed - hybrid planning mechanism:")
+    # каждый раз создавать априорный план смысла не имеет, в боевых условиях должен быть кеш
+    # то есть, если априорный видит наличие кеша под данные значения параметров, то он берёт план из кеша, инфраструктура под это уже готова практически
+    #получаем последовательный план с сидом в виде априорного, то есть гибридный
+    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100, verbose=True, NSIG=20, implicit=True, lognorm=True) #создаём последовательный план, с выводом инфо по итерациям
+
+    #выводим данные последовательного планирования
+    o_q.printSeqPlanData(seqplanb)
+
+    #получаем данные измерения по этому последовательному плану
+    measdata = o_p.makeMeasAccToPlan(funcf, seqplanb[3], btrue, c,Ve)
+    #чертим эти  данные
+    o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
+    #оценка
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=20, implicit=True)
+
+    #вывод данных оценки - данные, квалитат, дроп
+    o_q.printGKNUNeat(gknu)
+    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
+
+
+
+
+
+
+
 
 
 

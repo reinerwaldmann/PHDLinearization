@@ -152,15 +152,17 @@ def makeUniformExpPlan(xstart:list, xend:list, N:int):
         lststr+="x{0}".format(i)+("," if i+1<len(xstart) else "")
     evalstr+="\t"*(i+1)+"res.append(["+lststr+"])"
 
+
+
     #print (evalstr)
     exec(evalstr,  locals()) #исполняет полученную сроку, собсна, формирует список входных переменных
 
     # for i in range(N):
     #     res.append(list(xstart+i*xstep))
 
-    if len(xstart)==1:
-        for i in range (0, len(res)):
-            res[i]=[res[i],]
+    # if len(xstart)==1:
+    #     for i in range (0, len(res)):
+    #         res[i]=[res[i],] #костыль для диода и не нужен
 
 
 
@@ -259,6 +261,8 @@ def makeMeasOneDot_lognorm(func, xdot, b:list, c:dict, Ve=[]):
         for k in range(len(y)):
             #y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
             y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
+
+
     return y
 
 
@@ -290,6 +294,8 @@ def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, ou
         curdict = {'x':expplan[i], 'y':y}
         #res[i]["y"]=y
         res.append(curdict)
+
+
     return res
 
 

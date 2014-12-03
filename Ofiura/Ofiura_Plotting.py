@@ -41,7 +41,17 @@ def cutPlanToTwoList(plan):
 
 
 def plotPlan(plan, title=''):
-    _1,_2=cutPlanToTwoList(plan)
+    """
+    ONLY FOR 2 DIMENSIONAL PLANS
+    :param plan:
+    :param title:
+    :return:
+    """
+    try:
+        _1,_2=cutPlanToTwoList(plan)
+    except BaseException:
+        print("Неверное использование функции, она предназначена только для двумерных планов")
+        return
     plt.plot(_1, _2,  'bo')
     plt.legend(loc='upper right')
     plt.title(title)
