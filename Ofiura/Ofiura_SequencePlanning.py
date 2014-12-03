@@ -13,8 +13,9 @@ import Ofiura.Ofiura_ApriorPlanning as o_ap
 
 
 
+
 #http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
-def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=10, smallestdetVb=1e-6, implicit=False, lognorm=False, dotlim=500, verbose=False):
+def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, Ve, jacf, funcf, initplan=None, NSIG=10, smallestdetVb=1e-6, implicit=False, lognorm=False, dotlim=500, verbose=False, terminationOptDict={}):
     """
     Осуществляет последовательное планирование и оценку коэффициентов модели
     :param xstart: начало диапазона x
@@ -32,6 +33,9 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
     :param lognorm - требуется ли использование логнорм для получения измеренных данных
     :param dotlim - предел добавленных точек
     :param verbose - выводить ли информацию по итерациям
+    :param terminationOptDict - словарь опций завершения итеративного процесса:
+        VdShelfPow - по умолчанию -1 math.fabs(detVb-prevdetVb)/prevdetVb<math.pow(10,-VdShelfPow) NSIG для полки по detVb
+
     :return: k, число итераций, лог
     Для переделывания на реальные измерения btrue=None и функции моделирования переводятся на измерительные // btrue вообще должен бы быть исключен из всех функций ofiura
     """
@@ -55,7 +59,13 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
         if verbose:
             print ("Sequence Plan Iteration: {0}\nb={1}\ndetVb={2}\nprevdetVb={3} \nSk={4}".format(numiter, b, detVb, prevdetVb, Sk))
 
-        condition=prevdetVb!=None and math.fabs(detVb-prevdetVb)/prevdetVb<math.pow(10,-2) #если вышли на плато
+
+        VdShelfPow=terminationOptDict['VdShelfPow'] if 'VdShelfPow' in terminationOptDict else -1
+
+        condition=prevdetVb!=None and math.fabs(detVb-prevdetVb)/prevdetVb<math.pow(10,VdShelfPow) #если вышли на плато
+
+
+
         prevdetVb=detVb
 
         if condition:

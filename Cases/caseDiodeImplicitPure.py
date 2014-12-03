@@ -12,6 +12,7 @@ import Ofiura.Ofiura_Qualitat as o_q
 import Ofiura.Ofiura_Plotting as o_pl
 import Ofiura.Ofiura_SequencePlanning as o_sp
 
+
 numnone=0 #количество раз, когда функция вернула None, не справившись с оценкой тока
 
 
@@ -138,7 +139,7 @@ def plotPlanAndMeas2D(measdata):
     plt.show()
 
 
-def testDiodeParameterExtractionIMPLICIT():
+def testDiodeParameterExtractionIMPLICIT(plot=True):
     """
     пробуем экстрагировать коэффициенты из модели диода
     коэффициенты модели: Ток утечки Is, коэффициент неидеальности N, омическое сопротивление, параллельное диоду R
@@ -164,32 +165,14 @@ def testDiodeParameterExtractionIMPLICIT():
     #xend=[20,60]
     xend=[1.5]
     N=10
-    # N=60
-    # print("performing normal research:")
-    #
-    # global numnone
-    # numnone=0
-    # #создание стартового плана
-    #startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
-    #measdata = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c, Ve)
-    #o_pl.plotPlanAndMeas2D(measdata, 'Normal Uniform Disp{0} measdata'.format(Ve))
-    # print('unsuccessful estimations: ',numnone)
-    # gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
-    # #как мы помним, в случае неявных функций должно ставить sign=0
-    # print (gknu[0])
-    # o_pl.plotSkGraph(gknu, 'Normal Research Sk drop')
-    # print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
 
-    #N=30
-    # print("performing aprior plan:")
-    # # oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True)[1]
-    # o_p.writePlanToFile(oplan)
 
     print("performing aprior plan:")
 
 #примитивная попытка автоматизировать, риальни надо кешировать в файл под хешем параметров
     try:
         oplan=o_p.readPlanFromFile() #переключение на чтение априорного плана из файла
+        print ("Read file successful")
     except BaseException as e:
         oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True, verbose=True)[1]
         o_p.writePlanToFile(oplan)
@@ -197,43 +180,55 @@ def testDiodeParameterExtractionIMPLICIT():
     #получаем измеренные данные
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
     #чертим эти данные
-    o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
+    #o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
 
     #оценка
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=50, implicit=True)
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
 
     #вывод данных оценки - данные, квалитат, дроп
     o_q.printGKNUNeat(gknu)
     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
-    o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
+    if plot:
+        o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
 
 
     print ("performing sequence plan with aprior as seed - hybrid planning mechanism:")
     # каждый раз создавать априорный план смысла не имеет, в боевых условиях должен быть кеш
     # то есть, если априорный видит наличие кеша под данные значения параметров, то он берёт план из кеша, инфраструктура под это уже готова практически
     #получаем последовательный план с сидом в виде априорного, то есть гибридный
-    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100, verbose=True, NSIG=20, implicit=True, lognorm=True) #создаём последовательный план, с выводом инфо по итерациям
+    unifplan=o_p.makeUniformExpPlan(xstart, xend, N)
 
+    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=unifplan, dotlim=100, verbose=True, NSIG=100, implicit=True, lognorm=True, terminationOptDict={'VdShelfPow':-6}) #создаём последовательный план, с выводом инфо по итерациям
     #выводим данные последовательного планирования
     o_q.printSeqPlanData(seqplanb)
-
     #получаем данные измерения по этому последовательному плану
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, seqplanb[3], btrue, c,Ve)
     #чертим эти  данные
-    o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
-    #оценка
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=20, implicit=True)
-
-    #вывод данных оценки - данные, квалитат, дроп
+    if plot:
+        o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
+    print("GKNU bei plan")
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
     o_q.printGKNUNeat(gknu)
     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
-    o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
+    if plot:
+        o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
 
 
 
-
-
-
+    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100, verbose=True, NSIG=100, implicit=True, lognorm=True, terminationOptDict={'VdShelfPow':-6}) #создаём последовательный план, с выводом инфо по итерациям
+    #выводим данные последовательного планирования
+    o_q.printSeqPlanData(seqplanb)
+    #получаем данные измерения по этому последовательному плану
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, seqplanb[3], btrue, c,Ve)
+    #чертим эти  данные
+    if plot:
+        o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
+    print("GKNU bei plan")
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
+    o_q.printGKNUNeat(gknu)
+    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    if plot:
+        o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
 
 
 
@@ -306,10 +301,41 @@ def testDiodeImplicit():
 #тест модели
 #testDiodeImplicit()
 
-testDiodeParameterExtractionIMPLICIT()
+#шобы при обвале по переполнению автоматом заново запускался
+#clsbeep.beep()
+
+
+testDiodeParameterExtractionIMPLICIT(plot=False)
+
+
+
+
+
 
 def closest_node(node, nodes):
     nodes = np.asarray(nodes)
     dist_2 = np.sum((nodes - node)**2, axis=1)
     return np.argmin(dist_2)
 
+
+
+ # N=60
+    # print("performing normal research:")
+    #
+    # global numnone
+    # numnone=0
+    # #создание стартового плана
+    #startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+    #measdata = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c, Ve)
+    #o_pl.plotPlanAndMeas2D(measdata, 'Normal Uniform Disp{0} measdata'.format(Ve))
+    # print('unsuccessful estimations: ',numnone)
+    # gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=6, sign=0)
+    # #как мы помним, в случае неявных функций должно ставить sign=0
+    # print (gknu[0])
+    # o_pl.plotSkGraph(gknu, 'Normal Research Sk drop')
+    # print (o_q.getQualitat(measdata, gknu[0], Ve,  funcf, c))
+
+    #N=30
+    # print("performing aprior plan:")
+    # # oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True)[1]
+    # o_p.writePlanToFile(oplan)

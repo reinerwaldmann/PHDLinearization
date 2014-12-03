@@ -24,7 +24,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
 
 
 
-def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=True):
+def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=False):
     """
     Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом
     В стандартный поток вывода выводит отладочную информацию по каждой итерации
@@ -90,7 +90,11 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
             Skmu=0
             mu/=2
             for point in measdata:
-                dif=np.array(point['y'])-np.array(funcf(point['x'],b+deltab*mu,c)) if sign else np.array(point['y'])-np.array(funcf(point['x'],b-deltab*mu,c))
+                try:
+                    dif=np.array(point['y'])-np.array(funcf(point['x'],b+deltab*mu,c)) if sign else np.array(point['y'])-np.array(funcf(point['x'],b-deltab*mu,c))
+                except:
+                    continue
+
                 Skmu+=np.dot(dif.T, dif)
             it+=1
             if (it>100):
