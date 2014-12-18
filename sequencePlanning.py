@@ -7,9 +7,10 @@ import numpy as np
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Estimation as o_e
 import Ofiura.Ofiura_general as o_g
-import Ofiura.Ofiura_Plotting as o_pl
 import Ofiura.Ofiura_Qualitat as o_q
 import Ofiura.Ofiura_SequencePlanning as o_sp
+import Ofiura.Ofiura_ApriorPlanning as o_ap
+
 
 
 
@@ -104,7 +105,7 @@ def test():
     xstart=[1, 100]
     xend=[20,200]
 
-    N=5
+
     c={"a":1000}
     funcf=lambda x,b,c: np.array ( [ b[0]+b[1]*x[0]+b[2]*x[1]+b[3]*x[0]*x[1]+b[4]*x[0]*x[0]+b[5]*x[1]*x[1],   b[6]+b[7]*x[0]+b[8]*x[1]+b[9]*x[0]*x[1]+b[10]*x[0]*x[0]+b[11]*x[1]*x[1] ] )
 
@@ -114,54 +115,42 @@ def test():
     jacf = lambda x,b,c,y: np.matrix([ [1, x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1], 0, 0, 0, 0, 0, 0],
                                       [0,0,0,0,0,0,1,x[0], x[1], x[0]*x[1], x[0]*x[0], x[1]*x[1]] ])
 
-    Ve=np.array([ [0.00001, 0],
-                  [0, 0.00001]]  )
+    Ve=np.array([ [0.0001, 0],
+                  [0, 0.0001]]  )
     btrue=[8,4,2,2,9,3,4,2,2,3,4,5]
     bstart=np.array(btrue)-np.array([2]*len(btrue))
     bend=np.array(btrue)+np.array([2]*len(btrue))
     binit=[1]*len(btrue)
-    N=16
+    N=32
 
-    #print("\n\nperforming sequence plan:")
+
     #seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=o_p.makeRandomUniformExpPlan(xstart, xend, 5), dotlim=500)
 
-    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=o_p.makeRandomUniformExpPlan(xstart, xend, 5), dotlim=500)
+    print("performing aprior plan:")
+    oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=5)[1]
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
+    gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
+    o_q.printGKNUNeat(gknu)
+    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
 
-    o_pl.plotPlan(seqplanb[3],'Sequence Plan')
+
+
+    print("\n\nperforming sequence plan with uniform as seed:")
+    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=o_p.makeUniformExpPlan(xstart, xend, 4), dotlim=200, NSIG=10)
     measdata = o_p.makeMeasAccToPlan(funcf, seqplanb[3], btrue, c,Ve)
-
-    #gknu=seqplanb[6]
-    #o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
-    #o_pl.plotSkGraph(gknu,'sequence plan')
-    #print (gknu[0])
-    #o_q.printGKNUNeat(gknu)
-
-
-
-    # print (seqplanb[7])
-    # print('\n\n')
-    # print (measdata)
-
-#поскольку выяснить, где злой косяк не представляется возможным, то применяем seqplan как обычный метод планирования.
-
-    print("\n\nperforming sequence plan gknu impl:")
     gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
     o_q.printGKNUNeat(gknu)
     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
     o_q.printSeqPlanData(seqplanb)
 
-    o_pl.plotSkGraph(gknu,'sequence plan gknu impl')
-
-
-
 
 #И самый огонь - последовательный план с априорным в затравке!
     print("\n\nperforming sequence plan with aprior as seed (hybrid):")
-#    oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, func=None, Ntries=5)[1] #сперва строим априорный план на 10 точек
-    #seqplanb=getbSeqPlanUltra (xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=500) #теперь последовательный с лимитом на 100 точек лишних
 
-    seqplanb=o_sp.getHybridPlan(xstart, xend, N, btrue, binit, bstart, bend, c, Ve, jacf, funcf)
+    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=200, NSIG=10)
 
+
+    #seqplanb=o_sp.getHybridPlan(xstart, xend, N, btrue, binit, bstart, bend, c, Ve, jacf, funcf)
     measdata = o_p.makeMeasAccToPlan(funcf, seqplanb[3], btrue, c,Ve)
     gknu=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, NSIG=10, implicit=False, verbose=False) #получили оценку b binit=bs
     o_q.printGKNUNeat(gknu)
@@ -169,7 +158,7 @@ def test():
     o_q.printSeqPlanData(seqplanb)
     #print('Последовательное планирование добавило {0} точек'.format(seqplanb[1]))
 
-    o_pl.plotSkGraph(gknu,'performing sequence plan with aprior as seed:')
+
 
 
 

@@ -164,7 +164,7 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     xstart=[0.01]
     #xend=[20,60]
     xend=[1.5]
-    N=10
+    N=20
 
 
     print("performing aprior plan:")
@@ -179,6 +179,7 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
 
     #получаем измеренные данные
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
+    measdataETALON = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
     #чертим эти данные
     #o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
 
@@ -187,18 +188,16 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
 
     #вывод данных оценки - данные, квалитат, дроп
     o_q.printGKNUNeat(gknu)
-    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
     if plot:
         o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
 
 
-    print ("performing sequence plan with aprior as seed - hybrid planning mechanism:")
-    # каждый раз создавать априорный план смысла не имеет, в боевых условиях должен быть кеш
-    # то есть, если априорный видит наличие кеша под данные значения параметров, то он берёт план из кеша, инфраструктура под это уже готова практически
-    #получаем последовательный план с сидом в виде априорного, то есть гибридный
-    unifplan=o_p.makeUniformExpPlan(xstart, xend, N)
+    terminationOptDict={'VdShelfPow':-7}
 
-    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=unifplan, dotlim=100, verbose=True, NSIG=100, implicit=True, lognorm=True, terminationOptDict={'VdShelfPow':-6}) #создаём последовательный план, с выводом инфо по итерациям
+    print("\n\nperforming sequence plan with random as seed:")
+    unifplan=o_p.makeUniformExpPlan(xstart, xend, N)
+    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf,  dotlim=100, verbose=True, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
     #выводим данные последовательного планирования
     o_q.printSeqPlanData(seqplanb)
     #получаем данные измерения по этому последовательному плану
@@ -206,16 +205,39 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     #чертим эти  данные
     if plot:
         o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
-    print("GKNU bei plan")
+    print("GKNU for plan")
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
     o_q.printGKNUNeat(gknu)
-    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
     if plot:
         o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
 
 
 
-    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100, verbose=True, NSIG=100, implicit=True, lognorm=True, terminationOptDict={'VdShelfPow':-6}) #создаём последовательный план, с выводом инфо по итерациям
+    print("\n\nperforming sequence plan with uniform as seed:")
+    unifplan=o_p.makeUniformExpPlan(xstart, xend, N)
+    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=unifplan, dotlim=100, verbose=True, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
+    #выводим данные последовательного планирования
+    o_q.printSeqPlanData(seqplanb)
+    #получаем данные измерения по этому последовательному плану
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, seqplanb[3], btrue, c,Ve)
+    #чертим эти  данные
+    if plot:
+        o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
+    print("GKNU for plan")
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
+    o_q.printGKNUNeat(gknu)
+    o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
+    if plot:
+        o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
+
+
+
+
+
+
+    print("\n\nperforming sequence plan with aprior as seed (hybrid):")
+    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100, verbose=True, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
     #выводим данные последовательного планирования
     o_q.printSeqPlanData(seqplanb)
     #получаем данные измерения по этому последовательному плану
@@ -226,7 +248,7 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     print("GKNU bei plan")
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
     o_q.printGKNUNeat(gknu)
-    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
     if plot:
         o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
 
