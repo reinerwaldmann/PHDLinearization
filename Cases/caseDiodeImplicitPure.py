@@ -195,9 +195,11 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
 
     terminationOptDict={'VdShelfPow':-7}
 
+
+    N=30
+
     print("\n\nperforming sequence plan with random as seed:")
-    unifplan=o_p.makeUniformExpPlan(xstart, xend, N)
-    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf,  dotlim=100, verbose=True, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
+    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf,  dotlim=100, verbose=False, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
     #выводим данные последовательного планирования
     o_q.printSeqPlanData(seqplanb)
     #получаем данные измерения по этому последовательному плану
@@ -216,7 +218,7 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
 
     print("\n\nperforming sequence plan with uniform as seed:")
     unifplan=o_p.makeUniformExpPlan(xstart, xend, N)
-    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=unifplan, dotlim=100, verbose=True, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
+    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=unifplan, dotlim=100, verbose=False, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
     #выводим данные последовательного планирования
     o_q.printSeqPlanData(seqplanb)
     #получаем данные измерения по этому последовательному плану
@@ -237,7 +239,7 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
 
 
     print("\n\nperforming sequence plan with aprior as seed (hybrid):")
-    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100, verbose=True, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
+    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100, verbose=False, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
     #выводим данные последовательного планирования
     o_q.printSeqPlanData(seqplanb)
     #получаем данные измерения по этому последовательному плану
