@@ -35,6 +35,12 @@ relError=0.1 #доля ошибки, то есть 10%
 
 
 
+
+
+
+exit(0)
+
+
 #!/usr/bin/env python
 
 
