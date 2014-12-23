@@ -5,6 +5,9 @@ import copy
 
 import numpy as np
 
+import Ofiura.Ofiura_Qualitat as o_q
+import Ofiura.Ofiura_general as o_g
+
 
 """
 def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
@@ -127,6 +130,43 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
     return b, numiter, log, Sklist, Sk
 
 
+
+def grandCountGN_UltraX_Qualitat (funcf, jacf,  measdata:list, binit:list, c, Ve,  NSIG=3, implicit=False, verbose=False, name=''):
+    """
+    Параметры см внутренняя
+    :param name - название метода
+    """
+    gknux=grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG, implicit, verbose)
+    names = ['b', 'numiter', 'log' , 'Sklist', 'Sk']
+    gknuxdict = zip (names, list(gknux))
+    #    names=['AvLogTruth','DispLT', 'SigmaLT', 'AvDif', 'DispDif', 'SigmaDif', 'Diflist']
+
+    return o_q.getQualitatDict(measdata, gknuxdict['b'], Ve,  funcf, c).update(gknuxdict)
+
+def selectBestEstim (gknuxdictsarr:list):
+    """
+    1. Фильтрует массив оценок, выкидывая плохие
+    2. Выбирает наилучший, возвращает наилучший (или просто сортированный)
+    :param gknuxdictsarr
+    """
+    #1. Фильтр входного массива по чему-то там
+    def sortingfunc (arg):
+        return arg['AvLogTruth']
+
+    #2 опции
+    return gknuxdictsarr.sort(key=sortingfunc)
+    return gknuxdictsarr.sort(key=sortingfunc)[0]
+
+def grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata:list, bstart:list, bend:list, c, Ve,  NSIG=3, implicit=False, verbose=False, Ntries=10, name=''):
+    """
+    Новая реализация оценки, в соответствии с методом выбора начального приближения (22.12.2014 tasklist)
+    """
+    resarray=list()
+    for i in range (Ntries):
+        #получение uniform binit
+        binit = o_g.uniformVector(bstart, bend)
+        resarray.append(grandCountGN_UltraX_Qualitat (funcf, jacf,  measdata, binit, c, Ve,  NSIG, implicit, verbose, name))
+    return selectBestEstim (resarray)
 
 
 def grandCountGN_UltraX (funcf, jacf,  expdatalist:list, kinit:list, c=None, NSIG=3):

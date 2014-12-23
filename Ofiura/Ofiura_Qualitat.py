@@ -76,7 +76,7 @@ def averageDif(measdata:list, b:list, Ve,  func, c):
     diflist=list()
     for measpoint in measdata:
         diflist.append(np.abs(np.array(measpoint['y'])-func(measpoint['x'],b,c)))
-    return np.average(diflist), np.var(diflist), math.sqrt(np.var(diflist))
+    return np.average(diflist), np.var(diflist), math.sqrt(np.var(diflist)), diflist
 
 def getQualitat(measdata:list, b:list, Ve,  func, c):
     """
@@ -88,6 +88,19 @@ def getQualitat(measdata:list, b:list, Ve,  func, c):
     :return: Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков
     """
     return "Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков\n", logTruthness (measdata, b, Ve,  func, c), averageDif(measdata, b, Ve,  func, c)
+
+
+def getQualitatDict(measdata:list, b:list, Ve,  func, c):
+    names=['AvLogTruth','DispLT', 'SigmaLT', 'AvDif', 'DispDif', 'SigmaDif', 'Diflist']
+    values = list(logTruthness (measdata, b, Ve,  func, c))+list(averageDif(measdata, b, Ve,  func, c))
+    return zip (names, values)
+
+
+
+
+
+
+
 
 
 def printQualitatNeat(measdata:list, b:list, Ve,  func, c):
@@ -103,7 +116,7 @@ def printQualitatNeat(measdata:list, b:list, Ve,  func, c):
     """
 
     t=PrettyTable (['Среднее логарифма правдоподобия','Дисперсия лп', 'Сигма лп', 'Среднее остатков', 'Дисп. остатков', 'Сигма остатков'])
-    t.add_row(list(logTruthness (measdata, b, Ve,  func, c))+list(averageDif(measdata, b, Ve,  func, c))  )
+    t.add_row(list(logTruthness (measdata, b, Ve,  func, c))+list(averageDif(measdata, b, Ve,  func, c))[:-1:]  )
     print('Показатели качества оценки')
     print (t)
 

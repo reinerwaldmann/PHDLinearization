@@ -247,6 +247,13 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     #чертим эти  данные
     if plot:
         o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
+
+    print('grandCountGN_UltraX_ExtraStart')
+    gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=3, implicit=False, verbose=False, Ntries=10, name='sequence plan with aprior as seed (hybrid)')
+    #данные по новому формату
+    print(gknu)
+
+    print('normal')
     print("GKNU bei plan")
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
     o_q.printGKNUNeat(gknu)
