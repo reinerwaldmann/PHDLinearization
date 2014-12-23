@@ -10,7 +10,6 @@ import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
 import Ofiura.Ofiura_Plotting as o_pl
-import Ofiura.Ofiura_SequencePlanning as o_sp
 
 
 numnone=0 #количество раз, когда функция вернула None, не справившись с оценкой тока
@@ -156,8 +155,8 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     c={}
     Ve=np.array([ [0.000001] ]  )
     btrue=[1.238e-14, 1.8, 100]
-    bstart=np.array(btrue)-np.array(btrue)*0.2
-    bend=np.array(btrue)+np.array(btrue)*0.2
+    bstart=np.array(btrue)-np.array(btrue)*0.1
+    bend=np.array(btrue)+np.array(btrue)*0.1
     binit=[1.0e-14, 1.7, 70]
     #binit=[1.238e-14, 1.8, 100]
 
@@ -176,88 +175,107 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     except BaseException as e:
         oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True, verbose=True)[1]
         o_p.writePlanToFile(oplan)
-
-    #получаем измеренные данные
-    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
-    measdataETALON = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
-    #чертим эти данные
-    #o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
-
-    #оценка
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
-
-    #вывод данных оценки - данные, квалитат, дроп
-    o_q.printGKNUNeat(gknu)
-    o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
-    if plot:
-        o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
-
-
+#
+#     #получаем измеренные данные
+#     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
+#     measdataETALON = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
+#     #чертим эти данные
+#     #o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
+#
+#     #оценка
+#     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
+#
+#     #вывод данных оценки - данные, квалитат, дроп
+#     o_q.printGKNUNeat(gknu)
+#     o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
+#     if plot:
+#         o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
+#
+#
     terminationOptDict={'VdShelfPow':-7}
+#
+#
+#     N=30
+#
+#     print("\n\nperforming sequence plan with random as seed:")
+#     seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf,  dotlim=100, verbose=False, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
+#     #выводим данные последовательного планирования
+#     o_q.printSeqPlanData(seqplanb)
+#     #получаем данные измерения по этому последовательному плану
+#     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, seqplanb[3], btrue, c,Ve)
+#     #чертим эти  данные
+#     if plot:
+#         o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
+#     print("GKNU for plan")
+#     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
+#     o_q.printGKNUNeat(gknu)
+#     o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
+#     if plot:
+#         o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
+#
+#
+#
+#     print("\n\nperforming sequence plan with uniform as seed:")
+#     unifplan=o_p.makeUniformExpPlan(xstart, xend, N)
+#     seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=unifplan, dotlim=100, verbose=False, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
+#     #выводим данные последовательного планирования
+#     o_q.printSeqPlanData(seqplanb)
+#     #получаем данные измерения по этому последовательному плану
+#     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, seqplanb[3], btrue, c,Ve)
+#     #чертим эти  данные
+#     if plot:
+#         o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
+#     print("GKNU for plan")
+#     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
+#     o_q.printGKNUNeat(gknu)
+#     o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
+#     if plot:
+#         o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
+#
+#
 
 
-    N=30
 
-    print("\n\nperforming sequence plan with random as seed:")
-    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf,  dotlim=100, verbose=False, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
-    #выводим данные последовательного планирования
-    o_q.printSeqPlanData(seqplanb)
+
+    # print("\n\nperforming sequence plan with aprior as seed (hybrid):")
+    # seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100, verbose=False, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
+    # #выводим данные последовательного планирования
+
+
+    # o_q.printSeqPlanData(seqplanb)
     #получаем данные измерения по этому последовательному плану
-    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, seqplanb[3], btrue, c,Ve)
+
+    resarr=list()
+    #несколько раз измерения
+    for i in range(10):
+        measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
+        gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=10, name='sequence plan with aprior as seed (hybrid)')
+        resarr.append(gknu)
+
+
+    for gknu in resarr:
+        print (gknu['AvLogTruth'], gknu['b'], gknu['AvDif'] )
+
+    print (o_e.selectBestEstim (resarr))
+
+
+
+    # measdata = o_p.makeMeasAccToPlan_lognorm(funcf, seqplanb[3], btrue, c,Ve)
     #чертим эти  данные
-    if plot:
-        o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
-    print("GKNU for plan")
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
-    o_q.printGKNUNeat(gknu)
-    o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
-    if plot:
-        o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
-
-
-
-    print("\n\nperforming sequence plan with uniform as seed:")
-    unifplan=o_p.makeUniformExpPlan(xstart, xend, N)
-    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=unifplan, dotlim=100, verbose=False, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
-    #выводим данные последовательного планирования
-    o_q.printSeqPlanData(seqplanb)
-    #получаем данные измерения по этому последовательному плану
-    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, seqplanb[3], btrue, c,Ve)
-    #чертим эти  данные
-    if plot:
-        o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
-    print("GKNU for plan")
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
-    o_q.printGKNUNeat(gknu)
-    o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
-    if plot:
-        o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
-
-
-
-
-
-
-    print("\n\nperforming sequence plan with aprior as seed (hybrid):")
-    seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100, verbose=False, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
-    #выводим данные последовательного планирования
-    o_q.printSeqPlanData(seqplanb)
-    #получаем данные измерения по этому последовательному плану
-    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, seqplanb[3], btrue, c,Ve)
-    #чертим эти  данные
-    if plot:
-        o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
-
+    #if plot:
+    #    o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
+    #здесь мы сравниваем, сработает ли метод уточнения результатов - выбор начального значения из пула
     print('grandCountGN_UltraX_ExtraStart')
-    gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=3, implicit=False, verbose=False, Ntries=10, name='sequence plan with aprior as seed (hybrid)')
+
     #данные по новому формату
-    print(gknu)
+
+
 
     print('normal')
     print("GKNU bei plan")
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
     o_q.printGKNUNeat(gknu)
-    o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
+    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
     if plot:
         o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
 

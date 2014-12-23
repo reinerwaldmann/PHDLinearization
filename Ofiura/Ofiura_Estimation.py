@@ -138,10 +138,12 @@ def grandCountGN_UltraX_Qualitat (funcf, jacf,  measdata:list, binit:list, c, Ve
     """
     gknux=grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG, implicit, verbose)
     names = ['b', 'numiter', 'log' , 'Sklist', 'Sk']
-    gknuxdict = zip (names, list(gknux))
+    gknuxdict = dict(zip (names, list(gknux)))
     #    names=['AvLogTruth','DispLT', 'SigmaLT', 'AvDif', 'DispDif', 'SigmaDif', 'Diflist']
 
-    return o_q.getQualitatDict(measdata, gknuxdict['b'], Ve,  funcf, c).update(gknuxdict)
+    return dict(list(o_q.getQualitatDict(measdata, gknuxdict['b'], Ve,  funcf, c).items()) + list(gknuxdict.items()))
+
+    #return o_q.getQualitatDict(measdata, gknuxdict['b'], Ve,  funcf, c).update(gknuxdict)
 
 def selectBestEstim (gknuxdictsarr:list):
     """
@@ -154,8 +156,10 @@ def selectBestEstim (gknuxdictsarr:list):
         return arg['AvLogTruth']
 
     #2 опции
-    return gknuxdictsarr.sort(key=sortingfunc)
-    return gknuxdictsarr.sort(key=sortingfunc)[0]
+
+
+    return sorted(gknuxdictsarr, key=sortingfunc)[0]
+    #eturn gknuxdictsarr.sort(key=sortingfunc)[0]
 
 def grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata:list, bstart:list, bend:list, c, Ve,  NSIG=3, implicit=False, verbose=False, Ntries=10, name=''):
     """
@@ -165,7 +169,13 @@ def grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata:list, bstart:list, be
     for i in range (Ntries):
         #получение uniform binit
         binit = o_g.uniformVector(bstart, bend)
-        resarray.append(grandCountGN_UltraX_Qualitat (funcf, jacf,  measdata, binit, c, Ve,  NSIG, implicit, verbose, name))
+
+        try:
+            resarray.append(grandCountGN_UltraX_Qualitat (funcf, jacf,  measdata, binit, c, Ve,  NSIG, implicit, verbose, name))
+        except BaseException:
+            pass
+
+
     return selectBestEstim (resarray)
 
 

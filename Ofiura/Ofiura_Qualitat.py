@@ -93,7 +93,7 @@ def getQualitat(measdata:list, b:list, Ve,  func, c):
 def getQualitatDict(measdata:list, b:list, Ve,  func, c):
     names=['AvLogTruth','DispLT', 'SigmaLT', 'AvDif', 'DispDif', 'SigmaDif', 'Diflist']
     values = list(logTruthness (measdata, b, Ve,  func, c))+list(averageDif(measdata, b, Ve,  func, c))
-    return zip (names, values)
+    return dict(zip (names, values))
 
 
 
