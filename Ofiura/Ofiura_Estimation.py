@@ -62,7 +62,15 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
             jac=jacf(point['x'],b,c,point['y'])
             #print (G.shape, jac.T.shape, jac.shape)
             G+=np.dot(jac.T,jac)
-            dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
+
+            try:
+                dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
+            except BaseException as e:
+                print('grandCountGN_UltraX1: As funcf returned None, method  stops:', e)
+                exit(0)
+
+
+
             # print(dif, jac)
             # print('-----')
             #
@@ -141,7 +149,9 @@ def grandCountGN_UltraX_Qualitat (funcf, jacf,  measdata:list, binit:list, c, Ve
     gknuxdict = dict(zip (names, list(gknux)))
     #    names=['AvLogTruth','DispLT', 'SigmaLT', 'AvDif', 'DispDif', 'SigmaDif', 'Diflist']
 
-    return dict(list(o_q.getQualitatDict(measdata, gknuxdict['b'], Ve,  funcf, c).items()) + list(gknuxdict.items()))
+    rs= dict(list(o_q.getQualitatDict(measdata, gknuxdict['b'], Ve,  funcf, c).items()) + list(gknuxdict.items()))
+    rs['name']=name
+    return rs
 
     #return o_q.getQualitatDict(measdata, gknuxdict['b'], Ve,  funcf, c).update(gknuxdict)
 
@@ -158,7 +168,13 @@ def selectBestEstim (gknuxdictsarr:list):
     #2 опции
 
 
-    return sorted(gknuxdictsarr, key=sortingfunc)[0]
+    resl=sorted(gknuxdictsarr, key=sortingfunc)
+
+    if resl:
+        return resl[0]
+    else:
+        print ('Не удалось адекватно оценить параметры. Попробуйте больше интераций')
+        return None
     #eturn gknuxdictsarr.sort(key=sortingfunc)[0]
 
 def grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata:list, bstart:list, bend:list, c, Ve,  NSIG=3, implicit=False, verbose=False, Ntries=10, name=''):

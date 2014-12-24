@@ -4,12 +4,14 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import optimize
+from prettytable import PrettyTable
 
 import Ofiura.Ofiura_Estimation as o_e
 import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
 import Ofiura.Ofiura_Plotting as o_pl
+
 
 
 numnone=0 #количество раз, когда функция вернула None, не справившись с оценкой тока
@@ -70,7 +72,7 @@ def diodeResistorIMPLICITfunction (x,b,c=None):
         #http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
         #http://codereview.stackexchange.com/questions/28207/is-this-the-fastest-way-to-find-the-closest-point-to-a-list-of-points-using-nump
     except BaseException as e:
-        print ('Error in findroot=',e)
+        #print ('diodeResistorIMPLICITfunction: Error in findroot=',e)
         numnone+=1
         return None
 
@@ -153,10 +155,14 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     jacf = diodeResistorIMPLICITJac
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.000001] ]  )
+    Ve=np.array([ [0.00001] ]  )
     btrue=[1.238e-14, 1.8, 100]
-    bstart=np.array(btrue)-np.array(btrue)*0.1
-    bend=np.array(btrue)+np.array(btrue)*0.1
+    #btrue=[1.5e-14, 1.75, 150]
+
+
+
+    bstart=np.array(btrue)-np.array(btrue)*0.3
+    bend=np.array(btrue)+np.array(btrue)*0.3
     binit=[1.0e-14, 1.7, 70]
     #binit=[1.238e-14, 1.8, 100]
 
@@ -245,18 +251,35 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     # o_q.printSeqPlanData(seqplanb)
     #получаем данные измерения по этому последовательному плану
 
+
+    #пробуем несколько измерений произвести
     resarr=list()
     #несколько раз измерения
+    t=PrettyTable (['Среднее логарифма правдоподобия','b','Среднее остатков'])
+
+
     for i in range(10):
         measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
-        gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=10, name='sequence plan with aprior as seed (hybrid)')
-        resarr.append(gknu)
+        gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=10, name='aprior plan plus several measurements')
+        if (gknu):
+            resarr.append(gknu)
+
+    if resarr:
+        for gknu in resarr:
+            if (gknu):
+                t.add_row([gknu['AvLogTruth'], gknu['b'], gknu['AvDif'] ])
+    be=o_e.selectBestEstim (resarr)
+
+    t.add_row([be['AvLogTruth'], be['b'], be['AvDif'] ])
+    print(t)
 
 
-    for gknu in resarr:
-        print (gknu['AvLogTruth'], gknu['b'], gknu['AvDif'] )
+    #print (o_e.selectBestEstim (resarr))
 
-    print (o_e.selectBestEstim (resarr))
+
+    # measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
+    # gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=10, name='aprior plan')
+    # print (gknu['AvLogTruth'], gknu['b'], gknu['AvDif'], gknu['name'] )
 
 
 
