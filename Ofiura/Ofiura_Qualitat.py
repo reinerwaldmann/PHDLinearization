@@ -74,12 +74,16 @@ def averageDif(measdata:list, b:list, Ve,  func, c):
     """
 
     diflist=list()
+    diflistNoAbs=list()
+
 
     for measpoint in measdata:
-        diflist.append(np.abs(np.array(measpoint['y'])-func(measpoint['x'],b,c)))
-        #diflist.append(np.array(measpoint['y'])-func(measpoint['x'],b,c))
+        dif=np.array(measpoint['y'])-func(measpoint['x'],b,c)
 
-    return np.average(diflist), np.var(diflist), math.sqrt(np.var(diflist)), diflist
+        diflist.append(np.abs(dif ))
+        diflistNoAbs.append(dif)
+
+    return np.average(diflist), np.var(diflist), math.sqrt(np.var(diflist)), diflistNoAbs
 
 def getQualitat(measdata:list, b:list, Ve,  func, c):
     """
@@ -144,6 +148,49 @@ def printSeqPlanData(seq):
     t.add_row([seq[1], seq[2], seq[5], seq[8]])
     print('Данные работы последовательного плана')
     print (t)
+
+
+
+def analyseDifList(arg, plot=True ): #числовой режим, вектора не поддерживаются
+    """
+    Функция, выводит гистограмму остатков
+    в будущем будет возвращать True, если распределение нормальное и false, если таки нет
+    пока возвращает среднее
+    :param arg
+    :param plot
+    """
+
+    if type(arg)==dict:
+        diflist = arg['Diflist']
+    elif type(arg)==list:
+        diflist = arg
+    else:
+        print  ('analyseDifList erroneous arg')
+        return None
+
+    superlist = list(map(lambda x: x[0], diflist)) #костыль для тех случаев, когда на вход всё одно вектор, но единичной длины
+
+    #1. Определение нормальности распределения
+    #пока не имплементим
+
+    # учитываем, что всё это какбе с векторами
+    # с векторами можно работать как - 1. рассматривая каждый компонент по отдельности
+
+
+    if plot:
+        #посмотреть диаграмму остатков у лучшей оценки
+        import matplotlib.pyplot as plt
+        plt.hist(superlist, 25)
+        plt.show()
+
+    return np.average(superlist), True
+
+
+
+
+
+
+
 
 
 

@@ -154,14 +154,14 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     jacf = diodeResistorIMPLICITJac
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.000001] ]  )
+    Ve=np.array([ [0.001] ]  )
     btrue=[1.238e-14, 1.8, 100]
     #btrue=[1.5e-14, 1.75, 150]
 
 
 
-    bstart=np.array(btrue)-np.array(btrue)*0.03
-    bend=np.array(btrue)+np.array(btrue)*0.03
+    bstart=np.array(btrue)-np.array(btrue)*0.3
+    bend=np.array(btrue)+np.array(btrue)*0.3
     binit=[1.0e-14, 1.7, 70]
     #binit=[1.238e-14, 1.8, 100]
 
@@ -253,15 +253,14 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     #пробуем несколько измерений произвести
     resarr=list()
     #несколько раз измерения
-    t=PrettyTable (['Среднее логарифма правдоподобия','Сигма логарифма правдоподобия' , 'b','Среднее остатков'])
+    t=PrettyTable (['Среднее логарифма правдоподобия','Сигма логарифма правдоподобия' , 'b','Среднее остатков по модулю'])
 
 
-    for i in range(10):
+    for i in range(20):
         measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
         gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=10, name='aprior plan plus several measurements')
         if (gknu):
             resarr.append(gknu)
-
     if resarr:
         for gknu in resarr:
             if (gknu):
@@ -280,17 +279,8 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     print(t)
 
 
-    superlist = list(map(lambda x: x[0], be['Diflist'] ))
-    print (be['Diflist'])
-    print (superlist)
+    o_q.analyseDifList(be)
 
-
-
-    #посмотреть диаграмму остатков у лучшей оценки
-    import matplotlib.pyplot as plt
-
-    plt.hist(superlist, 25)
-    plt.show()
 
     #print (o_e.selectBestEstim (resarr))
 
