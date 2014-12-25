@@ -74,8 +74,11 @@ def averageDif(measdata:list, b:list, Ve,  func, c):
     """
 
     diflist=list()
+
     for measpoint in measdata:
         diflist.append(np.abs(np.array(measpoint['y'])-func(measpoint['x'],b,c)))
+        #diflist.append(np.array(measpoint['y'])-func(measpoint['x'],b,c))
+
     return np.average(diflist), np.var(diflist), math.sqrt(np.var(diflist)), diflist
 
 def getQualitat(measdata:list, b:list, Ve,  func, c):

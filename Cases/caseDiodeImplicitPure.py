@@ -13,7 +13,6 @@ import Ofiura.Ofiura_Qualitat as o_q
 import Ofiura.Ofiura_Plotting as o_pl
 
 
-
 numnone=0 #количество раз, когда функция вернула None, не справившись с оценкой тока
 
 
@@ -155,14 +154,14 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     jacf = diodeResistorIMPLICITJac
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.00001] ]  )
+    Ve=np.array([ [0.000001] ]  )
     btrue=[1.238e-14, 1.8, 100]
     #btrue=[1.5e-14, 1.75, 150]
 
 
 
-    bstart=np.array(btrue)-np.array(btrue)*0.3
-    bend=np.array(btrue)+np.array(btrue)*0.3
+    bstart=np.array(btrue)-np.array(btrue)*0.03
+    bend=np.array(btrue)+np.array(btrue)*0.03
     binit=[1.0e-14, 1.7, 70]
     #binit=[1.238e-14, 1.8, 100]
 
@@ -181,10 +180,9 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     except BaseException as e:
         oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True, verbose=True)[1]
         o_p.writePlanToFile(oplan)
-#
-#     #получаем измеренные данные
+
+    #получаем измеренные данные
 #     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
-#     measdataETALON = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
 #     #чертим эти данные
 #     #o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
 #
@@ -193,7 +191,7 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
 #
 #     #вывод данных оценки - данные, квалитат, дроп
 #     o_q.printGKNUNeat(gknu)
-#     o_q.printQualitatNeat(measdataETALON, gknu[0], Ve, funcf, c)
+#     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
 #     if plot:
 #         o_pl.plotSkGraph(gknu, 'Aprior Research Sk drop')
 #
@@ -244,8 +242,8 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
 
 
     # print("\n\nperforming sequence plan with aprior as seed (hybrid):")
-    # seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf, initplan=oplan, dotlim=100, verbose=False, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
-    # #выводим данные последовательного планирования
+    # seqplanb=o_sp.getbSeqPlanUltra(xstart, xend, N, btrue, binit, c, Ve, jacf, funcf,  dotlim=100, verbose=False, NSIG=100, implicit=True, lognorm=True, terminationOptDict=terminationOptDict) #создаём последовательный план, с выводом инфо по итерациям
+    # # #выводим данные последовательного планирования
 
 
     # o_q.printSeqPlanData(seqplanb)
@@ -255,7 +253,7 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     #пробуем несколько измерений произвести
     resarr=list()
     #несколько раз измерения
-    t=PrettyTable (['Среднее логарифма правдоподобия','b','Среднее остатков'])
+    t=PrettyTable (['Среднее логарифма правдоподобия','Сигма логарифма правдоподобия' , 'b','Среднее остатков'])
 
 
     for i in range(10):
@@ -267,19 +265,36 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     if resarr:
         for gknu in resarr:
             if (gknu):
-                t.add_row([gknu['AvLogTruth'], gknu['b'], gknu['AvDif'] ])
+                t.add_row([gknu['AvLogTruth'],gknu['SigmaLT'], gknu['b'], gknu['AvDif'] ])
     be=o_e.selectBestEstim (resarr)
 
-    t.add_row([be['AvLogTruth'], be['b'], be['AvDif'] ])
+
+    #всё делаем по априорному плану, производим  измерения, оцениваем, печатаем,
+
+    # measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
+    # gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=50, name='aprior plan')
+    # be=gknu
+
+    t.add_row(['*', '*', '*', '*' ])
+    t.add_row([be['AvLogTruth'], be['SigmaLT'], be['b'], be['AvDif'] ])
     print(t)
 
+
+    superlist = list(map(lambda x: x[0], be['Diflist'] ))
+    print (be['Diflist'])
+    print (superlist)
+
+
+
+    #посмотреть диаграмму остатков у лучшей оценки
+    import matplotlib.pyplot as plt
+
+    plt.hist(superlist, 25)
+    plt.show()
 
     #print (o_e.selectBestEstim (resarr))
 
 
-    # measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
-    # gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=10, name='aprior plan')
-    # print (gknu['AvLogTruth'], gknu['b'], gknu['AvDif'], gknu['name'] )
 
 
 
