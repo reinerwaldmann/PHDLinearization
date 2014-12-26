@@ -49,37 +49,25 @@ def getbSeqPlanUltra (xstart:list, xend:list, N:int, btrue:list, binit:list, c, 
     b=binit
     prevdetVb=None
     for numiter in range(dotlim): #ограничитель цикла - если выход произошёл по ограничению, значит, возможна ошибка
-        #estim=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, b, c, NSIG, implicit=implicit, verbose=False) #получили оценку b binit=b
-
-        estim=o_e.grandCountGN_UltraX_Qualitat (funcf, jacf,  measdata, b, c, Ve,  NSIG, implicit=implicit, verbose=False, name='sequence planning internal')
-        b=estim['b']
-
-
-
-        # b=estim[0]
-        #Sk=estim[1]
-        Sk=estim['Sk']
-
+        estim=o_e.grandCountGN_UltraX1(funcf, jacf, measdata, b, c, NSIG, implicit=implicit, verbose=False) #получили оценку b binit=b
+        #measdata почему-то разная, причины неизвестны.
+        b=estim[0]
+        Sk=estim[1]
         Vb=o_p.countVbForMeasdata(b,  c, Ve, jacf, measdata)
-        # #посчитали определитель
+        #посчитали определитель
         detVb=np.linalg.det(Vb)
 
-        alt=estim['AvLogTruth']
-
-
         if verbose:
-            print ("Sequence Plan Iteration: {0}\nb={1}\ndetVb={2}\nprevdetVb={3} \nSk={4} \nAvLogTruth={5}".format(numiter, b, detVb, prevdetVb, Sk, alt))
+            print ("Sequence Plan Iteration: {0}\nb={1}\ndetVb={2}\nprevdetVb={3} \nSk={4}".format(numiter, b, detVb, prevdetVb, Sk))
 
 
         VdShelfPow=terminationOptDict['VdShelfPow'] if 'VdShelfPow' in terminationOptDict else -1
 
-        #condition=prevdetVb!=None and math.fabs(detVb-prevdetVb)/prevdetVb<math.pow(10,VdShelfPow) #если вышли на плато
-        condition=prevdetVb!=None and math.fabs(alt-prevALT)/prevALT<math.pow(10,VdShelfPow) #если вышли на плато
+        condition=prevdetVb!=None and math.fabs(detVb-prevdetVb)/prevdetVb<math.pow(10,VdShelfPow) #если вышли на плато
 
 
 
-        #prevdetVb=detVb
-        prevALT=alt
+        prevdetVb=detVb
 
         if condition:
             return b, numiter, Sk, startplan, origplan, log, estim, measdata, detVb #то всё вернуть
