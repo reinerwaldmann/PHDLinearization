@@ -83,6 +83,8 @@ def diodeResistorIMPLICITfunction (x,b,c=None):
 
 #funstr = "b0*(exp((x0-y0*b2)/(FT*b1)) -1)-y0" #в подготовленном для взятия производной виде
 
+#b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0]
+
 #print (sympy.diff(funstr,'y0').__str__())
 
 
