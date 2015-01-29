@@ -1,26 +1,57 @@
-__author__ = 'vasilev_is'
+Наставление по написанию оценочных скриптов (кейсов)
 
-import math
-
-import numpy as np
-from scipy import optimize
-import sympy
-
-#Part1: прямая ветвь ВАХ диода
-#Стандарт: implicit
-#Таблица переменных:
+Общие положения
+Скрипты оценки бывают для  явных и неявных функций. В настоящей версии Наставления описана методика создания скриптов для неявных функций
+(уравнений Кирхгофа, в частности)
 
 
+Стандартный набор векторов
+x
+b
+c
+y
 
-#Описание стандартных функций приводятся в Методике программирования оценочных скриптов
-#Стандартные глобальные переменные:
+Глобальные переменные
 numnone=0 #количество раз, когда функция вернула None, не справившись с оценкой тока
 
 
-#Нестандартные глобальные переменные:
-FT=0.02586419 #подогнанное по pspice
 
 
+
+Реестр стандартных функций
+Общие положения
+Стандартные функции идут в начале файла и точно в порядке, указанном ниже.
+Названия функций формируются следующим образом - ставится префикс, _ и затем название кейса или подкейса.
+Если в одном файле кейса исследуются две модели, то в начале файла размещается описание моделей, ссылки на теоретические положения
+(как вариант, на раздел диссертации) и так далее.
+Внутреннее содержание функций возможно наиболее приближено к приводимому в примере вплоть до названий переменных
+
+
+
+def func_name(y,x,b,c)
+Уравнения Кирхгофа. На входе значения, на выходе вектор значений y (list)
+
+def solver_name (x,b,c=None):
+Основная функция. Отражает модель - на входе входные вектора, на выходе - выходные
+Возвращает solx=optimize.root(...).x
+
+
+def Jac_name (x,b,c,y):
+Якобиан векторной функции (модели)
+Возвращает jacf=np.dot(np.linalg.inv(dfdy(y,x,b,c)), dfdb(y,x,b,c) )
+
+
+
+def test_name():
+Функция тестирования работы модели. Не возвращает ничего.
+Выводит график модели через pyplot
+
+
+def extraction_name():
+Функция экстрагирования параметров
+
+
+Примеры оформления функций
 
 
 def func_Kirch_DiodeV2Mod2DirectBranch(y,x,b,c):
@@ -34,18 +65,8 @@ def func_Kirch_DiodeV2Mod2DirectBranch(y,x,b,c):
     :return:
     """
     global FT
-    #mm=float(b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0])
-    In =   float(b[0]*(math.exp( (x[0]-y[0]*b[7])/(FT*b[1]))-1 )-y[0]) #+
-    King = float(math.sqrt (b[2]/(b[2]+In))) #+
-    Irec = float(b[3]*(math.exp((x[0]-y[0]*b[7])/(FT*b[4]))-1 )-y[0]) #+
-    Kgen = float(((1- (x[0]-y[0]*b[7])/b[5])**2+0.005 )**(b[6]/2) ) #+
-    Ifwd = float(In*King+Irec*Kgen) #+
-    Ifwd_direct=(b[0]*(math.exp( (x[0]-y[0]*b[7])/(FT*b[1]))-1 )-y[0]) * math.sqrt (b[2]/(b[2]+(b[0]*(math.exp( (x[0]-y[0]*b[7])/(FT*b[1]))-1 )-y[0])))+\
-                (b[3]*(math.exp((x[0]-y[0]*b[7])/(FT*b[4]))-1 )-y[0]) * (((1- (x[0]-y[0]*b[7])/b[5])**2+0.005 )**(b[6]/2))
-    return [Ifwd]
-
-
-
+    mm=float(b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0])
+    return [mm]
 
 def solver_Kirch_DiodeV2Mod2DirectBranch (x,b,c=None):
     """
@@ -56,14 +77,10 @@ def solver_Kirch_DiodeV2Mod2DirectBranch (x,b,c=None):
     :return:
     """
     global numnone
-
     global FT
-
     dfdy=lambda y,x,b,c=None: np.array ([[ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]])
-
     func = func_Kirch_DiodeV2Mod2DirectBranch
     solvinit=[1]
-
     try:
         solx=optimize.root(func, solvinit, args=(x,b,c), jac=dfdy, method='lm').x
         #http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
@@ -72,38 +89,26 @@ def solver_Kirch_DiodeV2Mod2DirectBranch (x,b,c=None):
         #print ('diodeResistorIMPLICITfunction: Error in findroot=',e)
         numnone+=1
         return None
-
     if solx-solvinit==[0]*len(solx):
          numnone+=1
          return None
-
     return solx
 
 
 
 def Jac_Kirch_DiodeV2Mod2DirectBranch (x,b,c,y):
     global FT
-
-
     dfdb=lambda y,x,b,c: np.matrix( [ [math.exp((-b[2]*y[0] + x[0])/(FT*b[1])) - 1,
                                       -b[0]*(-b[2]*y[0] + x[0])*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**2),
                                       -b[0]*y[0]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]     ])
-
-
     dfdy=lambda y,x,b,c: np.matrix ([ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])])
-
     #возвращает структурную матрицу
     #jacf=lambda x,b,c,y: jjacf(x,b,c,y,dfdb,dfdy)
-
-
     jacf=np.dot(np.linalg.inv(dfdy(y,x,b,c)), dfdb(y,x,b,c) )
-
-
     return jacf
 
 
 def test_Kirch_DiodeV2Mod2DirectBranch():
-
     b=[1.238e-14, 1.8, 1000]
     #0.0026638081177255196
     rng=np.arange(0.01,1.5,0.01)
@@ -120,11 +125,8 @@ def test_Kirch_DiodeV2Mod2DirectBranch():
     plt.grid()
     plt.show()
 
-def extraction_Kirch_DiodeV2Mod2DirectBranch():
-    pass
 
 
 
-funstr="x**4"
 
-print (str(sympy.diff(funstr, 'x')))
+Наставление по подгонке параметров

@@ -15,10 +15,8 @@ import Ofiura.Ofiura_Plotting as o_pl
 
 numnone=0 #количество раз, когда функция вернула None, не справившись с оценкой тока
 
-
 """
 Экстрагируем три параметра диода: N (коэфф. неидеальности), Is, R(омическое сопротивление, включенное последовательно с диодом)
-
 """
 
 #Внимание - надо исключать из плана эксперимента неверно оценённые точки. Неверными признаются те, у которых результат совпадает с init
@@ -99,6 +97,7 @@ def diodeResistorIMPLICITfunction (x,b,c=None):
 
 
 def diodeResistorIMPLICITfunction_logwrapper (x,b,c=None):
+    "deprecated"
     return list(map(math.log, diodeResistorIMPLICITfunction(x,b)))
 
 
@@ -108,8 +107,6 @@ def diodeResistorIMPLICITfunction_logwrapper (x,b,c=None):
 
 def diodeResistorIMPLICITJac (x,b,c,y):
     FT=0.02586419 #подогнанное по pspice
-
-
 
 
     dfdb=lambda y,x,b,c: np.matrix( [ [math.exp((-b[2]*y[0] + x[0])/(FT*b[1])) - 1,

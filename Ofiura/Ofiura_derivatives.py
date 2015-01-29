@@ -9,7 +9,7 @@ def makeDerivlist (iline:str, listvars:list):
     :param listvars: список переменных
     :return: список производных по данным переменным
     """
-    line = iline.replace('[','').replace(']','').replace('math.exp','exp')
+    line = iline.replace('[','').replace(']','').replace('math.','')
 
     # print (line)
     # print (listvars)
