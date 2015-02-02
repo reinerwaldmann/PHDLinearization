@@ -30,6 +30,8 @@ def makeDerivListb (line:str, b:list, letter='b'):
     for i in range (len(b)):
         letterlist.append('{0}{1}'.format(letter, i))
 
+    print (letterlist)
+
     return makeDerivlist (line, letterlist)
 
 def makeDerivMatrix(lines:list, b:list, letter='b'):
@@ -57,7 +59,7 @@ def backwardOpt (line):
         line=line.replace ('b{0}'.format(i),'b[{0}]'.format(i))
         line=line.replace ('c{0}'.format(i),'c[{0}]'.format(i))
         line=line.replace ('y{0}'.format(i),'y[{0}]'.format(i))
-    return line.replace('exp', 'math.exp')
+    return line.replace('exp', 'math.exp').replace('sqrt', 'math.sqrt').replace ('log', 'math.log')
 
 
 

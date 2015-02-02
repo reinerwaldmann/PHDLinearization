@@ -41,15 +41,14 @@ def func_Kirch_DiodeV2Mod2DirectBranch(y,x,b,c):
     """
     global FT
     #mm=float(b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0])
-    In =   float(b[0]*(math.exp( (x[0]-y[0]*b[7])/(FT*b[1]))-1 )) #+
-    King = float(math.sqrt (b[2]/(b[2]+In))) #+
-    Irec = float(b[3]*(math.exp((x[0]-y[0]*b[7])/(FT*b[4]))-1 )) #+
-    Kgen = float(((1- (x[0]-y[0]*b[7])/b[5])**2+0.005 )**(b[6]/2) ) #+
-    Ifwd = float(In*King+Irec*Kgen - y [0])  #+
-    Ifwd_direct=(b[0]*(math.exp( (x[0]-y[0]*b[7])/(FT*b[1]))-1 )) * math.sqrt (b[2]/(b[2]+(b[0]*math.exp( (x[0]-y[0]*b[7])/(FT*b[1]))-1)))+\
-                (b[3]*(math.exp((x[0]-y[0]*b[7])/(FT*b[4]))-1 )) * (((1- (x[0]-y[0]*b[7])/b[5])**2+0.005 )**(b[6]/2))-y[0]
+    # In =   float(b[0]*(math.exp( (x[0]-y[0]*b[6])/(FT*b[1]))-1 )) #+
+    # King = 1
+    # Irec = float(b[2]*(math.exp((x[0]-y[0]*b[6])/(FT*b[3]))-1 )) #+
+    # Kgen = float(((1- (x[0]-y[0]*b[6])/b[4])**2+0.005 )**(b[5]/2) ) #+
+    # Ifwd = float(In*King+Irec*Kgen - y [0])  #+
+    Ifwd_direct=(b[0]*(math.exp( (x[0]-y[0]*b[6])/(FT*b[1]))-1 ))+ (b[2]*(math.exp((x[0]-y[0]*b[6])/(FT*b[3]))-1 )) * (((1- (x[0]-y[0]*b[6])/b[4])**2+0.005 )**(b[5]/2))-y[0]
 
-    return [Ifwd]
+    return [Ifwd_direct]
 
 
 def solver_Kirch_DiodeV2Mod2DirectBranch (x,b,c=None):
@@ -64,21 +63,15 @@ def solver_Kirch_DiodeV2Mod2DirectBranch (x,b,c=None):
 
     global FT
 
-    dfdy=lambda y,x,b,c=None: np.array ([[b[3]*b[6]*b[7]*(1 - (-b[7]*y[0] + x[0])/b[5])*
-    ((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*(math.exp((-b[7]*y[0] +
-    x[0])/(FT*b[4])) - 1)/(b[5]*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)) - 1 +
-    b[0]**2*b[7]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*
-    (math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1)*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(2*FT*b[1]*(b[0]*
-    math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)) - b[0]*b[7]*
-    math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*
-    math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[3]*b[7]*
-    ((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*math.exp((-b[7]*y[0] + x[0])/(FT*b[4]))/(FT*b[4])]])
+    dfdy=lambda y,x,b,c=None: np.array ([[b[2]*b[5]*b[6]*(1 - (-b[6]*y[0] + x[0])/b[4])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)) - 1 - b[0]*b[6]*math.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*math.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]]
+)
 
     func = func_Kirch_DiodeV2Mod2DirectBranch
     solvinit=[1]
 
     try:
         solx=optimize.root(func, solvinit, args=(x,b,c), jac=dfdy, method='lm').x
+        #solx=optimize.root(func, solvinit, args=(x,b,c), method='lm').x
         #http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
         #http://codereview.stackexchange.com/questions/28207/is-this-the-fastest-way-to-find-the-closest-point-to-a-list-of-points-using-nump
     except BaseException as e:
@@ -94,8 +87,9 @@ def solver_Kirch_DiodeV2Mod2DirectBranch (x,b,c=None):
          return None
 
     if solx<0:
-        print ("solver: <0")
-        return None
+        #print ("solver: <0")
+        pass
+        #return None
 
     return solx
 
@@ -114,26 +108,17 @@ def Jac_Kirch_DiodeV2Mod2DirectBranch (x,b,c,y):
     global FT
 
 
-    dfdb=lambda y,x,b,c: np.matrix( [[-b[0]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1)*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(2*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)) + math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1),
-                                      b[0]**2*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(-b[7]*y[0] + x[0])*(math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1)*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(2*FT*b[1]**2*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)) - b[0]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(-b[7]*y[0] + x[0])*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**2),
-                                      b[0]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(-b[2]/(2*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)**2) + 1/(2*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)))*(math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1)*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)/b[2],
-                                      ((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*(math.exp((-b[7]*y[0] + x[0])/(FT*b[4])) - 1),
-                                      -b[3]*(-b[7]*y[0] + x[0])*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*math.exp((-b[7]*y[0] + x[0])/(FT*b[4]))/(FT*b[4]**2),
-                                      b[3]*b[6]*(1 - (-b[7]*y[0] + x[0])/b[5])*(-b[7]*y[0] + x[0])*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*(math.exp((-b[7]*y[0] + x[0])/(FT*b[4])) - 1)/(b[5]**2*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)),
-                                      b[3]*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*(math.exp((-b[7]*y[0] + x[0])/(FT*b[4])) - 1)*math.log((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)/2,
-                                      b[3]*b[6]*y[0]*(1 - (-b[7]*y[0] + x[0])/b[5])*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*(math.exp((-b[7]*y[0] + x[0])/(FT*b[4])) - 1)/(b[5]*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)) + b[0]**2*y[0]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1)*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(2*FT*b[1]*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)) - b[0]*y[0]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[3]*y[0]*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*math.exp((-b[7]*y[0] + x[0])/(FT*b[4]))/(FT*b[4])]]
-   )
+    dfdy=lambda y,x,b,c=None: np.array ([[b[2]*b[5]*b[6]*(1 - (-b[6]*y[0] + x[0])/b[4])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)) - 1 - b[0]*b[6]*math.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*math.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]]
+    )
 
 
-    dfdy=lambda y,x,b,c=None: np.array ([[b[3]*b[6]*b[7]*(1 - (-b[7]*y[0] + x[0])/b[5])*
-    ((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*(math.exp((-b[7]*y[0] +
-    x[0])/(FT*b[4])) - 1)/(b[5]*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)) - 1 +
-    b[0]**2*b[7]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*
-    (math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1)*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(2*FT*b[1]*(b[0]*
-    math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)) - b[0]*b[7]*
-    math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*
-    math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[3]*b[7]*
-    ((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*math.exp((-b[7]*y[0] + x[0])/(FT*b[4]))/(FT*b[4])]])
+    dfdb=lambda y,x,b,c: np.matrix([[math.exp((-b[6]*y[0] + x[0])/(FT*b[1])) - 1, -b[0]*(-b[6]*y[0] + x[0])*math.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**2), ((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1), -b[2]*(-b[6]*y[0] + x[0])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*math.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3]**2), b[2]*b[5]*(1 - (-b[6]*y[0] + x[0])/b[4])*(-b[6]*y[0] + x[0])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]**2*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)), b[2]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)*math.log((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)/2, b[2]*b[5]*y[0]*(1 - (-b[6]*y[0] + x[0])/b[4])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)) - b[0]*y[0]*math.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*y[0]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*math.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]]
+)
+
+
+
+
+
     #возвращает структурную матрицу
     #jacf=lambda x,b,c,y: jjacf(x,b,c,y,dfdb,dfdy)
     jacf=np.dot(np.linalg.inv(dfdy(y,x,b,c)), dfdb(y,x,b,c) )
@@ -144,7 +129,7 @@ def Jac_Kirch_DiodeV2Mod2DirectBranch (x,b,c,y):
 
 def test_Kirch_DiodeV2Mod2DirectBranch():
     #       0       1   2      3    4  5   6    7
-    b=[1.238e-14, 1.8, 10E5, 1.1e-14, 2, 1, 0.5, 100]
+    b=[1.238e-14, 1.8, 1.1e-14, 2, 1, 0.5, 100]
     rng=np.arange(0.01,1.5,0.01)
     #снимем ВАХ
 #    resrng=[solver_Kirch_DiodeV2Mod2DirectBranch ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
@@ -157,6 +142,8 @@ def test_Kirch_DiodeV2Mod2DirectBranch():
     plt.grid()
     plt.show()
 
+
+
 def extraction_Kirch_DiodeV2Mod2DirectBranch():
     """
     [Реестровая]
@@ -167,10 +154,10 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
     jacf = Jac_Kirch_DiodeV2Mod2DirectBranch
     c={}
     Ve=np.array([ [0.00000000001] ]  )
-    btrue=[1.238e-14, 1.8, 10E5, 1.1e-14, 2, 1, 0.5, 100]
-    bstart=np.array(btrue)-np.array(btrue)*0.3
-    bend=np.array(btrue)+np.array(btrue)*0.3
-    binit=[1.1-14, 1.5, 9.5E5, 1e-14, 1.9, 1.1, 0.5, 100]
+    btrue=[1.238e-14, 1.8,  1.1e-14, 2, 1, 0.5, 100]
+    bstart=np.array(btrue)-np.array(btrue)*0.1
+    bend=np.array(btrue)+np.array(btrue)*0.1
+    binit=[1.1-14, 1.5,  1e-14, 1.9, 1.1, 0.5, 100]
     xstart=[0.01]
     #xend=[20,60]
     xend=[1.1]
@@ -180,11 +167,8 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
 
     #Получаем априорный план
     print("performing aprior plan:")
-
     #блок кеширования априорного плана в файл
-    filename = os.path.basename(__file__).replace('.py','_plan')
-
-
+    filename = os.path.basename(__file__).replace('.py','_plan1')
     try:
 
         oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
@@ -226,7 +210,7 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
     #Оценивание с использованием binit
     print('Aprior Plan Binit')
     #данные по новому формату
-    binit=[1.238e-14, 1.8, 10E5, 1.1e-14, 2, 1, 0.5, 100]
+    binit=[1.238e-14, 1.8, 1, 1.1e-14, 2, 1, 0.5, 100]
 
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
@@ -264,17 +248,19 @@ def solver_Kirch_DiodeV2Mod2DirectBranch_EXPLICIT(x,b,c=None):
 
 
 
-funstr="(b[0]*(math.exp( (x[0]-y[0]*b[7])/(FT*b[1]))-1 )) * math.sqrt (b[2]/(b[2]+(b[0]*math.exp( (x[0]-y[0]*b[7])/(FT*b[1]))-1)))+\
-                (b[3]*(math.exp((x[0]-y[0]*b[7])/(FT*b[4]))-1 )) * (((1- (x[0]-y[0]*b[7])/b[5])**2+0.005 )**(b[6]/2))-y[0]"
+funstr="(b[0]*(math.exp( (x[0]-y[0]*b[6])/(FT*b[1]))-1 ))+ (b[2]*(math.exp((x[0]-y[0]*b[6])/(FT*b[3]))-1 )) * (((1- (x[0]-y[0]*b[6])/b[4])**2+0.005 )**(b[5]/2))-y[0]"
 
 
 #test_Kirch_DiodeV2Mod2DirectBranch()
 # dfdb dfdy
+#
+# print ("dfdy")
+# print (o_d.makeDerivMatrix([funstr],[0], 'y'))
+#
+# print ("dfdb")
+# print (o_d.makeDerivMatrix([funstr],list(range(8)), 'b'))
+# exit(0)
+#
 
-#lst = o_d.makeDerivMatrix([funstr],list(range(8)), 'b')
-
-#print (lst)
-
-#Электроды
 
 extraction_Kirch_DiodeV2Mod2DirectBranch()
