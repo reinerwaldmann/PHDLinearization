@@ -12,7 +12,7 @@ import Ofiura.Ofiura_Estimation as o_e
 import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
-import Ofiura.Ofiura_derivatives as o_d
+
 
 #Part1: прямая ветвь ВАХ диода
 #Режим явной функции, резистора нет
@@ -33,7 +33,7 @@ FT=0.02586419 #подогнанное по pspice
 
 
 
-def func_Kirch_DiodeV2Mod2DirectBranch(y,x,b,c):
+def func_Kirch_DiodeV2Mod2DirectBranch(x,b,c=None):
     """
     [Реестровая] +
     Уравнение Кирхгофа
@@ -50,7 +50,7 @@ def func_Kirch_DiodeV2Mod2DirectBranch(y,x,b,c):
     # Irec = float(b[2]*(math.exp((x[0]-y[0]*b[6])/(FT*b[3]))-1 )) #+
     # Kgen = float(((1- (x[0]-y[0]*b[6])/b[4])**2+0.005 )**(b[5]/2) ) #+
     # Ifwd = float(In*King+Irec*Kgen - y [0])  #+
-    Ifwd_direct=b[0]*(math.exp( (x[0])/(FT*b[1]))-1 )+ b[2]*(math.exp((x[0])/(FT*b[3]))-1 ) * (((1- (x[0])/b[4])**2+0.005 )**(b[5]/2))
+    Ifwd_direct=b[0]*(math.exp( x[0]/(FT*b[1]))-1 )+ b[2]*(math.exp(x[0]/(FT*b[3]))-1 ) * (((1- (x[0])/b[4])**2+0.005 )**(b[5]/2))
 
     return [Ifwd_direct]
 
@@ -69,18 +69,21 @@ def Jac_Kirch_DiodeV2Mod2DirectBranch (x,b,c,y):
     """
     global FT
 
+    dfdb=lambda y,x,b,c: np.matrix([[
+                                        math.exp(x[0]/(FT*b[1])) - 1,
+                                        -b[0]*x[0]*math.exp(x[0]/(FT*b[1]))/(FT*b[1]**2),
+                                        ((1 - x[0]/b[4])**2 + 0.005)**(b[5]/2)*(math.exp(x[0]/(FT*b[3])) - 1),
+                                        -b[2]*x[0]*((1 - x[0]/b[4])**2 + 0.005)**(b[5]/2)*math.exp(x[0]/(FT*b[3]))/(FT*b[3]**2),
+                                        b[2]*b[5]*x[0]*(1 - x[0]/b[4])*((1 - x[0]/b[4])**2 + 0.005)**(b[5]/2)*(math.exp(x[0]/(FT*b[3])) - 1)/(b[4]**2*((1 - x[0]/b[4])**2 + 0.005)),
+                                        b[2]*((1 - x[0]/b[4])**2 + 0.005)**(b[5]/2)*(math.exp(x[0]/(FT*b[3])) - 1)*math.log((1 - x[0]/b[4])**2 + 0.005)/2
+                                    ]])
 
-    dfdb=lambda y,x,b,c: np.matrix([[math.exp((-b[6]*y[0] + x[0])/(FT*b[1])) - 1, -b[0]*(-b[6]*y[0] + x[0])*math.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**2), ((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1), -b[2]*(-b[6]*y[0] + x[0])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*math.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3]**2), b[2]*b[5]*(1 - (-b[6]*y[0] + x[0])/b[4])*(-b[6]*y[0] + x[0])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]**2*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)), b[2]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)*math.log((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)/2, b[2]*b[5]*y[0]*(1 - (-b[6]*y[0] + x[0])/b[4])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)) - b[0]*y[0]*math.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*y[0]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*math.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]]
-)
-
-    jacf = dfdb
-
-    return jacf
+    return dfdb(y,x,b,c)
 
 
 def test_Kirch_DiodeV2Mod2DirectBranch():
     #       0       1   2      3    4  5   6    7
-    b=[1.238e-14, 1.8, 1.1e-14, 2, 1, 0.5, 100]
+    b=[1.238e-14, 1.8, 1.1e-20, 2, 1, 0.5]
     rng=np.arange(0.01,1.5,0.01)
     #снимем ВАХ
 #    resrng=[solver_Kirch_DiodeV2Mod2DirectBranch ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
@@ -105,13 +108,14 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
     jacf = Jac_Kirch_DiodeV2Mod2DirectBranch
     c={}
     Ve=np.array([ [0.00000000001] ]  )
-    btrue=[1.238e-14, 1.8,  1.1e-14, 2, 1, 0.5]
+    btrue=[1.238e-14, 1.8, 1.1e-20, 2, 1, 0.5]
+
     bstart=np.array(btrue)-np.array(btrue)*0.1
     bend=np.array(btrue)+np.array(btrue)*0.1
     binit=[1.1-14, 1.5,  1e-14, 1.9, 1.1, 0.5]
     xstart=[0.01]
     #xend=[20,60]
-    xend=[1.1]
+    xend=[1.5]
     N=40 #число точек в плане (для планов, кроме априорного)
     NArprior=30 #число точек в априорном плане
 
@@ -140,7 +144,7 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
 
     for i in range(30):
         measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
-        gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=10, name='aprior plan plus several measurements')
+        gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=False, verbose=False, Ntries=10, name='aprior plan plus several measurements')
         if (gknu):
             resarr.append(gknu)
     if resarr:
@@ -161,10 +165,10 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
     #Оценивание с использованием binit
     print('Aprior Plan Binit')
     #данные по новому формату
-    binit=[1.238e-14, 1.8, 1, 1.1e-14, 2, 1, 0.5]
+
 
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=False)
     o_q.analyseDifList(gknu)
     o_q.printGKNUNeat(gknu)
     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
@@ -176,41 +180,19 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
 
 
 
-def solver_Kirch_DiodeV2Mod2DirectBranch_EXPLICIT(x,b,c=None):
-    """
-    [Реестровая]
-    Уравнение Кирхгофа
-    :param y:
-    :param x:
-    :param b:
-    :param c:
-    :return:
-    """
-    global FT
-    #mm=float(b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0])
-    In =   b[0]*(math.exp(x[0]/(FT*b[1]))-1 ) #+
-    King = math.sqrt (b[2]/(b[2]+In)) #+
-    Irec = b[3]*(math.exp((x[0])/(FT*b[4]))-1 ) #+
-    Kgen = ((1- (x[0])/b[5])**2+0.005 )**(b[6]/2)  #+
-    Ifwd = In*King+Irec*Kgen  #+
-    #Ifwd = In  #+
-
-    return [Ifwd]
-
-
-
-funstr="(b[0]*(math.exp( (x[0])/(FT*b[1]))-1 ))+ (b[2]*(math.exp((x[0])/(FT*b[3]))-1 )) * (((1- (x[0])/b[4])**2+0.005 )**(b[5]/2))"
+#funstr="(b[0]*(math.exp( x[0]/(FT*b[1]))-1 ))+ (b[2]*(math.exp(x[0]/(FT*b[3]))-1 )) * (((1- x[0]/b[4])**2+0.005 )**(b[5]/2))"
 
 
 #test_Kirch_DiodeV2Mod2DirectBranch()
+
 # dfdb dfdy
 #
 
+#
+#print ("dfdb")
+#print (o_d.makeDerivMatrix([funstr],list(range(6)), 'b'))
 
-print ("dfdb")
-print (o_d.makeDerivMatrix([funstr],list(range(6)), 'b'))
-exit(0)
 
-
+#exit(0)
 
 extraction_Kirch_DiodeV2Mod2DirectBranch()
