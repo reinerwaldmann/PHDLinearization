@@ -14,6 +14,7 @@ import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
 
 
+
 #Part1: прямая ветвь ВАХ диода
 #Режим явной функции, резистора нет
 
@@ -138,10 +139,8 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
 
 
     #Оценивание параметров с использованием  ряда начальных значений
-
     resarr=list() #Список результатов
     t=PrettyTable (['Среднее логарифма правдоподобия','Сигма логарифма правдоподобия' , 'b','Среднее остатков по модулю'])
-
     for i in range(30):
         measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
         gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=False, verbose=False, Ntries=10, name='aprior plan plus several measurements')
@@ -162,10 +161,14 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
 
 
 
+
+
     #Оценивание с использованием binit
+
+
+    #По априорному плану
     print('Aprior Plan Binit')
     #данные по новому формату
-
 
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
     gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=False)
@@ -174,8 +177,14 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
     o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
 
 
-
-
+    #По нормальному плану
+    print("performing normal research:")
+    startplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c,Ve)
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=False)
+    o_q.analyseDifList(gknu)
+    o_q.printGKNUNeat(gknu)
+    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
 
 
 
