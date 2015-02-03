@@ -4,13 +4,11 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import optimize
-from prettytable import PrettyTable
 
 import Ofiura.Ofiura_Estimation as o_e
 import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
-import Ofiura.Ofiura_Plotting as o_pl
 
 
 numnone=0 #количество раз, когда функция вернула None, не справившись с оценкой тока
@@ -153,20 +151,18 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     jacf = diodeResistorIMPLICITJac
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.001] ]  )
+    Ve=np.array([ [0.00000001] ]  )
     btrue=[1.238e-14, 1.8, 100]
     #btrue=[1.5e-14, 1.75, 150]
-
-
 
     bstart=np.array(btrue)-np.array(btrue)*0.3
     bend=np.array(btrue)+np.array(btrue)*0.3
     binit=[1.0e-14, 1.7, 70]
     #binit=[1.238e-14, 1.8, 100]
 
-    xstart=[0.01]
+    xstart=[0.001]
     #xend=[20,60]
-    xend=[1.5]
+    xend=[2 ]
     N=20
 
 
@@ -249,39 +245,38 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     #получаем данные измерения по этому последовательному плану
 
 
-    #пробуем несколько измерений произвести
-    resarr=list()
-    #несколько раз измерения
-    t=PrettyTable (['Среднее логарифма правдоподобия','Сигма логарифма правдоподобия' , 'b','Среднее остатков по модулю'])
+    # #пробуем несколько измерений произвести
+    # resarr=list()
+    # #несколько раз измерения
+    # t=PrettyTable (['Среднее логарифма правдоподобия','Сигма логарифма правдоподобия' , 'b','Среднее остатков по модулю'])
+    # for i in range(20):
+    #     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
+    #     gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=10, name='aprior plan plus several measurements')
+    #     if (gknu):
+    #         resarr.append(gknu)
+    # if resarr:
+    #     for gknu in resarr:
+    #         if (gknu):
+    #             t.add_row([gknu['AvLogTruth'],gknu['SigmaLT'], gknu['b'], gknu['AvDif'] ])
+    # be=o_e.selectBestEstim (resarr)
+    # t.add_row(['*', '*', '*', '*' ])
+    # t.add_row([be['AvLogTruth'], be['SigmaLT'], be['b'], be['AvDif'] ])
+    # print(t)
+    # o_q.analyseDifList(be)
 
 
-    for i in range(20):
-        measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
-        gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=10, name='aprior plan plus several measurements')
-        if (gknu):
-            resarr.append(gknu)
-    if resarr:
-        for gknu in resarr:
-            if (gknu):
-                t.add_row([gknu['AvLogTruth'],gknu['SigmaLT'], gknu['b'], gknu['AvDif'] ])
-    be=o_e.selectBestEstim (resarr)
 
 
-    #всё делаем по априорному плану, производим  измерения, оцениваем, печатаем,
-
-    # measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
-    # gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=50, name='aprior plan')
-    # be=gknu
-
-    t.add_row(['*', '*', '*', '*' ])
-    t.add_row([be['AvLogTruth'], be['SigmaLT'], be['b'], be['AvDif'] ])
-    print(t)
+    #Априорный план просто
 
 
-    o_q.analyseDifList(be)
+    startplan =  o_p.makeUniformExpPlan(xstart, xend, 150)
 
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, startplan, btrue, c,Ve)
+    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
+    o_q.printGKNUNeat(gknu)
+    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c, jacf)
 
-    #print (o_e.selectBestEstim (resarr))
 
 
 
@@ -292,19 +287,19 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
     #if plot:
     #    o_pl.plotPlanAndMeas2D(measdata, 'Hybrid Disp{0} measdata'.format(Ve))
     #здесь мы сравниваем, сработает ли метод уточнения результатов - выбор начального значения из пула
-    print('grandCountGN_UltraX_ExtraStart')
-
-    #данные по новому формату
-
-
-
-    print('normal')
-    print("GKNU bei plan")
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
-    o_q.printGKNUNeat(gknu)
-    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
-    if plot:
-        o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
+    # print('grandCountGN_UltraX_ExtraStart')
+    #
+    # #данные по новому формату
+    #
+    #
+    #
+    # print('normal')
+    # print("GKNU bei plan")
+    # gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
+    # o_q.printGKNUNeat(gknu)
+    # o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
+    # if plot:
+    #     o_pl.plotSkGraph(gknu, 'Hybrid bei plan Sk drop')
 
 
 

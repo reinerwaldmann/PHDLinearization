@@ -60,6 +60,10 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
         Sk=0
         for point in measdata:
             jac=jacf(point['x'],b,c,point['y'])
+
+            if jac==None:
+                return None
+
             #print (G.shape, jac.T.shape, jac.shape)
             G+=np.dot(jac.T,jac)
 
@@ -67,9 +71,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
                 dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
             except BaseException as e:
                 print('grandCountGN_UltraX1: As funcf returned None, method  stops:', e)
-                exit(0)
-
-
+                return None
 
             # print(dif, jac)
             # print('-----')
@@ -89,7 +91,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
         except BaseException as e:
             print('Error in G:', e)
             print('G=',G)
-            exit(0)
+            return None
 
 
         #mu counting
@@ -130,7 +132,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
                 condition=True
 
 
-        if numiter>500: #max number of iterations
+        if numiter>1000: #max number of iterations
             log+="GKNUX1: Break due to max number of iteration exceed"
             break
 

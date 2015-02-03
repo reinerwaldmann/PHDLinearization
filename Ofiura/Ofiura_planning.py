@@ -290,8 +290,11 @@ def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, ou
         if not Ve==None:
             ydisps=np.diag(Ve)
             for k in range(len(y)):
+                if (y[k]<0):
+                    y[k]=-1*math.exp(random.normalvariate(math.log(math.fabs(y[k])), math.sqrt(ydisps[k])))
+                else:
+                    y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
 
-                y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
 
 
         curdict = {'x':expplan[i], 'y':y}
