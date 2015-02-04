@@ -16,6 +16,7 @@ import Ofiura.Ofiura_Qualitat as o_q
 
 
 
+
 #Part1: прямая ветвь ВАХ диода
 #Режим явной функции, резистора нет
 
@@ -53,6 +54,14 @@ def func_Kirch_DiodeV2Mod2DirectBranch(x,b,c=None):
     # Kgen = float(((1- (x[0]-y[0]*b[6])/b[4])**2+0.005 )**(b[5]/2) ) #+
     # Ifwd = float(In*King+Irec*Kgen - y [0])  #+
 
+    In=b[0]*(math.exp( x[0]/(FT*b[1]))-1 )
+    King=1
+    Irec=b[2]*(math.exp(x[0]/(FT*b[3]))-1 )
+    Kgen = ((1- (x[0])/b[4])**2+0.005 )**(b[5]/2)
+
+
+    print (In, King, Irec, Kgen, x,b)
+
     try:
         Ifwd_direct=b[0]*(math.exp( x[0]/(FT*b[1]))-1 )+ b[2]*(math.exp(x[0]/(FT*b[3]))-1 ) * (((1- (x[0])/b[4])**2+0.005 )**(b[5]/2))
     except BaseException as e:
@@ -85,6 +94,9 @@ def Jac_Kirch_DiodeV2Mod2DirectBranch (x,b,c,y):
                                     ]])
 
     #print (dfdb(y,x,b,c))
+
+    func_Kirch_DiodeV2Mod2DirectBranch(x,b,c)
+
 
     try:
         return dfdb(y,x,b,c)
