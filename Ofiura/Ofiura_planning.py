@@ -269,7 +269,6 @@ def makeMeasOneDot_lognorm(func, xdot, b:list, c:dict, Ve=[]):
 
 def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilename="", listOfOutvars=None):
     """
-
     :param func: векторная функция
     :param expplan: план эксперимента (список значений вектора x)
     :param b: вектор b
@@ -295,13 +294,9 @@ def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, ou
                 else:
                     y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
 
-
-
         curdict = {'x':expplan[i], 'y':y}
         #res[i]["y"]=y
         res.append(curdict)
-
-
     return res
 
 

@@ -1,10 +1,10 @@
 __author__ = 'vasilev_is'
 
 import math
+import os
 
 import numpy as np
 from prettytable import PrettyTable
-
 """
 logTruthness (measdata:list, b:list, Ve,  func, c):
     Считает логарифм функции правдоподобия для известной ковариационной матрицы Ve - ошибок экспериментальных данных
@@ -33,6 +33,7 @@ def getQualitat(measdata:list, b:list, Ve,  func, c):
 
 """
 
+foldername=None
 
 def logTruthness (measdata:list, b:list, Ve,  func, c):
     """
@@ -166,22 +167,22 @@ def printQualitatNeat(measdata:list, b:list, Ve,  func, c, jac):
 
 
 
-
-
-
-
-
-
-
-
-
 def printGKNUNeat(gknu):
     """
     Выводит таблицу результатов работы метода оценки
      USES PRETTYTABLE
      """
     t=PrettyTable(['b','Количество итераций', 'log', 'Skmu'])
-    t.add_row([gknu[0],gknu[1],gknu[2],gknu[4]])
+
+    if type(gknu)==tuple:
+        t.add_row([gknu[0],gknu[1],gknu[2],gknu[4]])
+    elif type(gknu)==dict:
+        t.add_row([gknu['b'],gknu['numiter'],gknu['log'],gknu['Sk']])
+    else:
+        print  ('analyseDifList erroneous arg')
+        return
+
+
     print('Данные оценки')
     print (t)
 
@@ -198,7 +199,7 @@ def printSeqPlanData(seq):
 
 
 
-def analyseDifList(arg, plot=True ): #числовой режим, вектора не поддерживаются
+def analyseDifList(arg, plot=True, imagename='img' ): #числовой режим, вектора не поддерживаются
     """
     Функция, выводит гистограмму остатков
     в будущем будет возвращать True, если распределение нормальное и false, если таки нет
@@ -206,6 +207,8 @@ def analyseDifList(arg, plot=True ): #числовой режим, вектор�
     :param arg
     :param plot
     """
+    global foldername
+
 
     if type(arg)==dict:
         diflist = arg['Diflist']
@@ -227,8 +230,17 @@ def analyseDifList(arg, plot=True ): #числовой режим, вектор�
     if plot:
         #посмотреть диаграмму остатков у лучшей оценки
         import matplotlib.pyplot as plt
-        plt.hist(superlist, 25)
-        plt.show()
+        plt.hist(superlist, 25, label=imagename)
+
+        if foldername:
+            try:
+                os.makedirs(foldername)
+            except OSError:
+                if not os.path.isdir(foldername):
+                    raise
+            plt.savefig(foldername+imagename+'.png')
+        else:
+            plt.show()
 
     return np.average(superlist), True
 

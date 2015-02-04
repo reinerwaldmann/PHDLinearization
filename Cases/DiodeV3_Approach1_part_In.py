@@ -7,9 +7,20 @@ import numpy as np
 from scipy import optimize
 import matplotlib.pyplot as plt
 
+import Ofiura.Ofiura_Estimation as o_e
 import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_planning as o_p
+import Ofiura.Ofiura_Qualitat as o_q
 
+
+#Задаём имя папки, куда складывать нарисованные изображения
+genfoldername = '/home/reiner/results_estimation/'
+subfoldername = os.path.basename(__file__).replace('.py','_results/')
+o_q.foldername = genfoldername + subfoldername
+
+
+
+from prettytable import PrettyTable
 
 #Part1: прямая ветвь ВАХ диода
 #функция логарифмирована в соответствии с подходом 1 к проблеме устранения ошибок
@@ -41,7 +52,13 @@ def func_DiodeV3Approach1_part_In(y,x,b,c):
     global FT
     #mm=float(b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0])
 
-    func=x[0]/(FT*b[1]) + math.log(b[0]/(b[0]+y[0]))
+    try:
+        func=x[0]/(FT*b[1]) + math.log(b[0]/(b[0]+y[0]))
+
+    except BaseException:
+
+        return 10E6
+
     return func
 
 
@@ -60,7 +77,7 @@ def solver_func_DiodeV3Approach1_part_In (x,b,c=None):
     solvinit=[1]
 
     try:
-        solx=optimize.root(func, solvinit, args=(x,b,c), jac=dfdy, method='hybr').x
+        solx=optimize.root(func, solvinit, args=(x,b,c), jac=dfdy, method='lm').x
 
         #solx=optimize.minimize(func, solvinit, args=(x,b,c), jac=dfdy, bounds=[(0,None),]).x
 
@@ -74,10 +91,10 @@ def solver_func_DiodeV3Approach1_part_In (x,b,c=None):
 
         return [None]
 
-    if solx-solvinit==[0]*len(solx):
-         numnone+=1
-         print ("solver: problems in estimation")
-         return [None]
+    # if solx-solvinit==[0]*len(solx):
+    #      numnone+=1
+    #      print ("solver: problems in estimation")
+    #      return [None]
 
 
 
@@ -96,33 +113,12 @@ def Jac_func_DiodeV3Approach1_part_In (x,b,c,y):
     :return:
     """
     global FT
-
-
-    dfdb=lambda y,x,b,c: np.matrix( [[-b[0]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1)*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(2*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)) + math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1),
-                                      b[0]**2*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(-b[7]*y[0] + x[0])*(math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1)*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(2*FT*b[1]**2*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)) - b[0]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(-b[7]*y[0] + x[0])*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**2),
-                                      b[0]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(-b[2]/(2*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)**2) + 1/(2*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)))*(math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1)*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)/b[2],
-                                      ((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*(math.exp((-b[7]*y[0] + x[0])/(FT*b[4])) - 1),
-                                      -b[3]*(-b[7]*y[0] + x[0])*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*math.exp((-b[7]*y[0] + x[0])/(FT*b[4]))/(FT*b[4]**2),
-                                      b[3]*b[6]*(1 - (-b[7]*y[0] + x[0])/b[5])*(-b[7]*y[0] + x[0])*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*(math.exp((-b[7]*y[0] + x[0])/(FT*b[4])) - 1)/(b[5]**2*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)),
-                                      b[3]*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*(math.exp((-b[7]*y[0] + x[0])/(FT*b[4])) - 1)*math.log((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)/2,
-                                      b[3]*b[6]*y[0]*(1 - (-b[7]*y[0] + x[0])/b[5])*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*(math.exp((-b[7]*y[0] + x[0])/(FT*b[4])) - 1)/(b[5]*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)) + b[0]**2*y[0]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*(math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1)*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(2*FT*b[1]*(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)) - b[0]*y[0]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[3]*y[0]*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*math.exp((-b[7]*y[0] + x[0])/(FT*b[4]))/(FT*b[4])]]
-   )
-
-
-    dfdy=lambda y,x,b,c=None: np.array ([[b[3]*b[6]*b[7]*(1 - (-b[7]*y[0] + x[0])/b[5])*
-    ((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*(math.exp((-b[7]*y[0] +
-    x[0])/(FT*b[4])) - 1)/(b[5]*((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)) - 1 +
-    b[0]**2*b[7]*math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*
-    (math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) - 1)*math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(2*FT*b[1]*(b[0]*
-    math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1)) - b[0]*b[7]*
-    math.sqrt(b[2]/(b[0]*math.exp((-b[7]*y[0] + x[0])/(FT*b[1])) + b[2] - 1))*
-    math.exp((-b[7]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[3]*b[7]*
-    ((1 - (-b[7]*y[0] + x[0])/b[5])**2 + 0.005)**(b[6]/2)*math.exp((-b[7]*y[0] + x[0])/(FT*b[4]))/(FT*b[4])]])
+    dfdb=lambda y,x,b,c: np.matrix( [[(b[0] + y[0])*(-b[0]/(b[0] + y[0])**2 + 1/(b[0] + y[0]))/b[0],
+                                      -x[0]/(FT*b[1]**2)]])
+    dfdy=lambda y,x,b,c=None: np.array ([[-1/(b[0] + y[0])]])
     #возвращает структурную матрицу
     #jacf=lambda x,b,c,y: jjacf(x,b,c,y,dfdb,dfdy)
     jacf=np.dot(np.linalg.inv(dfdy(y,x,b,c)), dfdb(y,x,b,c) )
-
-
     return jacf
 
 
@@ -141,45 +137,99 @@ def test_func_DiodeV3Approach1_part_In():
     plt.grid()
     plt.show()
 
+
+#    plt.savefig(foldername+'/lol.png')
+
+
 def extraction_func_DiodeV3Approach1_part_In():
     """
     [Реестровая]
 
     :return:
     """
-    funcf=solver_Kirch_DiodeV2Mod2DirectBranch
-    jacf = Jac_Kirch_DiodeV2Mod2DirectBranch
+    funcf=solver_func_DiodeV3Approach1_part_In
+    jacf=Jac_func_DiodeV3Approach1_part_In
     c={}
-    Ve=np.array([ [0.00000000001] ]  )
-    btrue=[1.238e-14, 1.8, 10E5, 1.1e-14, 2, 1, 0.5, 100]
-    bstart=np.array(btrue)-np.array(btrue)*0.3
-    bend=np.array(btrue)+np.array(btrue)*0.3
-    binit=[1.1-14, 1.5, 9.5E5, 1e-14, 1.9, 1.1, 0.5, 100]
+    Ve=np.array([ [0.001] ]  )
+    btrue=[1.238e-14, 1.3]
+    bstart=np.array(btrue)-np.array(btrue)*0.1
+    bend=np.array(btrue)+np.array(btrue)*0.1
+
+    binit=np.array(btrue)+np.array(btrue)*0.05
     xstart=[0.01]
     #xend=[20,60]
-    xend=[1.1]
-    N=40 #число точек в плане (для планов, кроме априорного)
-    NArprior=30 #число точек в априорном плане
-
+    xend=[3]
+    N=300 #число точек в плане (для планов, кроме априорного)
+    NArprior=20 #число точек в априорном плане
 
     #Получаем априорный план
     print("performing aprior plan:")
-
     #блок кеширования априорного плана в файл
     filename = os.path.basename(__file__).replace('.py','_plan')
-
-
     try:
-
         oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
         print ("Read file successful")
     except BaseException as e:
         oplan=o_ap.grandApriornPlanning (xstart, xend, NArprior, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True, verbose=True)[1]
         o_p.writePlanToFile(oplan, filename)
+    #}
+
+
+    unifplan =  o_p.makeUniformExpPlan(xstart, xend, N)
+
+
+    #получаем измерения с планов
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
+    measdataUnif = o_p.makeMeasAccToPlan_lognorm(funcf, unifplan, btrue, c,Ve )
+
+    filename = os.path.basename(__file__).replace('.py','_results')
 
 
 
-# funstr="x[0]/(FT*b[1]) + math.log(b[0]/(b[0]+y[0]))"
-# print (o_d.makeDerivMatrix([funstr],list(range(1)), 'y'))
-test_func_DiodeV3Approach1_part_In()
+    #выполняем оценку
+    print ("performing aprior plan")
+    gknu=o_e.grandCountGN_UltraX_Qualitat (funcf, jacf,  measdata, binit, c, Ve, NSIG=100, implicit=True)
+    o_q.analyseDifList(gknu, imagename='Aprior_Plan')
+    o_q.printGKNUNeat(gknu)
+    o_q.printQualitatNeat(measdata, gknu['b'], Ve, funcf, c, jacf)
+
+
+    print ("performing uniform plan")
+    gknu=o_e.grandCountGN_UltraX_Qualitat (funcf, jacf,  measdataUnif, binit, c, Ve, NSIG=100, implicit=True)
+    o_q.analyseDifList(gknu, imagename='Uniform_Plan')
+    o_q.printGKNUNeat(gknu)
+    o_q.printQualitatNeat(measdata, gknu['b'], Ve, funcf, c, jacf)
+
+
+    print ("performing ExtraStart™ method")
+    resarr=list() #Список результатов
+    t=PrettyTable (['Среднее логарифма правдоподобия','Сигма логарифма правдоподобия' , 'b','Среднее остатков по модулю'])
+
+    for i in range(30):
+        measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
+        gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=10, name='aprior plan plus several measurements')
+        if (gknu):
+            resarr.append(gknu)
+    if resarr:
+        for gknu in resarr:
+            if (gknu):
+                t.add_row([gknu['AvLogTruth'],gknu['SigmaLT'], gknu['b'], gknu['AvDif'] ])
+    gknu=o_e.selectBestEstim (resarr)
+
+    t.add_row(['*', '*', '*', '*' ])
+    t.add_row([gknu['AvLogTruth'], gknu['SigmaLT'], gknu['b'], gknu['AvDif'] ])
+    print(t)
+
+    o_q.analyseDifList(gknu, imagename='ExtraStart_et_Aprior_Plan')
+    o_q.printGKNUNeat(gknu)
+    o_q.printQualitatNeat(measdata, gknu['b'], Ve, funcf, c, jacf)
+
+
+extraction_func_DiodeV3Approach1_part_In()
+
+#funstr="x[0]/(FT*b[1]) + math.log(b[0]/(b[0]+y[0]))"
+#print (o_d.makeDerivMatrix([funstr],list(range(3)), 'b'))
+
+
+#test_func_DiodeV3Approach1_part_In()
 

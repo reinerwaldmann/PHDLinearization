@@ -341,9 +341,9 @@ def testDiodeParameterExtractionIMPLICIT(plot=True):
 
 def testDiodeImplicit():
 
-    b=[1.238e-14, 1.8, 1000]
+    b=[1.238e-14, 1.3, 0    ]
     #0.0026638081177255196
-    rng=np.arange(0.01,1.5,0.01)
+    rng=np.arange(0.01,2,0.01)
     #снимем ВАХ
     resrng=[diodeResistorIMPLICITfunction ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
 #    resrngorig=[casesDiode.diode([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
@@ -370,13 +370,13 @@ def testDiodeImplicit():
 
 
 #тест модели
-#testDiodeImplicit()
+testDiodeImplicit()
 
 #шобы при обвале по переполнению автоматом заново запускался
 #clsbeep.beep()
 
 
-testDiodeParameterExtractionIMPLICIT(plot=False)
+#testDiodeParameterExtractionIMPLICIT(plot=False)
 
 
 
