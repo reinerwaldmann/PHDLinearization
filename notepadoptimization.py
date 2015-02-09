@@ -30,8 +30,66 @@ def peval(x, p):
 #
 #моделируем погрешность измерения
 
-median=10 #истинное значение
-relError=0.1 #доля ошибки, то есть 10%
+# median=10 #истинное значение
+# relError=0.1 #доля ошибки, то есть 10%
+#
+
+
+sum1=0  #первая формула
+sum2=0 #вторая формула
+
+# pa=0.9999
+# pb=0.9997
+
+pa=0.8
+pb=0.4
+
+# c=0
+# N=0
+
+c=7
+N=17
+
+#
+# def c_in (i,n):
+#     return math.factorial(n) / (math.factorial(i) * math.factorial(n-i))
+#
+#
+# for i in range (c-1):
+#
+#     sum1+=c_in(i,N)*math.pow(pa,N-i)*(math.pow(1-pa,i))
+#     sum2+=c_in(i,N)*math.pow(pb,N-i)*(math.pow(1-pb,i))
+#
+#
+#
+# print (sum1, sum2)
+# print (1-0.2, 0.2)
+#
+import numpy as np
+import decimal as dc
+
+
+
+np.float64
+
+mm = np.array ([1.0,2.0,np.longdouble(0.00000003+1)], dtype=np.dtype(np.longdouble))
+print (mm)
+print (type(mm[2]))
+
+
+mm = np.array ([1.0,2.0,0.00000003+1])
+print (mm)
+print (type(mm[2]))
+
+
+ff=dc.Decimal (0.00000000000003)
+print (ff+1)
+
+ma=np.array([ff])
+
+
+print (ma+ma-ma-ma+np.array([1]))
+print (type(ma[0]))
 
 
 
@@ -87,3 +145,4 @@ while 1:
     print ("received data:", data)
     conn.send(data[1:5])  # echo
 conn.close()
+

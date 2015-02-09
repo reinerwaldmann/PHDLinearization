@@ -115,6 +115,8 @@ def writePlanToFile (plan, filename='plan.txt'):
     :param filename: имя файла
     :return: ничего
     """
+    if not plan:
+        return
     with open (filename, 'wt') as outfile:
         for point in plan:
             outfile.write(point.__str__())
