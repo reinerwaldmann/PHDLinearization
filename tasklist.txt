@@ -140,3 +140,19 @@ GKNU в SP заменяется:
 
 Написать методику формирования оптимизационной программы
 
+
+Финальное разъяснение относительно теста на None:
+if val is not None:
+    # ...
+is the Pythonic idiom for testing that a variable is not set to None.
+This idiom has particular uses in the case of declaring keyword functions with default parameters.
+ is tests identity in Python. Because there is one and only one instance of None present in a running Python script/program,
+  is is the optimal test for this. As Johnsyweb points out, this is discussed in PEP 8 under "Programming Recommendations".
+
+ И до кучи
+ You use == when comparing values and is when comparing identities.
+
+
+
+
+

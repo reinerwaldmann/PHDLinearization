@@ -74,13 +74,6 @@ def solver_Diode_In_mpmath (x,b,c=None):
         numnone+=1
         print ("solver: ERROR: "+e.__str__())
         return [None]
-    # if solx-solvinit==[0]*len(solx):
-    #      numnone+=1
-    #      print ("solver: problems in estimation")
-    #      return None
-    # if solx<0:
-    #     print ("solver: <0")
-    #     return None
 
     #вторая часть решения: находим корень с увеличенной  точностью через mpmath
     funcMPM = lambda y:  func_Diode_In_mpmath ([y],x,b,c)
@@ -105,31 +98,18 @@ def test_Diode_In_mpmath():
     #0.0026638081177255196
     rng=mpm.arange('0.01','2','0.01')
     #снимем ВАХ
-
-
     resrng=[solver_Diode_In_mpmath ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
 #    resrngorig=[casesDiode.diode([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
-
     b=[mpm.mpf('1.238e-14'), mpm.mpf('1.3'), mpm.mpf('100')]
-
-
-
     resrng1=[solver_Diode_In_mpmath ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
-
  #   plt.plot(rng , resrngorig, label='r=0')
-
     plt.plot(rng , resrng, label='r=1000')
     plt.plot(rng , resrng1, label='r=3000')
-
-
-
-
     plt.legend(loc='upper left')
-
     #plt.axis([0.0,1.0,0,5])
     plt.grid()
     plt.show()
 
 
-
 test_Diode_In_mpmath()
+
