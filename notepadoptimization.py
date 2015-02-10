@@ -94,6 +94,23 @@ print (type(ma[0]))
 
 
 
+import numpy as np
+im
+
+sbarr=np.array ([1,0.00000001])
+sbarr1=np.array ([1,1])
+
+print (type(sbarr1[1]))
+
+sbarr+=sbarr1
+
+print (sbarr)
+
+print (type(sbarr[1]))
+
+
+
+
 
 
 exit(0)

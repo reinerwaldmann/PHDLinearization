@@ -1,8 +1,8 @@
 __author__ = 'SW'
-import mpmath as mpm
-
 import math
 import copy
+
+import mpmath as mpm
 
 
 #во всём проекте для матриц mpmath примем такую точность
@@ -38,12 +38,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
         for point in measdata:
             jac=jacf(point['x'],b,c,point['y'])
             #G+=np.dot(jac.T,jac)
-
-
-
             G+=jac.T*jac
-
-
             #dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
             dif=mpm.matrix(point['y'])-mpm.matrix(funcf(point['x'],b,c))
 
