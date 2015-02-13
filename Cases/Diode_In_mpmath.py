@@ -7,8 +7,10 @@ import math
 import numpy as np
 from scipy import optimize
 import matplotlib.pyplot as plt
-
 import mpmath as mpm
+
+import Ofiura.Ofiura_planningMpmath as o_pmpm
+import Ofiura.Ofiura_EstimationMpmath as o_empm
 
 
 #Part1: прямая ветвь ВАХ диода
@@ -85,22 +87,43 @@ def solver_Diode_In_mpmath (x,b,c=None):
         numnone+=1
         print ("solver MPM: ERROR: "+e.__str__())
         return [None]
-
     return precsolx
 
 
-
-
+def jac_Kirch_DiodeV2Mod2DirectBranch (x,b,c,y):
+    """
+    [Реестровая]
+    непосредственная проверка невозможна
+    :param x:
+    :param b:
+    :param c:
+    :param y:
+    :return:
+    """
+    global FT
+    dfdbMPM=lambda y,x,b,c: mpm.matrix( [ [mpm.exp((-b[2]*y[0] + x[0])/(FT*b[1])) - 1,
+                                          -b[0]*(-b[2]*y[0] + x[0])*mpm.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**2),
+                                          -b[0]*y[0]*mpm.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]     ])
+    dfdyMPM=lambda y,x,b,c: mpm.matrix ([[ -1 - b[0]*b[2]*mpm.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]])
+    jacf=dfdyMPM(y,x,b,c)**-1 * dfdbMPM(y,x,b,c)
+    return jacf
 
 
 def test_Diode_In_mpmath():
     b=[mpm.mpf('1.238e-14'), mpm.mpf('1.3'), mpm.mpf('1')]
+    c=None
     #0.0026638081177255196
     rng=mpm.arange('0.01','2','0.01')
+    xstart=[mpm.mpf('0.0001')]
+    xend=[mpm.mpf('2')]
+    Ve=np.array([ [0.001] ]  )
+
     #снимем ВАХ
-    resrng=[solver_Diode_In_mpmath ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
-#    resrngorig=[casesDiode.diode([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
-    b=[mpm.mpf('1.238e-14'), mpm.mpf('1.3'), mpm.mpf('100')]
+#    resrng=[solver_Diode_In_mpmath ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
+
+    #resrng=o_pmpm.makeMeasOneDot_lognorm(solver_Diode_In_mpmath, x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
+    resrng=[o_pmpm.makeMeasOneDot_lognorm(solver_Diode_In_mpmath, [x],b,c,Ve) for x in rng]
+
     resrng1=[solver_Diode_In_mpmath ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
  #   plt.plot(rng , resrngorig, label='r=0')
     plt.plot(rng , resrng, label='r=1000')
@@ -111,5 +134,54 @@ def test_Diode_In_mpmath():
     plt.show()
 
 
-test_Diode_In_mpmath()
+
+def extraction_Diode_In_mpmath():
+    """
+    пробуем экстрагировать коэффициенты из модели диода
+    коэффициенты модели: Ток утечки Is, коэффициент неидеальности N, омическое сопротивление, параллельное диоду R
+    входные параметры: напряжение, приложенное источником к системе резистор-диод
+    +-----------|||||---------->|--------- -
+    Резистор подключен до диода
+    :return:
+    """
+    btrue=[mpm.mpf('1.238e-14'), mpm.mpf('1.3'), mpm.mpf('10')]
+    c=None
+    global FT
+    funcf=solver_Diode_In_mpmath
+    jacf = jac_Kirch_DiodeV2Mod2DirectBranch
+    #теперь попробуем сделать эксперимент.
+    Ve=np.array([ [0.00000001] ]  )
+    bstart=[mpm.mpf('1.0e-14'), mpm.mpf('1.0'), mpm.mpf('9')]
+    bend=[mpm.mpf('1.5e-14'), mpm.mpf('1.5'), mpm.mpf('14')]
+    binit=[mpm.mpf('1.1e-14'), mpm.mpf('1.1'), mpm.mpf('11')]
+
+    xstart=[mpm.mpf('0.0001')]
+    xend=[mpm.mpf('2')]
+
+    N=200
+    NAprior=20
+
+    unifplan = o_pmpm.makeUniformExpPlan(xstart, xend, N)
+    unifmeasdata = o_pmpm.makeMeasAccToPlan_lognorm(funcf, unifplan, btrue, c, Ve)
+    #print (unifmeasdata[0]['y'][0])
+
+    gknux = o_empm.grandCountGN_UltraX1_mpmath(funcf, jacf, unifmeasdata, binit,c, NSIG=100,implicit=True, verbose=True)
+    #print (gknux)
+
+
+
+
+extraction_Diode_In_mpmath()
+
+
+
+
+
+
+
+#test_Diode_In_mpmath()
+
+
+
+
 

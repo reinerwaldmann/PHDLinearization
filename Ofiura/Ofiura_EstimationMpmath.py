@@ -31,7 +31,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
     condition=True
 
     def throwError (msg):
-        global b, numiter, log, Sklist, Sk
+        #global b, numiter, log, Sklist, Sk
         log+=msg
         return b, numiter, log, Sklist, Sk
 
@@ -69,7 +69,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
         except BaseException as e:
             print('G=',G)
             print('B5=',B5)
-            throwError('Error in G:', e)
+            throwError('Error in G:'+e.__str__())
 
         #mu counting
         mu=mpm.mpf(4)

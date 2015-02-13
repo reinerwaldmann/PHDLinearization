@@ -6,6 +6,11 @@ import random
 import math
 
 import numpy as np
+import mpmath as mpm
+
+#Установка точности для mpmath. В проекте принято 50
+mpm.mp.dps=50
+mpm.pretty = False
 
 
 """
@@ -143,9 +148,17 @@ def readPlanFromFile (filename='plan.txt'):
         lines = infile.readlines()
         return list(map(eval, lines))
 
+#функция, которая из плана в виде списка векторов со значениями float (np.float) выдаёт список векторов со значениями mpf в точности 50
+#эту функцию мы приложим к создателям планов и вообще к любым планам
+
+def mpmfPlanWrapper (inplan):
+    mpf_from_npfloat_through_string=lambda x: mpm.mpf (x.__str__())
+    vct = lambda  v: list(map (mpf_from_npfloat_through_string, v))
+    return list(map (vct, inplan))
+
+
 def makeUniformExpPlan(xstart:list, xend:list, N:int):
     """
-    MPMATHcurr
 
     Создаёт равномерный план эксперимента
     :param xstart: начало диапазона x
@@ -189,65 +202,12 @@ def makeRandomUniformExpPlan(xstart:list, xend:list, N:int):
         res.append(o_g.uniformVector(xstart, xend))
     return res
 
-def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilename="", listOfOutvars=None):
-    """
-
-    :param func: векторная функция
-    :param expplan: план эксперимента (список значений вектора x)
-    :param b: вектор b
-    :param c: вектор c
-    :param Ve: ковариационная матрица (np.array)
-    :param n: объём выборки y
-    :param outfilename: имя выходного файла, куда писать план
-    :param listOfOutvars: список выносимых переменных
-    :return: список экспериментальных данных в формате списка словарей 'x':..., 'y':...
-    """
-    res = list()
-
-    for i in range(len(expplan)):
-        y=func(expplan[i],b,c)
-        if y==None: #если функция вернула чушь, то в measdata её не записывать!
-            continue
-        #Внесём возмущения:
-        if not Ve==None:
-            ydisps=np.diag(Ve)
-            for k in range(len(y)):
-                y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
-        curdict = {'x':expplan[i], 'y':y}
-        #res[i]["y"]=y
-        res.append(curdict)
-    return res
-
-def makeMeasOneDot(func, xdot, b:list, c:dict, Ve=[]):
-    """
-
-    :param func: векторная функция
-    :param expplan: план эксперимента (список значений вектора x)
-    :param b: вектор b
-    :param c: вектор c
-    :param Ve: ковариационная матрица (np.array)
-    :param n: объём выборки y
-    :param outfilename: имя выходного файла, куда писать план
-    :param listOfOutvars: список выносимых переменных
-    :return: список экспериментальных данных в формате списка словарей 'x':..., 'y':...
-    """
-
-
-    y=func(xdot,b,c)
-    if y==None: #если функция вернула чушь, то в measdata её не записывать!
-        return None
-    #Внесём возмущения:
-    if not Ve==None:
-        ydisps=np.diag(Ve)
-        for k in range(len(y)):
-            y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
-    return y
-    #res[i]["y"]=y
 
 
 
 def makeMeasOneDot_lognorm(func, xdot, b:list, c:dict, Ve=[]):
     """
+        MPMATH+CAPABLE
 
     :param func: векторная функция
     :param expplan: план эксперимента (список значений вектора x)
@@ -260,24 +220,32 @@ def makeMeasOneDot_lognorm(func, xdot, b:list, c:dict, Ve=[]):
     :return: список экспериментальных данных в формате списка словарей 'x':..., 'y':...
     """
 
-
-    y=func(xdot,b,c)
-    if y==None: #если функция вернула чушь, то в measdata её не записывать!
+    y=func(xdot,b,c) #вернёт mpm.matrix
+    if y is None: #если функция вернула чушь, то в measdata её не записывать!
         return None
+
     #Внесём возмущения:
-    if not Ve==None:
+    if Ve is not None:
+
         ydisps=np.diag(Ve)
+
         for k in range(len(y)):
-            #y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
-            y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
+                #y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
+                y[k]=math.exp(  random.normalvariate(np.longdouble ( mpm.log(y[k])),   math.sqrt(ydisps[k])))
 
 
     return y
 
 
 
+
+
+
+
 def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilename="", listOfOutvars=None):
     """
+        MPMATH+CAPABLE
+
     :param func: векторная функция
     :param expplan: план эксперимента (список значений вектора x)
     :param b: вектор b
@@ -291,26 +259,17 @@ def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, ou
     res = list()
 
     for i in range(len(expplan)):
-        y=func(expplan[i],b,c)
-        if y==None: #если функция вернула чушь, то в measdata её не записывать!
+        y=makeMeasOneDot_lognorm(func, expplan[i], b, c, Ve)
+
+        if y is None: #если функция вернула чушь, то в measdata её не записывать!
             continue
-        #Внесём возмущения:
-        if not Ve==None:
-            ydisps=np.diag(Ve)
-            for k in range(len(y)):
-                if (y[k]<0):
-                    y[k]=-1*math.exp(random.normalvariate(math.log(math.fabs(y[k])), math.sqrt(ydisps[k])))
-                else:
-                    y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
 
-        curdict = {'x':expplan[i], 'y':y}
-        #res[i]["y"]=y
-        res.append(curdict)
+        res.append({'x':mpm.matrix(expplan[i]), 'y':y})
+        #res.append({'x':expplan[i], 'y':y})
+
+
+
     return res
-
-
-
-
 
 
 #FIXME функция makeMeasAccToPlan_lognorm и makeMeasAccToPlan работает в общем  неверно, если говорить об ошибках. И лишь в частном случае диагональной
@@ -322,6 +281,8 @@ def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, ou
 
 #генерирует список случайных чисел м=0 д=1
 def generlist (n):
+        #MPMATH+CAPABLE
+
     r=list()
     for x in range (0,n):
         r.append(random.gauss(0,1))
@@ -331,6 +292,7 @@ def generlist (n):
 
 def generrandvals (M, cov_ksi, nvol=1000):
     """
+    MPMATH+CAPABLE
     генерирует кортеж случайных последовательностей, коррелированных по матрице и с матожиданием во вх. параметрах
     """
     M_ksi=np.array(M)
@@ -372,11 +334,6 @@ def generrandvals (M, cov_ksi, nvol=1000):
     MTEST=list(map (np.mean, res))
 
     return res, COVTEST, MTEST
-
-
-
-
-
 
 
 def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
