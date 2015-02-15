@@ -21,7 +21,7 @@ import Ofiura.Ofiura_EstimationMpmath as o_empm
 #Таблица переменных:
 
 #Установка точности для mpmath. В проекте принято 50
-mpm.mp.dps=50
+mpm.mp.dps=30
 mpm.pretty = True
 
 
@@ -82,7 +82,7 @@ def solver_Diode_In_mpmath (x,b,c=None):
     dfdyMPM=lambda y: mpm.matrix ([[ -1 - b[0]*b[2]*mpm.exp((-b[2]*[y][0] + x[0])/(FT*b[1]))/(FT*b[1])]])
     solvinitMPM=solx[0]
     try:
-        precsolx=mpm.calculus.optimization.findroot(mpm.mp, f=funcMPM, x0=solvinitMPM, solver=MDNewton, multidimensional=True, J=dfdyMPM)
+        precsolx=mpm.calculus.optimization.findroot(mpm.mp, f=funcMPM, x0=solvinitMPM, solver=MDNewton, multidimensional=True, J=dfdyMPM, verify=False)
     except BaseException as e:
         numnone+=1
         print ("solver MPM: ERROR: "+e.__str__())
@@ -114,9 +114,9 @@ def test_Diode_In_mpmath():
     c=None
     #0.0026638081177255196
     rng=mpm.arange('0.01','2','0.01')
-    xstart=[mpm.mpf('0.0001')]
+    xstart=[mpm.mpf('0.00001')]
     xend=[mpm.mpf('2')]
-    Ve=np.array([ [0.001] ]  )
+    Ve=np.array([ [0.0001] ]  )
 
     #снимем ВАХ
 #    resrng=[solver_Diode_In_mpmath ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
@@ -150,15 +150,17 @@ def extraction_Diode_In_mpmath():
     funcf=solver_Diode_In_mpmath
     jacf = jac_Kirch_DiodeV2Mod2DirectBranch
     #теперь попробуем сделать эксперимент.
-    Ve=np.array([ [0.00000001] ]  )
+    Ve=np.array([ [0.00001] ]  )
     bstart=[mpm.mpf('1.0e-14'), mpm.mpf('1.0'), mpm.mpf('9')]
     bend=[mpm.mpf('1.5e-14'), mpm.mpf('1.5'), mpm.mpf('14')]
-    binit=[mpm.mpf('1.1e-14'), mpm.mpf('1.1'), mpm.mpf('11')]
+    #binit=[mpm.mpf('1.1e-14'), mpm.mpf('1.1'), mpm.mpf('11')]
+
+    binit=mpm.matrix([['1.1e-14', '1', '9']]).T
 
     xstart=[mpm.mpf('0.0001')]
     xend=[mpm.mpf('2')]
 
-    N=200
+    N=250
     NAprior=20
 
     unifplan = o_pmpm.makeUniformExpPlan(xstart, xend, N)
@@ -166,9 +168,7 @@ def extraction_Diode_In_mpmath():
     #print (unifmeasdata[0]['y'][0])
 
     gknux = o_empm.grandCountGN_UltraX1_mpmath(funcf, jacf, unifmeasdata, binit,c, NSIG=100,implicit=True, verbose=True)
-    #print (gknux)
-
-
+    print (gknux)
 
 
 extraction_Diode_In_mpmath()

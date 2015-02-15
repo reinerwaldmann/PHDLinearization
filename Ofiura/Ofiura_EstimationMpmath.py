@@ -5,8 +5,9 @@ import copy
 import mpmath as mpm
 
 
+
 #во всём проекте для матриц mpmath примем такую точность
-mpm.dps = 50;
+mpm.dps = 30
 mpm.pretty = True
 
 def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=False):
@@ -63,9 +64,9 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
                 B5=dif*jac
             else:
                 B5+=dif*jac
-            Sk+=dif.T*dif
+            Sk+=(dif.T*dif)[0]
         try:
-            deltab=(G**-1)*B5
+            deltab=(G**-1)*B5.T
         except BaseException as e:
             print('G=',G)
             print('B5=',B5)
@@ -80,14 +81,14 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
             mu/=mpm.mpf(2)
             for point in measdata:
                 dif=point['y']-funcf(point['x'],b-deltab*mu,c) if implicit else point['y']-funcf(point['x'],b+deltab*mu,c)
-                Skmu+=dif.T*dif
+                Skmu+=(dif.T*dif)[0]
             it+=1
             if (it>100):
                 log+="Mu counting: break due to max number of iteration exceed"
                 break
             cond2=Skmu>Sk
         b=b-deltab*mu if implicit else b+deltab*mu
-
+        Sklist.append(Sk)
         if verbose:
             print ("Sk:",Sk)
             print ("Iteration {0} mu={1} delta={2} deltamu={3} resb={4}".format(numiter, mu, deltab, deltab*mu, b))
