@@ -7,7 +7,7 @@ import mpmath as mpm
 
 
 #во всём проекте для матриц mpmath примем такую точность
-mpm.dps = 30
+mpm.dps = 40
 mpm.pretty = True
 
 def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=False):

@@ -27,6 +27,8 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
 
 
 
+
+
 def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=False):
     """
     Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом

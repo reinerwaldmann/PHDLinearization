@@ -21,7 +21,7 @@ import Ofiura.Ofiura_EstimationMpmath as o_empm
 #Таблица переменных:
 
 #Установка точности для mpmath. В проекте принято 50
-mpm.mp.dps=30
+mpm.mp.dps=40
 mpm.pretty = True
 
 
@@ -150,17 +150,17 @@ def extraction_Diode_In_mpmath():
     funcf=solver_Diode_In_mpmath
     jacf = jac_Kirch_DiodeV2Mod2DirectBranch
     #теперь попробуем сделать эксперимент.
-    Ve=np.array([ [0.00001] ]  )
+    Ve=np.array([ [1e-7] ]  )
     bstart=[mpm.mpf('1.0e-14'), mpm.mpf('1.0'), mpm.mpf('9')]
     bend=[mpm.mpf('1.5e-14'), mpm.mpf('1.5'), mpm.mpf('14')]
     #binit=[mpm.mpf('1.1e-14'), mpm.mpf('1.1'), mpm.mpf('11')]
 
-    binit=mpm.matrix([['1.1e-14', '1', '9']]).T
+    binit=mpm.matrix([['1.1e-14', '1.1', '11.1']]).T
 
     xstart=[mpm.mpf('0.0001')]
     xend=[mpm.mpf('2')]
 
-    N=250
+    N=100
     NAprior=20
 
     unifplan = o_pmpm.makeUniformExpPlan(xstart, xend, N)
