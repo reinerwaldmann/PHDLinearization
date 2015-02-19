@@ -56,7 +56,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
             fxbc=funcf(point['x'],b,c)
 
             if fxbc is None:
-                throwError ("Jac is None")
+                throwError ("Funcf is None")
             dif=point['y']-fxbc
 
             if B5 is None:
