@@ -35,9 +35,6 @@ def islinux ():
          return False
      return True
 
-
-
-
 def makeAinit (bstart, bend, Skbinit, binit):
     """
     расчёт ведётся по правилу "binit есть хорошее предположение в рамках области"
@@ -47,18 +44,13 @@ def makeAinit (bstart, bend, Skbinit, binit):
     :param binit:
     :return:
     """
-
-
     A=np.zeros ( (len(binit), 2 ))  #,  dtype=np.float96 if islinux() else np.float64
 
     for i in range (len(binit)):
         #A[i][0]=A[i][1]=.001*(bend[i]-bstart[i])*Skbinit  #универсально
         A[i][0]=0.001*(binit[i]-bstart[i])*Skbinit
         A[i][1]=0.001*(bend[i]-binit[i])*Skbinit
-
     return A
-
-
 
 def countSklims(A,b,bstart, bend):
     partone=parttwo=.0
@@ -66,8 +58,6 @@ def countSklims(A,b,bstart, bend):
         partone+=A[i][0]/(b[i]-bstart[i]) #UNSAFE: если вдруг, ну вдруг b=bstart или bend, то будет <strike> треш </strike> креш с делением на ноль.
         parttwo+=A[i][1]/(bend[i]-b[i])
     return partone+parttwo
-
-
 
 def countN (A, b, bstart, bend):
     N=np.zeros (len(b), len(b))
@@ -79,3 +69,165 @@ def countN (A, b, bstart, bend):
         N[j][j]=parttwo+partone
     return N
 
+
+def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, A, NSIG=50, NSIGGENERAL=3, implicit=False, verbose=False):
+    """
+    Обёртка для grandCountGN_UltraX1_Limited для реализации общего алгоритма
+    :param funcf callable функция, параметры по формату x,b,c
+    :param jacf callable функция, параметры по формату x,b,c,y
+    :param measdata:list список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
+    :param binit:list начальное приближение b
+    :param bstart:list нижняя граница b
+    :param bend:list верхняя граница b
+    :param c словарь дополнительных постоянных
+    :param A матрица коэффициентов a
+    :param NSIG=3 точность (кол-во знаков после запятой)
+    :param implicit True если функция - неявная, иначе false
+    :param verbose Если True, то подробно принтить результаты итераций
+    :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
+    """
+    Skinit= makeSkInit(funcf, measdata, binit, c)
+    A=makeAinit (bstart, bend, Skinit, binit)
+    maxiter=100
+    b,bpriv=binit,binit
+    gknux=None
+
+
+    for numiter in range (maxiter):
+        bpriv=b
+        gknux=grandCountGN_UltraX1_Limited (funcf, jacf,  measdata, b, bstart, bend, c, A, NSIG, implicit, verbose)[0] #посчитали b
+        b=gknux[0]
+        for j in range (len(binit)): #уменьшили в два раза
+            A[j][0]*=0.5
+            A[j][1]*=0.5
+        for i in range (len(b)):
+            if math.fabs ((b[i]-bpriv[i])/bpriv[i]) > math.pow(10,-1*NSIGGENERAL):
+                continue
+        break
+        #мол если хоть один компонент вектора b значимо изменился, тогда продолжать. Иначе программа дойдёт до break и цикл прекратится
+    return gknux
+
+
+
+
+def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, bend, c, A, NSIG=3, implicit=False, verbose=False):
+    """
+    Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом с ограничениями, заданными диапазоном
+    В стандартный поток вывода выводит отладочную информацию по каждой итерации
+
+    :param funcf callable функция, параметры по формату x,b,c
+    :param jacf callable функция, параметры по формату x,b,c,y
+    :param measdata:list список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
+    :param binit:list начальное приближение b
+    :param bstart:list нижняя граница b
+    :param bend:list верхняя граница b
+    :param c словарь дополнительных постоянных
+    :param A матрица коэффициентов a
+    :param NSIG=3 точность (кол-во знаков после запятой)
+    :param implicit True если функция - неявная, иначе false
+    :param verbose Если True, то подробно принтить результаты итераций
+    :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
+    """
+    #sign - если  1, то b=b+deltab*mu, иначе b=b-deltab*mu. При неявной функции надо ставить sign=0
+    sign=0 if implicit else 1
+
+    Sklist=list()
+    b=binit
+    log=""
+    numiter=0
+    condition=True
+    while (condition):
+        m=len(b) #число коэффициентов
+        G=np.zeros((m,m))
+        B5=None
+        bpriv=copy.copy(b)
+        Sk=0
+        for point in measdata:
+            jac=jacf(point['x'],b,c,point['y'])
+
+            if jac==None:
+                return None
+
+            #print (G.shape, jac.T.shape, jac.shape)
+            G+=np.dot(jac.T,jac)
+
+            try:
+                dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
+            except BaseException as e:
+                print('grandCountGN_UltraX1: As funcf returned None, method  stops:', e)
+                return None
+
+            # print(dif, jac)
+            # print('-----')
+            #
+            # print()
+            if B5==None:
+                B5=np.dot(dif, jac)
+            else:
+                B5+=np.dot(dif,jac)
+            Sk+=np.dot(dif.T,dif)
+
+        G+=countN(A,b,bstart, bend) #добавиляем градиент от штрафных функций
+        Sk+=countSklims(A,b,bstart, bend) #добавиляем объектную функцию от штрафных функций
+
+
+        #print(np.linalg.inv(G), B5[:,0])
+        #костыль для диодной задачи
+        if hasattr(B5, 'A1'):
+            B5=B5.A1
+        try:
+            deltab=np.dot(np.linalg.inv(G), B5)
+        except BaseException as e:
+            print('Error in G:', e)
+            print('G=',G)
+            return None
+
+
+        #mu counting
+        mu=4
+        cond2=True
+        it=0
+        Skmu=0
+        while (cond2):
+            Skmu=0
+            mu/=2
+            for point in measdata:
+                try:
+                    dif=np.array(point['y'])-np.array(funcf(point['x'],b+deltab*mu,c)) if sign else np.array(point['y'])-np.array(funcf(point['x'],b-deltab*mu,c))
+                except:
+                    continue
+
+                Skmu+=np.dot(dif.T, dif)
+
+            Skmu+=countSklims(A,b,bstart, bend) #добавиляем объектную функцию от штрафных функций
+            it+=1
+
+
+            if (it>100):
+                log+="Mu counting: break due to max number of iteration exceed"
+                break
+            cond2=Skmu>Sk
+
+        b=b+deltab*mu if sign else b-deltab*mu
+
+        Sk=Skmu
+
+        Sklist.append(Sk)
+        if verbose:
+            print ("Sk:",Sk)
+            print ("Iteration {0} mu={1} delta={2} deltamu={3} resb={4}".format(numiter, mu, deltab, deltab*mu, b))
+
+        numiter+=1
+
+        condition=False
+        for i in range (len(b)):
+            if math.fabs ((b[i]-bpriv[i])/bpriv[i])>math.pow(10,-1*NSIG):
+                condition=True
+
+
+        if numiter>1000: #max number of iterations
+            log+="GKNUX1: Break due to max number of iteration exceed"
+            break
+
+
+    return b, numiter, log, Sklist, Sk
