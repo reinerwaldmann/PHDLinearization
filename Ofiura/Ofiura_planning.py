@@ -199,10 +199,10 @@ def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilenam
 
     for i in range(len(expplan)):
         y=func(expplan[i],b,c)
-        if y==None: #если функция вернула чушь, то в measdata её не записывать!
+        if y is None: #если функция вернула чушь, то в measdata её не записывать!
             continue
         #Внесём возмущения:
-        if not Ve==None:
+        if Ve is not None:
             ydisps=np.diag(Ve)
             for k in range(len(y)):
                 y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
@@ -227,10 +227,10 @@ def makeMeasOneDot(func, xdot, b:list, c:dict, Ve=[]):
 
 
     y=func(xdot,b,c)
-    if y==None: #если функция вернула чушь, то в measdata её не записывать!
+    if y is None: #если функция вернула чушь, то в measdata её не записывать!
         return None
     #Внесём возмущения:
-    if not Ve==None:
+    if  Ve is not None:
         ydisps=np.diag(Ve)
         for k in range(len(y)):
             y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
@@ -255,10 +255,10 @@ def makeMeasOneDot_lognorm(func, xdot, b:list, c:dict, Ve=[]):
 
 
     y=func(xdot,b,c)
-    if y==None: #если функция вернула чушь, то в measdata её не записывать!
+    if y is None: #если функция вернула чушь, то в measdata её не записывать!
         return None
     #Внесём возмущения:
-    if not Ve==None:
+    if Ve is not None:
         ydisps=np.diag(Ve)
         for k in range(len(y)):
             #y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
@@ -285,10 +285,10 @@ def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, ou
 
     for i in range(len(expplan)):
         y=func(expplan[i],b,c)
-        if y==None: #если функция вернула чушь, то в measdata её не записывать!
+        if y is None: #если функция вернула чушь, то в measdata её не записывать!
             continue
         #Внесём возмущения:
-        if not Ve==None:
+        if  Ve is not None:
             ydisps=np.diag(Ve)
             for k in range(len(y)):
                 if (y[k]<0):

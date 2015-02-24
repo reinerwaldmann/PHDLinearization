@@ -145,7 +145,7 @@ GKNU в SP заменяется:
 if val is not None:
     # ...
 is the Pythonic idiom for testing that a variable is not set to None.
-This idiom has particular uses in the case of declaring keyword functions with default parameters.
+This idiom has particular uses in the case  declaring keyword functions with default parameters.
  is tests identity in Python. Because there is one and only one instance of None present in a running Python script/program,
   is is the optimal test for this. As Johnsyweb points out, this is discussed in PEP 8 under "Programming Recommendations".
 
@@ -157,6 +157,27 @@ This idiom has particular uses in the case of declaring keyword functions with d
 всякое про отношения
 http://www.livejournal.com/magazine/644533.html?xtor=EPR-1-%5BCampaign_2015_02_13%20_33_11_sending_10:12%5D-20150213-%5Bpost_10%5D-%5B11%5D
 http://www.livejournal.com/magazine/447515.html
+
+--====--===----===----====
+
+Больше тасклиста:
+#TODO требуется добавить функцию с оценкой качества, вопрос, сюда ли это добавить или же сделать враппер-функцию оценки качества в qualitat файле, и её надевать на разные gknux
+
+возможно, имеет смысл измениьт подход к планированию - сделать ряд планов для
+ - разных моделей
+ - разных количеств точек
+
+у каждого плана свои границы на коэффициенты.
+Их можно стандартизировать, либо по границам, либо по истинному значению и коридору. При этом, кстати, получается искусственная ситуация - 20% коридор с истиной ТОЧНО посередине.
+чтоб такого не было, хорошо истинное значение сдвигать по коридору, при пользовании библиотечным планом, или же сам план делать с коридором 20%30% или каким другим неравнозначным
+
+
+
+
+2 подхода: сначала каждый файл сам кеширует свои планы
+потом я беру некоторые планы,  копирую их под другим именем.
+Их заношу в библиотеку. затем можно взять план уже из библиотеки
+
 
 
 

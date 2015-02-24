@@ -63,7 +63,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
         for point in measdata:
             jac=jacf(point['x'],b,c,point['y'])
 
-            if jac==None:
+            if jac is None:
                 return None
 
             #print (G.shape, jac.T.shape, jac.shape)
@@ -79,7 +79,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
             # print('-----')
             #
             # print()
-            if B5==None:
+            if B5 is None:
                 B5=np.dot(dif, jac)
             else:
                 B5+=np.dot(dif,jac)

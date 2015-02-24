@@ -60,17 +60,20 @@ def countSklims(A,b,bstart, bend):
     return partone+parttwo
 
 def countN (A, b, bstart, bend):
-    N=np.zeros (len(b), len(b))
+
+    N=np.zeros ((len(b),len(b)))
     for j in range (len(b)):
         partone=parttwo=0
         for i in range (len(b)):
             partone+=2*A[i][0]/(b[i]-bstart[i])**3
             parttwo+=2*A[i][1]/(bend[i]-b[i])**3
-        N[j][j]=parttwo+partone
+        N[j][j]+=parttwo+partone #так как матрица нулевая
     return N
 
+#TODO требуется добавить функцию с оценкой качества, вопрос, сюда ли это добавить или же сделать враппер-функцию оценки качества в qualitat файле, и её надевать на разные gknux
 
-def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, A, NSIG=50, NSIGGENERAL=3, implicit=False, verbose=False):
+
+def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, A, NSIG=50, NSIGGENERAL=50, implicit=False, verbose=False, verbose_wrapper=False):
     """
     Обёртка для grandCountGN_UltraX1_Limited для реализации общего алгоритма
     :param funcf callable функция, параметры по формату x,b,c
@@ -95,13 +98,19 @@ def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:li
 
     for numiter in range (maxiter):
         bpriv=b
-        gknux=grandCountGN_UltraX1_Limited (funcf, jacf,  measdata, b, bstart, bend, c, A, NSIG, implicit, verbose)[0] #посчитали b
+        gknux=grandCountGN_UltraX1_Limited (funcf, jacf,  measdata, b, bstart, bend, c, A, NSIG, implicit, verbose) #посчитали b
+
+        if verbose_wrapper:
+            print ('Iteration \n',numiter,'\n' ,gknux,'\n',A)
         b=gknux[0]
         for j in range (len(binit)): #уменьшили в два раза
             A[j][0]*=0.5
             A[j][1]*=0.5
         for i in range (len(b)):
+            #print ('entre',b,bpriv)
+
             if math.fabs ((b[i]-bpriv[i])/bpriv[i]) > math.pow(10,-1*NSIGGENERAL):
+                print ('contd')
                 continue
         break
         #мол если хоть один компонент вектора b значимо изменился, тогда продолжать. Иначе программа дойдёт до break и цикл прекратится
@@ -145,7 +154,7 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
         for point in measdata:
             jac=jacf(point['x'],b,c,point['y'])
 
-            if jac==None:
+            if jac is None:
                 return None
 
             #print (G.shape, jac.T.shape, jac.shape)
@@ -161,14 +170,29 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
             # print('-----')
             #
             # print()
-            if B5==None:
+            if B5 is None:
                 B5=np.dot(dif, jac)
             else:
                 B5+=np.dot(dif,jac)
             Sk+=np.dot(dif.T,dif)
 
-        G+=countN(A,b,bstart, bend) #добавиляем градиент от штрафных функций
-        Sk+=countSklims(A,b,bstart, bend) #добавиляем объектную функцию от штрафных функций
+
+        N=countN(A,b,bstart, bend)
+        Sklims=countSklims(A,b,bstart, bend)
+
+
+        print (G,'\n', N, '\n', Sklims)
+
+        G=G-N if implicit else G+N #добавляем градиент от штрафных функций
+
+        print (G)
+
+
+
+        Sk+=Sklims #добавиляем объектную функцию от штрафных функций
+
+
+        print ()
 
 
         #print(np.linalg.inv(G), B5[:,0])
@@ -189,7 +213,7 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
         it=0
         Skmu=0
         while (cond2):
-            Skmu=0
+            Skmu=countSklims(A,b,bstart, bend) #добавиляем объектную функцию от штрафных функций
             mu/=2
             for point in measdata:
                 try:
@@ -199,7 +223,6 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
 
                 Skmu+=np.dot(dif.T, dif)
 
-            Skmu+=countSklims(A,b,bstart, bend) #добавиляем объектную функцию от штрафных функций
             it+=1
 
 
@@ -231,3 +254,6 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
 
 
     return b, numiter, log, Sklist, Sk
+
+
+#693175 усадьба сервис
