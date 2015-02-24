@@ -8,10 +8,8 @@ from scipy import optimize
 
 import Ofiura.Ofiura_EstimationLimited as o_el
 import Ofiura.Ofiura_Estimation  as o_e
-
 import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_planning as o_p
-import Ofiura.Ofiura_Qualitat as o_q
 
 
 
@@ -83,7 +81,7 @@ def solver_Diode_In_Limited (x,b,c=None):
         #http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
         #http://codereview.stackexchange.com/questions/28207/is-this-the-fastest-way-to-find-the-closest-point-to-a-list-of-points-using-nump
     except BaseException as e:
-        #print ('diodeResistorIMPLICITfunction: Error in findroot=',e)
+        print ('diodeResistorIMPLICITfunction: Error in findroot=',e)
         numnone+=1
         return None
 

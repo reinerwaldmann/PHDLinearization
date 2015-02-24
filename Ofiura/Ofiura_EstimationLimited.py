@@ -1,12 +1,10 @@
 __author__ = 'vasilev_is'
 
-import math, copy, os, platform
-
+import math
+import copy
+import platform
 
 import numpy as np
-
-import Ofiura.Ofiura_Qualitat as o_q
-import Ofiura.Ofiura_general as o_g
 
 
 """
@@ -63,10 +61,8 @@ def countN (A, b, bstart, bend):
 
     N=np.zeros ((len(b),len(b)))
     for j in range (len(b)):
-        partone=parttwo=0
-        for i in range (len(b)):
-            partone+=2*A[i][0]/(b[i]-bstart[i])**3
-            parttwo+=2*A[i][1]/(bend[i]-b[i])**3
+        partone=2*A[j][0]/(b[j]-bstart[j])**3
+        parttwo=2*A[j][1]/(bend[j]-b[j])**3
         N[j][j]+=parttwo+partone #так как матрица нулевая
     return N
 
@@ -163,7 +159,7 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
             try:
                 dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
             except BaseException as e:
-                print('grandCountGN_UltraX1: As funcf returned None, method  stops:', e)
+                print('grandCountGN_UltraX1_limited: As funcf returned None, method  stops:', e)
                 return None
 
             # print(dif, jac)
@@ -181,9 +177,10 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
         Sklims=countSklims(A,b,bstart, bend)
 
 
-        print (G,'\n', N, '\n', Sklims)
+        print (A, '\n\n', G,'\n\n', N, '\n\n', Sklims)
 
-        G=G-N if implicit else G+N #добавляем градиент от штрафных функций
+        #G=G-N if implicit else G+N #добавляем градиент от штрафных функций
+        G=G+N
 
         print (G)
 
