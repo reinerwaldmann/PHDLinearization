@@ -1,3 +1,30 @@
+
+
+g = {'one':1, 'two':2, 'three':3}
+
+klist = sorted(list(g.keys()))
+
+rslist = [g[i] for i in sorted(g.keys())]
+
+
+# rslist=list()
+# for i in klist:
+#     rslist.append(g[i])
+
+print (klist)
+
+print (rslist)
+
+
+
+
+
+
+
+
+exit(0)
+
+
 from numpy import arange, sin, pi, random
 
 

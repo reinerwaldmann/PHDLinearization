@@ -1,11 +1,13 @@
 
 __author__ = 'reiner'
+
 import math
 
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import optimize
 
+import Ofiura.Ofiura_Qualitat as o_q
 import Ofiura.Ofiura_EstimationLimited as o_el
 import Ofiura.Ofiura_Estimation  as o_e
 import Ofiura.Ofiura_ApriorPlanning as o_ap
@@ -143,8 +145,8 @@ def extraction_Diode_In_Limited():
     btrue=[1.238e-14, 1.8, 100]
     #btrue=[1.5e-14, 1.75, 150]
 
-    bstart=np.array(btrue)-np.array(btrue)*0.5
-    bend=np.array(btrue)+np.array(btrue)*0.5
+    bstart=np.array(btrue)-np.array(btrue)*0.3
+    bend=np.array(btrue)+np.array(btrue)*0.3002
     #binit=np.array(btrue)-np.array(btrue)*0.1
 
     print('conditions:')
@@ -153,24 +155,16 @@ def extraction_Diode_In_Limited():
 
 
     binit=[1.1e-14, 1.5, 90]
-
     xstart=[0.001]
     #xend=[20,60]
     xend=[2]
     N=20
-
-
     print("performing aprior plan:")
 
 #примитивная попытка автоматизировать, риальни надо кешировать в файл под хешем параметров
 
-
     import os
-
-
     filename =foldername+'/'+os.path.basename(__file__).replace('.py','_plan')
-
-
     try:
         oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
         print ("Read file successful")
@@ -184,16 +178,22 @@ def extraction_Diode_In_Limited():
 #     #o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
 #
 #     #оценка
-    Skinit = o_el.makeSkInit(funcf,measdata,binit, c)
-    A=o_el.makeAinit(bstart, bend,Skinit,binit)
+
 
     #grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, A, NSIG=50, NSIGGENERAL=50, implicit=False, verbose=False, verbose_wrapper=False):
 
-
-    gknuxlim = o_el.grandCountGN_UltraX1_Limited_wrapper(funcf,jacf,measdata,binit,bstart,bend, c, A, implicit=True, verbose=True, verbose_wrapper=True )
+    gknuxlim = o_el.grandCountGN_UltraX1_Limited_wrapper(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=False )
     gknux = o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, implicit=True)
 
-    print (gknuxlim)
-    print (gknux)
+    gknuxlim2=o_q.convertToQualitatStandart (gknuxlim, funcf, jacf,  measdata, c, Ve, name='Limited Count Aprior')
+    gknux2=o_q.convertToQualitatStandart (gknux, funcf, jacf,  measdata, c, Ve, name='Normal Count Aprior')
+
+    o_q.printQualitatStandart (gknuxlim2)
+    o_q.printQualitatStandart (gknux2)
+
+
+
+
+
 
 extraction_Diode_In_Limited()

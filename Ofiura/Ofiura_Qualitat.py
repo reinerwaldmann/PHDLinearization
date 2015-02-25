@@ -1,5 +1,5 @@
 __author__ = 'vasilev_is'
-
+import copy
 import math
 import os
 
@@ -34,6 +34,114 @@ def getQualitat(measdata:list, b:list, Ve,  func, c):
 """
 
 foldername=None
+
+
+def convertToQualitatStandart (gknux, funcf, jacf,  measdata:list, c, Ve, name=''):
+    """
+    Принимая на вход gknux по старому стандарту (tuple) и некоторые другие параметры, возвращает словарь с gknux - параметрами
+    и показателями качества, то есть новый стандарт
+
+    Спецификация:
+    Тип данных - словарь
+    Поля и описание -
+     'b'            оцененный вектор коэффициентов
+     'numiter'      число итераций
+     'log'          лог
+     'Sklist'       список значений объектной функции
+     'Sk'           последнее значение объектной функции
+     'AvLogTruth'   среднее по точкам эксперимента значение логарифма правдоподобия
+     'DispLT'       дисперсия логарифма правдоподобия
+     'SigmaLT'      среднеквадратическое отклонение логарифма правдоподобия
+     'AvDif'        средний остатков
+     'DispDif'      дисперсия остатков
+     'SigmaDif'     СКВ остатков
+     'Diflist'      список остатков
+     'name'         название метода
+     'Vb'           ковариационная матрица оценённого вектора b
+     'VbSigmas'     сигмы из ковариационной матрицы оценённого вектора b (корни квадратные из диагонали)
+
+    :param gknux- результат оценочной функции по старому стандарту
+    :param funcf- указатель на функцию
+    :param jacf - указатель на функцию, возвращ. якобиан
+    :param measdata- измеренные данные
+    :param c
+    :param Ve
+    :param name - название метода
+
+
+    """
+    names = [' b', 'numiter', 'log' , 'Sklist', 'Sk']
+    gknuxdict = dict(zip (names, list(gknux)))
+    #    names=['AvLogTruth','DispLT', 'SigmaLT', 'AvDif', 'DispDif', 'SigmaDif', 'Diflist']
+    rs= dict(list(getQualitatDict(measdata, gknuxdict[' b'], Ve,  funcf, c).items()) + list(gknuxdict.items()))
+    rs['name']=name
+    Vb = countVbForMeasdata(gknux[0],  c, Ve, jacf, measdata)
+    rs['Vb'] = Vb
+    sigmas=list()
+    for i in range (Vb.shape[0]):
+        sigmas.append(math.sqrt(Vb[i][i]))
+    rs['VbSigmas'] = sigmas
+    return rs
+
+
+def printQualitatStandart(gknux_dict:dict):
+    """
+    Выводит таблицу показателей качества оценки и логи
+    USES PRETTYTABLE
+    :param gknux_dict результаты оценки с показателями качества по стандарту 2
+    """
+    g=gknux_dict
+    tg=copy.copy(g) #для вывода в таблицу
+
+    del tg['log']
+    del tg['Sklist']
+    del tg['Diflist']
+    del tg['name']
+    del tg['Vb']
+
+
+
+    klist = sorted(list(tg.keys()))
+    vallist = [tg[i] for i in klist]
+
+    t=PrettyTable (klist)
+    t.add_row(vallist)
+
+    print ("\n Results of method {0} \n".format(g['name']))
+    print (t)
+    print ("Vb:\n {0}  ".format (g['Vb']))
+    print ("\nLog messages: {0} \n ".format (g['log']))
+
+
+def printQualitatNeat(measdata:list, b:list, Ve,  func, c, jac):
+    """
+    Выводит таблицу показателей качества оценки
+    USES PRETTYTABLE
+    :param measdata: список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
+    :param b: вектор коэфф
+    :param Ve:  Ve ковар. матрица измеренных данных
+    :param funcf callable функция, параметры по формату x,b,c
+    :param c словарь дополнительных постоянных
+    :return: Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков
+    """
+
+    t=PrettyTable (['Среднее логарифма правдоподобия','Дисперсия лп', 'Сигма лп', 'Среднее остатков', 'Дисп. остатков', 'Сигма остатков'])
+    t.add_row(list(logTruthness (measdata, b, Ve,  func, c))+list(averageDif(measdata, b, Ve,  func, c))[:-1:]  )
+    print('Показатели качества оценки')
+    print (t)
+
+    print('Матрица Vb')
+
+    Vb=countVbForMeasdata(b,  c, Ve, jac, measdata)
+    print (Vb)
+
+    print('Parameter Sigmas')
+    for i in range (Vb.shape[0]):
+        print (math.sqrt(Vb[i][i]))
+
+
+
+
 
 def logTruthness (measdata:list, b:list, Ve,  func, c):
     """
@@ -136,34 +244,6 @@ def countVbForMeasdata(b:list,  c:dict, Ve, jac, measdata):
         exit(0)
 
 
-
-
-
-def printQualitatNeat(measdata:list, b:list, Ve,  func, c, jac):
-    """
-    Выводит таблицу показателей качества оценки
-    USES PRETTYTABLE
-    :param measdata: список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
-    :param b: вектор коэфф
-    :param Ve:  Ve ковар. матрица измеренных данных
-    :param funcf callable функция, параметры по формату x,b,c
-    :param c словарь дополнительных постоянных
-    :return: Среднее логарифма правдоподобия Дисперсия лп Сигма лп Среднее остатков Дисп. остатков Сигма остатков
-    """
-
-    t=PrettyTable (['Среднее логарифма правдоподобия','Дисперсия лп', 'Сигма лп', 'Среднее остатков', 'Дисп. остатков', 'Сигма остатков'])
-    t.add_row(list(logTruthness (measdata, b, Ve,  func, c))+list(averageDif(measdata, b, Ve,  func, c))[:-1:]  )
-    print('Показатели качества оценки')
-    print (t)
-
-    print('Матрица Vb')
-
-    Vb=countVbForMeasdata(b,  c, Ve, jac, measdata)
-    print (Vb)
-
-    print('Parameter Sigmas')
-    for i in range (Vb.shape[0]):
-        print (math.sqrt(Vb[i][i]))
 
 
 

@@ -143,22 +143,6 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
 
 
 
-def grandCountGN_UltraX_Qualitat (funcf, jacf,  measdata:list, binit:list, c, Ve,  NSIG=3, implicit=False, verbose=False, name=''):
-    """
-    Параметры см внутренняя
-    :param name - название метода
-    """
-    gknux=grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG, implicit, verbose)
-    names = ['b', 'numiter', 'log' , 'Sklist', 'Sk']
-    gknuxdict = dict(zip (names, list(gknux)))
-    #    names=['AvLogTruth','DispLT', 'SigmaLT', 'AvDif', 'DispDif', 'SigmaDif', 'Diflist']
-
-    rs= dict(list(o_q.getQualitatDict(measdata, gknuxdict['b'], Ve,  funcf, c).items()) + list(gknuxdict.items()))
-    rs['name']=name
-    return rs
-
-    #return o_q.getQualitatDict(measdata, gknuxdict['b'], Ve,  funcf, c).update(gknuxdict)
-
 def selectBestEstim (gknuxdictsarr:list):
     """
     1. Фильтрует массив оценок, выкидывая плохие

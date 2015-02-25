@@ -33,7 +33,7 @@ def islinux ():
          return False
      return True
 
-def makeAinit (bstart, bend, Skbinit, binit):
+def makeAinit (bstart, bend, Skbinit, binit, isBinitGood=True):
     """
     расчёт ведётся по правилу "binit есть хорошее предположение в рамках области"
     :param bstart:
@@ -46,8 +46,12 @@ def makeAinit (bstart, bend, Skbinit, binit):
 
     for i in range (len(binit)):
         #A[i][0]=A[i][1]=.001*(bend[i]-bstart[i])*Skbinit  #универсально
-        A[i][0]=0.001*(binit[i]-bstart[i])*Skbinit
-        A[i][1]=0.001*(bend[i]-binit[i])*Skbinit
+
+        if isBinitGood:
+            A[i][0] = 0.001*(binit[i]-bstart[i])*Skbinit
+            A[i][1] = 0.001*(bend[i]-binit[i])*Skbinit
+        else:
+            A[i][0] = A[i][1] = 0.001*(bend[i]-bstart[i])*Skbinit  #универсально
     return A
 
 def countSklims(A,b,bstart, bend):
@@ -69,7 +73,7 @@ def countN (A, b, bstart, bend):
 #TODO требуется добавить функцию с оценкой качества, вопрос, сюда ли это добавить или же сделать враппер-функцию оценки качества в qualitat файле, и её надевать на разные gknux
 
 
-def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, A, NSIG=50, NSIGGENERAL=50, implicit=False, verbose=False, verbose_wrapper=False):
+def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, NSIG=50, NSIGGENERAL=50, implicit=False, verbose=False, verbose_wrapper=False, isBinitGood=True):
     """
     Обёртка для grandCountGN_UltraX1_Limited для реализации общего алгоритма
     :param funcf callable функция, параметры по формату x,b,c
@@ -85,32 +89,46 @@ def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:li
     :param verbose Если True, то подробно принтить результаты итераций
     :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
     """
-    Skinit= makeSkInit(funcf, measdata, binit, c)
-    A=makeAinit (bstart, bend, Skinit, binit)
+
     maxiter=100
     b,bpriv=binit,binit
     gknux=None
 
+    Skinit = makeSkInit(funcf,measdata,binit, c)
+    A=makeAinit(bstart, bend,Skinit,binit, isBinitGood)
+
+    log=''
+
+    if verbose_wrapper:
+        print ('==grandCountGN_UltraX1_Limited_wrapper is launched==\n\n')
 
     for numiter in range (maxiter):
-        bpriv=b
+        bpriv=copy.copy(b)
         gknux=grandCountGN_UltraX1_Limited (funcf, jacf,  measdata, b, bstart, bend, c, A, NSIG, implicit, verbose) #посчитали b
 
         if verbose_wrapper:
-            print ('Iteration \n',numiter,'\n' ,gknux,'\n',A)
+            print ('Iteration \n',numiter,'\n' ,gknux)
         b=gknux[0]
+
+        if not gknux[2]=='':
+            log+=gknux[2]+"\n"
         for j in range (len(binit)): #уменьшили в два раза
             A[j][0]*=0.5
             A[j][1]*=0.5
-        for i in range (len(b)):
-            #print ('entre',b,bpriv)
 
+        condition=False
+        for i in range (len(b)):
             if math.fabs ((b[i]-bpriv[i])/bpriv[i]) > math.pow(10,-1*NSIGGENERAL):
-                print ('contd')
-                continue
-        break
+                condition=True
+        if not condition:
+            break
+
         #мол если хоть один компонент вектора b значимо изменился, тогда продолжать. Иначе программа дойдёт до break и цикл прекратится
-    return gknux
+
+#  return b, numiter, log, Sklist, Sk
+
+    print ('grandCountGN_UltraX1_Limited_wrapper iterations number:', numiter)
+    return gknux[0], gknux[1], log, gknux[3], gknux[4]
 
 
 
@@ -175,22 +193,9 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
 
         N=countN(A,b,bstart, bend)
         Sklims=countSklims(A,b,bstart, bend)
-
-
-        print (A, '\n\n', G,'\n\n', N, '\n\n', Sklims)
-
-        #G=G-N if implicit else G+N #добавляем градиент от штрафных функций
+       #G=G-N if implicit else G+N #добавляем градиент от штрафных функций
         G=G+N
-
-        print (G)
-
-
-
         Sk+=Sklims #добавиляем объектную функцию от штрафных функций
-
-
-        print ()
-
 
         #print(np.linalg.inv(G), B5[:,0])
         #костыль для диодной задачи
@@ -245,7 +250,7 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
                 condition=True
 
 
-        if numiter>1000: #max number of iterations
+        if numiter>2000: #max number of iterations
             log+="GKNUX1: Break due to max number of iteration exceed"
             break
 
