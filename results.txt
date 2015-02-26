@@ -18,5 +18,26 @@ DiodeV2Mod2Part1
 
 Каждый априорный план строится порядка 3 мин 3 сек
 то есть 7*3=21 минут
+
+
+C:\Python34\python.exe D:/Projects/PHDLinearization/Cases/DiodeV2Mod2Part1.py
+Herzlich willkommen auf Ofiura System!
+Read file successful
+grandCountGN_UltraX1_limited: As funcf returned None, method  stops: Can't convert 'OverflowError' object to str implicitly
+Traceback (most recent call last):
+{'y': array([ 0.00325093]), 'x': [1.3927032239311437]}
+  File "D:/Projects/PHDLinearization/Cases/DiodeV2Mod2Part1.py", line 222, in <module>
+[ -1.40737198e-02   1.61826117e+00   1.10000000e-14   1.90000000e+00
+    extraction_Kirch_DiodeV2Mod2DirectBranch()
+   1.10000000e+00   8.00000000e-01   1.09691028e+02]
+  File "D:/Projects/PHDLinearization/Cases/DiodeV2Mod2Part1.py", line 194, in extraction_Kirch_DiodeV2Mod2DirectBranch
+    gknuxlim = o_el.grandCountGN_UltraX1_Limited_wrapper(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=False )
+  File "D:\Projects\PHDLinearization\Ofiura\Ofiura_EstimationLimited.py", line 111, in grandCountGN_UltraX1_Limited_wrapper
+    b=gknux[0]
+TypeError: 'NoneType' object is not subscriptable
+
+Process finished with exit code 1
+
+
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
