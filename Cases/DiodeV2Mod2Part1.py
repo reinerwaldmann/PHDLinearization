@@ -131,8 +131,14 @@ def Jac_Kirch_DiodeV2Mod2DirectBranch (x,b,c,y):
 
 def test_Kirch_DiodeV2Mod2DirectBranch():
     #       0       1   2      3    4  5   6    7
-    b=[1.238e-14, 1.8, 1.1e-14, 2, 1, 0.5, 100]
-    rng=np.arange(0.01,1.5,0.01)
+    btrue=[1.238e-14, 1.8,  1.123e-14, 1.5, 1., 0.5, 100.]
+
+    bstart=np.array(btrue)-np.array(btrue)*0.1
+    bend=np.array(btrue)+np.array(btrue)*0.102
+
+    b=btrue
+
+    rng=np.arange(0.01,1.5,0.001)
     #снимем ВАХ
 #    resrng=[solver_Kirch_DiodeV2Mod2DirectBranch ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
     resrng=[solver_Kirch_DiodeV2Mod2DirectBranch ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
@@ -212,5 +218,5 @@ funstr="(b[0]*(math.exp( (x[0]-y[0]*b[6])/(FT*b[1]))-1 ))+ (b[2]*(math.exp((x[0]
 # exit(0)
 #
 
-
+#test_Kirch_DiodeV2Mod2DirectBranch()
 extraction_Kirch_DiodeV2Mod2DirectBranch()
