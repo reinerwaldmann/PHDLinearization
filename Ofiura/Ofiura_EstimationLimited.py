@@ -178,6 +178,7 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
                 dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
             except BaseException as e:
                 print('grandCountGN_UltraX1_limited: As funcf returned None, method  stops:', e)
+                print (point, b, sep='\n')
                 return None
 
             # print(dif, jac)
