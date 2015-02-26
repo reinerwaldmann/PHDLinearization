@@ -104,11 +104,22 @@ def printQualitatStandart(gknux_dict:dict):
     klist = sorted(list(tg.keys()))
     vallist = [tg[i] for i in klist]
 
-    t=PrettyTable (klist)
-    t.add_row(vallist)
+
+    num=4
+    klists=[klist[i::num] for i in range(num)]
+    vallists=[vallist[i::num] for i in range(num)]
+
+
+    t=PrettyTable (klists[0])
+    t.add_row(vallists[0])
+
+    t2=PrettyTable (klists[1])
+    t2.add_row(vallists[1])
+
 
     print ("\n Results of method {0} \n".format(g['name']))
     print (t)
+    print (t2)
     print ("Vb:\n {0}  ".format (g['Vb']))
     print ("\nLog messages: {0} \n ".format (g['log']))
 
@@ -233,7 +244,9 @@ def countVbForMeasdata(b:list,  c:dict, Ve, jac, measdata):
     for point in measdata:
         jj=jac(point['x'], b, c, point['y'])
         #G+=jj*np.linalg.inv(Ve)*jj.T
-        G+=np.dot(jj.T, jj)
+        G+=np.dot ( np.dot(jj.T, np.linalg.inv(Ve)), jj)
+
+        #G+=np.dot(jj.T, jj)
     try:
         return np.linalg.inv(G)
     except BaseException as e:

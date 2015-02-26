@@ -15,7 +15,8 @@ print (klist)
 
 print (rslist)
 
-
+num=2
+print ([klist[i::num] for i in range(num)])
 
 
 

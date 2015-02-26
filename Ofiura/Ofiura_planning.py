@@ -388,7 +388,9 @@ def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
         jj=np.array(jac(point, b, c, func(point,b,c) if func else None))
         #G+=jj*np.linalg.inv(Ve)*jj.T
 
-        G+=np.dot(jj.T, jj)
+        G+=np.dot ( np.dot(jj.T, np.linalg.inv(Ve)), jj)  #поправлено в соответствии с формулой
+
+        #G+=np.dot(jj.T, jj)
 
     try:
         return np.linalg.inv(G)
@@ -417,7 +419,9 @@ def countVbForMeasdata(b:list,  c:dict, Ve, jac, measdata):
     for point in measdata:
         jj=jac(point['x'], b, c, point['y'])
         #G+=jj*np.linalg.inv(Ve)*jj.T
-        G+=np.dot(jj.T, jj)
+        #G+=np.dot(jj.T, jj)
+        G+=np.dot ( np.dot(jj.T, np.linalg.inv(Ve)), jj)  #поправлено в соответствии с формулой
+
     try:
         return np.linalg.inv(G)
     except BaseException as e:

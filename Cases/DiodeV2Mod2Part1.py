@@ -7,6 +7,7 @@ import numpy as np
 from scipy import optimize
 import matplotlib.pyplot as plt
 
+import Ofiura.Ofiura_EstimationLimited as o_el
 import Ofiura.Ofiura_Estimation as o_e
 import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_planning as o_p
@@ -25,6 +26,7 @@ numnone=0 #количество раз, когда функция вернула
 
 #Нестандартные глобальные переменные:
 FT=0.02586419 #подогнанное по pspice
+foldername='cachedPlans'
 
 
 
@@ -150,101 +152,49 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
 
     :return:
     """
+    global FT
+    global foldername
+
     funcf=solver_Kirch_DiodeV2Mod2DirectBranch
     jacf = Jac_Kirch_DiodeV2Mod2DirectBranch
     c={}
     Ve=np.array([ [0.00000000001] ]  )
-    btrue=[1.238e-14, 1.8,  1.1e-14, 2, 1, 0.5, 100]
+    #       0           1       2     3   4    5    6
+    btrue=[1.238e-14, 1.8,  1.123e-14, 1.5, 1., 0.5, 100.]
+
+
     bstart=np.array(btrue)-np.array(btrue)*0.1
-    bend=np.array(btrue)+np.array(btrue)*0.1
-    binit=[1.1-14, 1.5,  1e-14, 1.9, 1.1, 0.5, 100]
-    xstart=[0.01]
-    #xend=[20,60]
-    xend=[1.1]
+    bend=np.array(btrue)+np.array(btrue)*0.102
+    binit=[1.1-14, 1.5,  1.1e-14, 1.9, 1.1, 0.8, 98.]
+    xstart=[0.001]
+    xend=[1.5]
     N=40 #число точек в плане (для планов, кроме априорного)
-    NArprior=30 #число точек в априорном плане
+    NArprior=20 #число точек в априорном плане
 
 
     #Получаем априорный план
-    print("performing aprior plan:")
-    #блок кеширования априорного плана в файл
-    filename = os.path.basename(__file__).replace('.py','_plan1')
+    import os
+    filename =foldername+'/'+os.path.basename(__file__).replace('.py','_plan')
     try:
-
         oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
         print ("Read file successful")
     except BaseException as e:
-        oplan=o_ap.grandApriornPlanning (xstart, xend, NArprior, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbosePlan=True, verbose=True)[1]
+        oplan=o_ap.grandApriornPlanning (xstart, xend, NArprior, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True)[1]
         o_p.writePlanToFile(oplan, filename)
 
-    #Задание опций для последовательного плана
-    terminationOptDict={'VdShelfPow':-7}
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
 
 
+    gknuxlim = o_el.grandCountGN_UltraX1_Limited_wrapper(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=False )
+    gknux = o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, implicit=True)
 
-    #Оценивание параметров с использованием  ряда начальных значений
+    gknuxlim2=o_q.convertToQualitatStandart (gknuxlim, funcf, jacf,  measdata, c, Ve, name='Limited Count Aprior')
+    gknux2=o_q.convertToQualitatStandart (gknux, funcf, jacf,  measdata, c, Ve, name='Normal Count Aprior')
 
-    # resarr=list() #Список результатов
-    # t=PrettyTable (['Среднее логарифма правдоподобия','Сигма логарифма правдоподобия' , 'b','Среднее остатков по модулю'])
-    #
-    # for i in range(30):
-    #     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
-    #     gknu=o_e.grandCountGN_UltraX_ExtraStart (funcf, jacf,  measdata, bstart, bend, c, Ve,  NSIG=100, implicit=True, verbose=False, Ntries=10, name='aprior plan plus several measurements')
-    #     if (gknu):
-    #         resarr.append(gknu)
-    # if resarr:
-    #     for gknu in resarr:
-    #         if (gknu):
-    #             t.add_row([gknu['AvLogTruth'],gknu['SigmaLT'], gknu['b'], gknu['AvDif'] ])
-    # be=o_e.selectBestEstim (resarr)
-    #
-    # t.add_row(['*', '*', '*', '*' ])
-    # t.add_row([be['AvLogTruth'], be['SigmaLT'], be['b'], be['AvDif'] ])
-    # print(t)
-    # o_q.analyseDifList(be)
-    # o_q.printGKNUNeat(be)
-    # o_q.printQualitatNeat(measdata, be[0], Ve, funcf, c)
-    #
+    o_q.printQualitatStandart (gknuxlim2)
+    o_q.printQualitatStandart (gknux2)
 
 
-    #Оценивание с использованием binit
-    print('Aprior Plan Binit')
-    #данные по новому формату
-    binit=[1.238e-14, 1.8, 1, 1.1e-14, 2, 1, 0.5, 100]
-
-    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve)
-    gknu=o_e.grandCountGN_UltraX1 (funcf, jacf,  measdata, binit, c, NSIG=100, implicit=True)
-    o_q.analyseDifList(gknu)
-    o_q.printGKNUNeat(gknu)
-    o_q.printQualitatNeat(measdata, gknu[0], Ve, funcf, c)
-
-
-
-
-
-
-
-
-def solver_Kirch_DiodeV2Mod2DirectBranch_EXPLICIT(x,b,c=None):
-    """
-    [Реестровая]
-    Уравнение Кирхгофа
-    :param y:
-    :param x:
-    :param b:
-    :param c:
-    :return:
-    """
-    global FT
-    #mm=float(b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0])
-    In =   b[0]*(math.exp(x[0]/(FT*b[1]))-1 ) #+
-    King = math.sqrt (b[2]/(b[2]+In)) #+
-    Irec = b[3]*(math.exp((x[0])/(FT*b[4]))-1 ) #+
-    Kgen = ((1- (x[0])/b[5])**2+0.005 )**(b[6]/2)  #+
-    Ifwd = In*King+Irec*Kgen  #+
-    #Ifwd = In  #+
-
-    return [Ifwd]
 
 
 

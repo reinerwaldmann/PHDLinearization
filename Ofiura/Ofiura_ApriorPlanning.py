@@ -8,6 +8,8 @@ import numpy as np
 import Ofiura.Ofiura_general as o_g
 import traceback
 
+import time, datetime
+
 """
 def countMeanVbForAprior_S4000(expplan:list, bstart:list, bend:list, c, Ve, jac, func=None):
     Считает среднее значение определителя и дисперсию определителя Vb, формируя выборку из значений случайных b, распределённых равномерно (uniform) в диапазоне. Выборка в данной версии объёмом в 30 значений.
@@ -92,8 +94,12 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
         print('\n\nДанные априорного планирования:')
         print('Неоптимизированное-оптимизированное значение среднего det(Vb)')
 
+    prevtime=time.time()
+
     for i in range(0,Ntries1):
         try:
+
+
             if initplan==None:
                 m=len(xstart) #длина вектора входных параметров
                 plan = o_p.makeUniformExpPlan(xstart, xend, N**(1/float(m))) if i==0 else o_p.makeRandomUniformExpPlan(xstart, xend, N)
@@ -124,7 +130,14 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
             dcurr=countMeanVbForAprior_S4000(plan, bstart, bend, c, Ve, jac, func)[0]
 
             if verbose:
-                print ("{0} unoptimized-optimized:".format('uniform' if i==0 else ''),unopt, dcurr)
+                curtime = time.time() #in seconds
+                #st = datetime.datetime.fromtimestamp(curtime-prevtime).strftime('%Y-%m-%d %H:%M:%S')
+                st = datetime.datetime.fromtimestamp(curtime-prevtime).strftime('%H:%M:%S')
+                print ("{0} unoptimized-optimized: {1}   {2} time spent: {3}".format('uniform' if i==0 else '',unopt, dcurr, st))
+                prevtime=copy.copy(curtime)
+
+
+
             if dcurr<dopt or planopt==None:
                 dopt=dcurr
                 planopt=plan
@@ -132,6 +145,11 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
             if (verbosePlan):
                 o_p.writePlanToFile(plan, "{0}plan.txt".format(i))
+
+
+
+
+
 
         except BaseException as e:
             print ('This try failed, due to exception e=',e)
