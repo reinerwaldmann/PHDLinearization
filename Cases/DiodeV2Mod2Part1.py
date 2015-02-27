@@ -171,7 +171,7 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
 
     bstart=np.array(btrue)-np.array(btrue)*0.1
     bend=np.array(btrue)+np.array(btrue)*0.102
-    binit=[1.1-14, 1.5,  1.1e-14, 1.9, 1.1, 0.8, 98.]
+    binit=[1.1e-14, 1.5,  1.1e-14, 1.9, 1.1, 0.8, 98.]
     xstart=[0.001]
     xend=[1.5]
     N=40 #число точек в плане (для планов, кроме априорного)
