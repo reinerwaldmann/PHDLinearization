@@ -41,3 +41,23 @@ Process finished with exit code 1
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+27 feb
+пофикшена мелкая ошибка в binit
+теперь имеем
+Iteration
+ 30
+ (array([  1.11418990e-14,   1.58176403e+00,   1.23751678e-14,
+         1.65301019e+00,   9.90574120e-01,   5.51036147e-01,
+         9.75051527e+01]), 1, 'Mu counting: break due to max number of iteration exceed', [1.0874840898469799e-10], 1.0874840898469799e-10)
+grandCountGN_UltraX1_Limited_wrapper iterations number: 30
+
+при
+Iteration
+ 30
+ (array([  1.11418990e-14,   1.58176403e+00,   1.23751678e-14,
+         1.65301019e+00,   9.90574120e-01,   5.51036147e-01,
+         9.75051527e+01]), 1, 'Mu counting: break due to max number of iteration exceed', [1.0874840898469799e-10], 1.0874840898469799e-10)
+grandCountGN_UltraX1_Limited_wrapper iterations number: 30
+
+
+

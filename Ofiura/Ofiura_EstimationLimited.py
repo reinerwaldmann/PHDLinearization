@@ -93,6 +93,8 @@ def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:li
     maxiter=100
     b,bpriv=binit,binit
     gknux=None
+    gknuxlist=list()
+
 
     Skinit = makeSkInit(funcf,measdata,binit, c)
     A=makeAinit(bstart, bend,Skinit,binit, isBinitGood)
@@ -105,9 +107,15 @@ def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:li
     for numiter in range (maxiter):
         bpriv=copy.copy(b)
         gknux=grandCountGN_UltraX1_Limited (funcf, jacf,  measdata, b, bstart, bend, c, A, NSIG, implicit, verbose) #посчитали b
+        if gknux is None:
+            print ("grandCountGN_UltraX1_Limited_wrapper crashed on some iteration")
+            continue
+
+        gknuxlist.append(gknux)
 
         if verbose_wrapper:
             print ('Iteration \n',numiter,'\n' ,gknux)
+
         b=gknux[0]
 
         if not gknux[2]=='':

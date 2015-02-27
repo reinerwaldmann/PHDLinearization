@@ -1,7 +1,6 @@
 __author__ = 'vasilev_is'
 
 import math
-import os
 
 import numpy as np
 from scipy import optimize
@@ -191,7 +190,7 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
 
 
-    gknuxlim = o_el.grandCountGN_UltraX1_Limited_wrapper(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=False )
+    gknuxlim = o_el.grandCountGN_UltraX1_Limited_wrapper(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=True )
     gknux = o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, implicit=True)
 
     gknuxlim2=o_q.convertToQualitatStandart (gknuxlim, funcf, jacf,  measdata, c, Ve, name='Limited Count Aprior')
