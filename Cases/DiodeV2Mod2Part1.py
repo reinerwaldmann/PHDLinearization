@@ -163,23 +163,24 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
     funcf=solver_Kirch_DiodeV2Mod2DirectBranch
     jacf = Jac_Kirch_DiodeV2Mod2DirectBranch
     c={}
-    Ve=np.array([ [0.00000000001] ]  )
+    Ve=np.array([ [1e-5] ]  )
     #       0           1       2     3   4    5    6
-    btrue=[1.238e-14, 1.8,  1.123e-14, 1.5, 1., 0.5, 100.]
+    btrue=[1.238e-14, 1.8,  1.123e-14, 1.5, 1., 0.5, 123.]
 
 
     bstart=np.array(btrue)-np.array(btrue)*0.1
     bend=np.array(btrue)+np.array(btrue)*0.102
-    binit=[1.1e-14, 1.5,  1.1e-14, 1.9, 1.1, 0.8, 98.]
+    binit=[1.1e-14, 1.5,  1.1e-14, 1.9, 1.1, 0.8, 100.]
     xstart=[0.001]
     xend=[1.5]
     N=40 #число точек в плане (для планов, кроме априорного)
-    NArprior=20 #число точек в априорном плане
+    NArprior=30 #число точек в априорном плане
 
 
     #Получаем априорный план
     import os
-    filename =foldername+'/'+os.path.basename(__file__).replace('.py','_plan')
+
+    filename =foldername+'/'+os.path.basename(__file__).replace('.py','N{0}_plan'.format (NArprior))
     try:
         oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
         print ("Read file successful")
@@ -191,13 +192,13 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
 
 
     gknuxlim = o_el.grandCountGN_UltraX1_Limited_wrapper(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=True )
-    gknux = o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, implicit=True)
+    #gknux = o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, implicit=True)
 
     gknuxlim2=o_q.convertToQualitatStandart (gknuxlim, funcf, jacf,  measdata, c, Ve, name='Limited Count Aprior')
-    gknux2=o_q.convertToQualitatStandart (gknux, funcf, jacf,  measdata, c, Ve, name='Normal Count Aprior')
+    #gknux2=o_q.convertToQualitatStandart (gknux, funcf, jacf,  measdata, c, Ve, name='Normal Count Aprior')
 
     o_q.printQualitatStandart (gknuxlim2)
-    o_q.printQualitatStandart (gknux2)
+    #o_q.printQualitatStandart (gknux2)
 
 
 
@@ -219,3 +220,4 @@ funstr="(b[0]*(math.exp( (x[0]-y[0]*b[6])/(FT*b[1]))-1 ))+ (b[2]*(math.exp((x[0]
 
 #test_Kirch_DiodeV2Mod2DirectBranch()
 extraction_Kirch_DiodeV2Mod2DirectBranch()
+

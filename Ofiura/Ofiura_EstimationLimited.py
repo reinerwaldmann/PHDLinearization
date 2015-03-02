@@ -119,7 +119,10 @@ def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:li
         b=gknux[0]
 
         if not gknux[2]=='':
-            log+=gknux[2]+"\n"
+            #log+="On gknux iteration "+numiter+": "+ gknux[2]+"\n"
+            log+="On gknux iteration {0}: {1}\n".format (numiter, gknux[2])
+
+
         for j in range (len(binit)): #уменьшили в два раза
             A[j][0]*=0.5
             A[j][1]*=0.5
@@ -136,6 +139,9 @@ def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:li
 #  return b, numiter, log, Sklist, Sk
 
     print ('grandCountGN_UltraX1_Limited_wrapper iterations number:', numiter)
+
+    print (gknux[0], gknux[1], log, gknux[3], gknux[4])
+
     return gknux[0], gknux[1], log, gknux[3], gknux[4]
 
 
@@ -237,7 +243,7 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
             it+=1
 
 
-            if (it>100):
+            if (it>200):
                 log+="Mu counting: break due to max number of iteration exceed"
                 break
             cond2=Skmu>Sk
@@ -259,11 +265,13 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
                 condition=True
 
 
-        if numiter>2000: #max number of iterations
+        if numiter>3000: #max number of iterations
             log+="GKNUX1: Break due to max number of iteration exceed"
             break
 
-
+    if len(Sklist)>100:
+        ll=[Sklist[i] for i in range(0,len(Sklist),10)]
+        Sklist = ll
     return b, numiter, log, Sklist, Sk
 
 

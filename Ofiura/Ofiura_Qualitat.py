@@ -1,4 +1,4 @@
-__author__ = 'vasilev_is'
+author__ = 'vasilev_is'
 import copy
 import math
 import os
