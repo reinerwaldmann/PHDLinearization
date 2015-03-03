@@ -8,22 +8,17 @@ import numpy as np
 from scipy import optimize
 import matplotlib.pyplot as plt
 import mpmath as mpm
-
 import Ofiura.Ofiura_planningMpmath as o_pmpm
 import Ofiura.Ofiura_EstimationMpmath as o_empm
-
 
 #Part1: прямая ветвь ВАХ диода
 #Стандарт: implicit
 #Опция: MPMATH USED
 
-
 #Таблица переменных:
-
 #Установка точности для mpmath. В проекте принято 50
 mpm.mp.dps=40
 mpm.pretty = True
-
 
 #Описание стандартных функций приводятся в Методике программирования оценочных скриптов
 #Стандартные глобальные переменные:
@@ -72,7 +67,6 @@ def solver_Diode_In_mpmath (x,b,c=None):
         #http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
         #http://codereview.stackexchange.com/questions/28207/is-this-the-fastest-way-to-find-the-closest-point-to-a-list-of-points-using-nump
     except BaseException as e:
-        #print ('diodeResistorIMPLICITfunction: Error in findroot=',e)
         numnone+=1
         print ("solver: ERROR: "+e.__str__())
         return [None]
@@ -90,10 +84,12 @@ def solver_Diode_In_mpmath (x,b,c=None):
     return precsolx
 
 
-def jac_Kirch_DiodeV2Mod2DirectBranch (x,b,c,y):
+def jac_Diode_In_mpmath (x,b,c,y):
     """
     [Реестровая]
     непосредственная проверка невозможна
+
+
     :param x:
     :param b:
     :param c:
@@ -148,7 +144,7 @@ def extraction_Diode_In_mpmath():
     c=None
     global FT
     funcf=solver_Diode_In_mpmath
-    jacf = jac_Kirch_DiodeV2Mod2DirectBranch
+    jacf = jac_Diode_In_mpmath
     #теперь попробуем сделать эксперимент.
     Ve=np.array([ [1e-7] ]  )
     bstart=[mpm.mpf('1.0e-14'), mpm.mpf('1.0'), mpm.mpf('9')]

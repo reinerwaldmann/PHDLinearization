@@ -97,7 +97,30 @@ countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
 
 """
 
+#из обычных планов будем делать mpmath-планы
+
+def valueToMpm (val):
+    return mpm.mpf(val.__str__())
+
+def listToMpm(vect):
+    return [valueToMpm (val) for val in vect]
+
+def planToMpm(plan):
+    return [listToMpm(item) for item in plan]
+
+
+
+
+
+
+
+
+
+
 #У перекодированных функций ставить MPMATH+CAPABLE префикс
+
+
+
 
 
 def for_filter (x,lim):

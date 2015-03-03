@@ -1,6 +1,17 @@
 
 
-g = {'one':1, 'two':2, 'three':3}
+
+
+
+g = {'one':1, 'two':2, 'three':3, '1':23}
+
+lst = g.keys()
+[print (i) for i in lst if 't' in i] #печатает любой iterable красиво - каждый элемент на своей строчке
+#красивенная конструкция, которая фильтрует и печатает
+exit(0)
+
+
+
 
 klist = sorted(list(g.keys()))
 

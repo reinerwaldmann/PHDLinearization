@@ -165,16 +165,14 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
     c={}
     Ve=np.array([ [1e-5] ]  )
     #       0           1       2     3   4    5    6
-    btrue=[1.238e-14, 1.8,  1.123e-14, 1.5, 1., 0.5, 123.]
-
-
+    btrue=[1.238e-14, 1.8,  1.123e-14, 1.5, 1.12, 0.5, 123.]
     bstart=np.array(btrue)-np.array(btrue)*0.1
     bend=np.array(btrue)+np.array(btrue)*0.102
-    binit=[1.1e-14, 1.5,  1.1e-14, 1.9, 1.1, 0.8, 100.]
+    binit=[1.1e-14, 1.5,  1.1e-14, 1.9, 1.0, 0.8, 100.]
     xstart=[0.001]
     xend=[1.5]
     N=40 #число точек в плане (для планов, кроме априорного)
-    NArprior=30 #число точек в априорном плане
+    NArprior=20 #число точек в априорном плане
 
 
     #Получаем априорный план
@@ -187,6 +185,9 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
     except BaseException as e:
         oplan=o_ap.grandApriornPlanning (xstart, xend, NArprior, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True)[1]
         o_p.writePlanToFile(oplan, filename)
+
+    newxstart=1.4
+    oplan = [item for item in oplan if item[0]<newxstart]
 
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
 

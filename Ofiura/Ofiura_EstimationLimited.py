@@ -109,7 +109,7 @@ def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:li
         gknux=grandCountGN_UltraX1_Limited (funcf, jacf,  measdata, b, bstart, bend, c, A, NSIG, implicit, verbose) #посчитали b
         if gknux is None:
             print ("grandCountGN_UltraX1_Limited_wrapper crashed on some iteration")
-            continue
+            return None
 
         gknuxlist.append(gknux)
 
