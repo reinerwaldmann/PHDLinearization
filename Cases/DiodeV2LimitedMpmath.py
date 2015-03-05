@@ -2,7 +2,6 @@
 
 __author__ = 'reiner'
 
-
 import math
 
 import numpy as np
@@ -11,12 +10,8 @@ import matplotlib.pyplot as plt
 import mpmath as mpm
 from mpmath.calculus.optimization import MDNewton
 
-
 import Ofiura.Ofiura_EstimationLimitedMpmath as o_elm
 import Ofiura.Ofiura_planningMpmath as o_pmpm
-
-
-import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
 
@@ -102,8 +97,6 @@ def solver_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c=None):
         return [None]
     return precsolx
 
-    return solx
-
 
 
 def Jac_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c,y):
@@ -163,7 +156,8 @@ def extraction_Kirch_DiodeV2Mod2DirectBranchMpmath():
     btrue=[mpm.mpf('1.238e-14'), mpm.mpf('1.8'),  mpm.mpf('1.123e-14'), mpm.mpf('1.5'), mpm.mpf('1.1'), mpm.mpf('0.852'), mpm.mpf('123.')]
     bstart = [item-item*.1 for item in btrue]
     bend = [item+item*.12 for item in btrue]
-    binit=[mpm.mpf('1e-14'), mpm.mpf('1.1'),  mpm.mpf('1e-14'), mpm.mpf('1.'), mpm.mpf('1.'), mpm.mpf('0.5'), mpm.mpf('100.')]
+    #binit=[mpm.mpf('1e-14'), mpm.mpf('1.1'),  mpm.mpf('1e-14'), mpm.mpf('1.'), mpm.mpf('1.'), mpm.mpf('0.5'), mpm.mpf('100.')]
+    binit=mpm.matrix([['1e-14', '1.1',  '1e-14', '1.', '1.', '0.5', '100.']]).T
 
     xstart=[mpm.mpf('0.0001')]
     xend=[mpm.mpf('1.3')]

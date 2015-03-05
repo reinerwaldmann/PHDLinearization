@@ -5,6 +5,7 @@ import copy
 
 import mpmath as mpm
 
+
 #Finished
 
 
@@ -36,27 +37,28 @@ def makeAinitMpmath (bstart, bend, Skbinit, binit, isBinitGood=True):
     :return:
     """
     A=mpm.matrix( len(binit), 2 )
+
     for i in range (len(binit)):
         if isBinitGood:
-            A[i][0] = mpm.mpf('0.001')*(binit[i]-bstart[i])*Skbinit
-            A[i][1] = mpm.mpf('0.001')*(bend[i]-binit[i])*Skbinit
+            A[i,0] = mpm.mpf('0.001')*(binit[i]-bstart[i])*Skbinit
+            A[i,1] = mpm.mpf('0.001')*(bend[i]-binit[i])*Skbinit
         else:
-            A[i][0] = A[i][1] = mpm.mpf('0.001')*(bend[i]-bstart[i])*Skbinit  #универсально
+            A[i,0] = A[i,1] = mpm.mpf('0.001')*(bend[i]-bstart[i])*Skbinit  #универсально
     return A
 
 def countSklimsMpmath(A,b,bstart, bend):
     partone=parttwo=mpm.mpf(0)
     for i in range (len(b)):
-        partone+=A[i][0]/(b[i]-bstart[i]) #UNSAFE: если вдруг, ну вдруг b=bstart или bend, то будет <strike> треш </strike> креш с делением на ноль.
-        parttwo+=A[i][1]/(bend[i]-b[i])
+        partone+=A[i,0]/(b[i]-bstart[i]) #UNSAFE: если вдруг, ну вдруг b=bstart или bend, то будет <strike> треш </strike> креш с делением на ноль.
+        parttwo+=A[i,1]/(bend[i]-b[i])
     return partone+parttwo
 
 def countNMpmath (A, b, bstart, bend):
-    N=mpm.matrix((len(b),len(b)))
+    N=mpm.matrix(len(b),len(b))
     for j in range (len(b)):
-        partone=2*A[j][0]/(b[j]-bstart[j])**3
-        parttwo=2*A[j][1]/(bend[j]-b[j])**3
-        N[j][j]+=parttwo+partone #так как матрица нулевая
+        partone=2*A[j,0]/(b[j]-bstart[j])**3
+        parttwo=2*A[j,1]/(bend[j]-b[j])**3
+        N[j,j]+=parttwo+partone #так как матрица нулевая
     return N
 
 
@@ -78,7 +80,7 @@ def  grandCountGN_UltraX1_Limited_wrapperMpmath (funcf, jacf,  measdata:list, bi
     :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
     """
 
-    maxiter=100
+    maxiter=10
     b,bpriv=binit,binit
     gknux=None
     gknuxlist=list()
@@ -91,7 +93,7 @@ def  grandCountGN_UltraX1_Limited_wrapperMpmath (funcf, jacf,  measdata:list, bi
 
     for numiter in range (maxiter):
         bpriv=copy.copy(b)
-        gknux=grandCountGN_UltraX1_Limited_wrapperMpmath (funcf, jacf,  measdata, b, bstart, bend, c, A, NSIG, implicit, verbose) #посчитали b
+        gknux=grandCountGN_UltraX1_mpmath_Limited (funcf, jacf,  measdata, b, bstart, bend, c, A, NSIG, implicit, verbose) #посчитали b
         if gknux is None:
             print ("grandCountGN_UltraX1_Limited_wrapper crashed on some iteration")
             continue
