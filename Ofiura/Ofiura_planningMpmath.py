@@ -247,6 +247,8 @@ def makeMeasOneDot_lognorm(func, xdot, b:list, c:dict, Ve=[]):
     if y is None: #если функция вернула чушь, то в measdata её не записывать!
         return None
 
+    print (y)
+
     #Внесём возмущения:
     if Ve is not None:
 

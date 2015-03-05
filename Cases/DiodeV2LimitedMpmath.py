@@ -1,6 +1,7 @@
-from Cases.Diode_In_mpmath import solver_Diode_In_mpmath
+
 
 __author__ = 'reiner'
+
 
 import math
 
@@ -52,22 +53,18 @@ def func_Kirch_DiodeV2Mod2DirectBranchMpmath(y,x,b,c):
     :return:
     """
     global FT
-    #mm=float(b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0])
-    # In =   float(b[0]*(math.exp( (x[0]-y[0]*b[6])/(FT*b[1]))-1 )) #+
-    # King = 1
-    # Irec = float(b[2]*(math.exp((x[0]-y[0]*b[6])/(FT*b[3]))-1 )) #+
-    # Kgen = float(((1- (x[0]-y[0]*b[6])/b[4])**2+0.005 )**(b[5]/2) ) #+
-    # Ifwd = float(In*King+Irec*Kgen - y [0])  #+
     Ifwd_direct=(b[0]*(mpm.exp( (x[0]-y[0]*b[6])/(FT*b[1]))-1 ))+ (b[2]*(mpm.exp((x[0]-y[0]*b[6])/(FT*b[3]))-1 )) * (((1- (x[0]-y[0]*b[6])/b[4])**2+0.005 )**(b[5]/2))-y[0]
 
+
     return [Ifwd_direct]
+
+
 
 
 def solver_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c=None):
     """
     [Реестровая] +
     двухступенчатый - сначала np solver, затем mpm solver
-
     :param x:
     :param b:
     :param c:
@@ -76,29 +73,35 @@ def solver_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c=None):
     global numnone
     global FT
 
-    dfdy = lambda y, x, b, c=None: np.array ([[b[2]*b[5]*b[6]*(1 - (-b[6]*y[0] + x[0])/b[4])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)) - 1 - b[0]*b[6]*math.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*math.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]])
-    func = lambda y, x, b, c: [np.float(xx) for xx in func_Kirch_DiodeV2Mod2DirectBranchMpmath(y,x,b,c)]
 
-    solvinit=[.5]
+    dfdy = lambda y, x, b, c=None:  [b[2]*b[5]*b[6]*(1 - (-b[6]*y[0] + x[0])/b[4])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)) - 1 - b[0]*b[6]*math.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*math.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]
+    #func = lambda y, x, b, c: [np.float(x) for x in func_Kirch_DiodeV2Mod2DirectBranchMpmath(y,x,b,c)]
+    func = func_Kirch_DiodeV2Mod2DirectBranchMpmath
 
+    solvinit=[0.5]
     try:
         solx=optimize.root(func, solvinit, args=(x,b,c), jac=dfdy, method='lm').x
+        #solx=optimize.root(func, solvinit, args=(x,b,c),  method='lm').x
                                                                                     #solx=optimize.root(func, solvinit, args=(x,b,c), method='lm').x
                                                                                     #http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
                                                                                     #http://codereview.stackexchange.com/questions/28207/is-this-the-fastest-way-to-find-the-closest-point-to-a-list-of-points-using-nump
     except BaseException as e:
         numnone+=1
-        print ("solver: ERROR: "+e.__str__())
+        print ("solver: ERROR first stage: "+e.__str__())
+
         return [None]
 
     funcMPM = lambda y:  func_Kirch_DiodeV2Mod2DirectBranchMpmath ([y],x,b,c)
-    dfdyMPM=lambda y: mpm.matrix ([[b[2]*b[5]*b[6]*(1 - (-b[6]*y[0] + x[0])/b[4])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))) - 1 - b[0]*b[6]*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]])
+    #dfdyMPM=lambda y: [b[2]*b[5]*b[6]*(1 - (-b[6]*[y][0] + x[0])/b[4])*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))) - 1 - b[0]*b[6]*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]
+    dfdyMPM=lambda y: [b[2]*b[5]*b[6]*(1 - (-b[6]*[y][0] + x[0])/b[4])*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))) - 1 - b[0]*b[6]*mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3]))/(FT*b[3])]
+
     solvinitMPM=solx[0]
     try:
         precsolx=mpm.calculus.optimization.findroot(mpm.mp, f=funcMPM, x0=solvinitMPM, solver=MDNewton, multidimensional=True, J=dfdyMPM, verify=False)
+        #   precsolx=mpm.calculus.optimization.findroot(mpm.mp, f=funcMPM, x0=solvinitMPM, solver=MDNewton, multidimensional=True, verify=False)
     except BaseException as e:
         numnone+=1
-        print ("solver MPM: ERROR: "+e.__str__())
+        print ("solver MPM: ERROR second stage: "+e.__str__())
         return [None]
     return precsolx
 
@@ -174,32 +177,32 @@ def extraction_Kirch_DiodeV2Mod2DirectBranchMpmath():
 
 
     #Получаем априорный план
-    import os
+    # import os
+    # filename =foldername+'/'+os.path.basename(__file__).replace('.py','N{0}_plan'.format (NArprior))
+    # print (filename)
+    # try:
+    #     oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
+    #     print ("Read file successful")
+    # except BaseException as e:
+    #     oplan=o_ap.grandApriornPlanning (xstart, xend, NArprior, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True)[1]
+    #     o_p.writePlanToFile(oplan, filename)
 
-    filename =foldername+'/'+os.path.basename(__file__).replace('.py','N{0}_plan'.format (NArprior))
-    try:
-        oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
-        print ("Read file successful")
-    except BaseException as e:
-        oplan=o_ap.grandApriornPlanning (xstart, xend, NArprior, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True)[1]
-        o_p.writePlanToFile(oplan, filename)
+    filename='cachedPlans/DiodeV2Mod2Part1N20_plan'
+    oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла - читаем  библиотечный файл!
 
     # newxstart=1.4
     # oplan = [item for item in oplan if item[0]<newxstart]
     #
     oplanmpm=o_pmpm.planToMpm(oplan)
-    measdata = o_pmpm.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c, Ve)
-
-
+    print (oplanmpm)
+    measdata = o_pmpm.makeMeasAccToPlan_lognorm(funcf, oplanmpm, btrue, c, Ve)
     gknuxlimmpm = o_elm.grandCountGN_UltraX1_Limited_wrapperMpmath(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=True )
     print (gknuxlimmpm)
     gknuxlimmpm2=o_q.convertToQualitatStandart (gknuxlimmpm, funcf, jacf,  measdata, c, Ve, name='Limited Count Aprior')
     o_q.printQualitatStandart (gknuxlimmpm2)
 
 
-
 funstr="(b[0]*(math.exp( (x[0]-y[0]*b[6])/(FT*b[1]))-1 ))+ (b[2]*(math.exp((x[0]-y[0]*b[6])/(FT*b[3]))-1 )) * (((1- (x[0]-y[0]*b[6])/b[4])**2+0.005 )**(b[5]/2))-y[0]"
-
 
 #test_Kirch_DiodeV2Mod2DirectBranch()
 # dfdb dfdy

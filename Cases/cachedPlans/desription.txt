@@ -83,3 +83,5 @@ funcf=solver_Kirch_DiodeV2Mod2DirectBranch
     xend=[1.5]
     N=40 #число точек в плане (для планов, кроме априорного)
     NArprior=20 #число точек в априорном плане
+
+
