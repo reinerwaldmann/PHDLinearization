@@ -35,9 +35,8 @@ def makeAinitMpmath (bstart, bend, Skbinit, binit, isBinitGood=True):
     :param binit:
     :return:
     """
-    A=mpm.matrix( (len(binit), 2 ))
+    A=mpm.matrix( len(binit), 2 )
     for i in range (len(binit)):
-
         if isBinitGood:
             A[i][0] = mpm.mpf('0.001')*(binit[i]-bstart[i])*Skbinit
             A[i][1] = mpm.mpf('0.001')*(bend[i]-binit[i])*Skbinit

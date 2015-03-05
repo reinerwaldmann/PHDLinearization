@@ -88,13 +88,10 @@ def solver_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c=None):
     except BaseException as e:
         numnone+=1
         print ("solver: ERROR first stage: "+e.__str__())
-
         return [None]
-
     funcMPM = lambda y:  func_Kirch_DiodeV2Mod2DirectBranchMpmath ([y],x,b,c)
     #dfdyMPM=lambda y: [b[2]*b[5]*b[6]*(1 - (-b[6]*[y][0] + x[0])/b[4])*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))) - 1 - b[0]*b[6]*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]
     dfdyMPM=lambda y: [b[2]*b[5]*b[6]*(1 - (-b[6]*[y][0] + x[0])/b[4])*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))) - 1 - b[0]*b[6]*mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3]))/(FT*b[3])]
-
     solvinitMPM=solx[0]
     try:
         precsolx=mpm.calculus.optimization.findroot(mpm.mp, f=funcMPM, x0=solvinitMPM, solver=MDNewton, multidimensional=True, J=dfdyMPM, verify=False)
@@ -194,7 +191,6 @@ def extraction_Kirch_DiodeV2Mod2DirectBranchMpmath():
     # oplan = [item for item in oplan if item[0]<newxstart]
     #
     oplanmpm=o_pmpm.planToMpm(oplan)
-    print (oplanmpm)
     measdata = o_pmpm.makeMeasAccToPlan_lognorm(funcf, oplanmpm, btrue, c, Ve)
     gknuxlimmpm = o_elm.grandCountGN_UltraX1_Limited_wrapperMpmath(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=True )
     print (gknuxlimmpm)
