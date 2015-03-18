@@ -63,7 +63,7 @@ def countNMpmath (A, b, bstart, bend):
 
 
 
-def  grandCountGN_UltraX1_Limited_wrapperMpmath (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, NSIG=50, NSIGGENERAL=50, implicit=False, verbose=False, verbose_wrapper=False, isBinitGood=True):
+def  grandCountGN_UltraX1_Limited_wrapperMpmath (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, NSIG=10, NSIGGENERAL=10, implicit=False, verbose=False, verbose_wrapper=False, isBinitGood=True):
     """
     Обёртка для grandCountGN_UltraX1_Limited для реализации общего алгоритма
     :param funcf callable функция, параметры по формату x,b,c
@@ -105,8 +105,8 @@ def  grandCountGN_UltraX1_Limited_wrapperMpmath (funcf, jacf,  measdata:list, bi
             #log+="On gknux iteration "+numiter+": "+ gknux[2]+"\n"
             log+="On gknux iteration {0}: {1}\n".format (numiter, gknux[2])
         for j in range (len(binit)): #уменьшили в два раза
-            A[j][0]*=mpm.mpf('0.5')
-            A[j][1]*=mpm.mpf('0.5')
+            A[j,0]*=mpm.mpf('0.5')
+            A[j,1]*=mpm.mpf('0.5')
         condition=False
         for i in range (len(b)):
             if mpm.fabs ((b[i]-bpriv[i])/bpriv[i]) > math.pow(10,-1*NSIGGENERAL):
@@ -146,12 +146,12 @@ def grandCountGN_UltraX1_mpmath_Limited (funcf, jacf,  measdata:list, binit:list
     numiter=0
     condition=True
 
-    def throwError (msg):
-        #global b, numiter, log, Sklist, Sk
-        log+=msg
-        return b, numiter, log, Sklist, Sk
+
 
     while (condition):
+
+        #verbose = numiter%10==0 #печатать инфу каждый 10 итераций
+
         m=len(b) #число коэффициентов
         #G=np.zeros((m,m))
         G=mpm.matrix(m)
@@ -162,12 +162,18 @@ def grandCountGN_UltraX1_mpmath_Limited (funcf, jacf,  measdata:list, binit:list
         for point in measdata:
             jac=jacf(point['x'],b,c,point['y'])
             if jac is None:
-                 throwError ("Jac is None")
+                log+="Jac is None"
+                return b, numiter, log, Sklist, Sk
+
+
             G+=jac.T*jac
 
             fxbc=funcf(point['x'],b,c)
             if fxbc is None:
-                throwError ("Funcf is None")
+                log+="Funkf is None"
+                return b, numiter, log, Sklist, Sk
+
+
             dif=point['y']-fxbc
 
             if B5 is None:
@@ -188,7 +194,10 @@ def grandCountGN_UltraX1_mpmath_Limited (funcf, jacf,  measdata:list, binit:list
         except BaseException as e:
             print('G=',G)
             print('B5=',B5)
-            throwError('Error in G:'+e.__str__())
+
+            log+='Error in G:'+e.__str__()
+            return b, numiter, log, Sklist, Sk
+
 
         #mu counting
         mu=mpm.mpf(4)
@@ -225,7 +234,9 @@ def grandCountGN_UltraX1_mpmath_Limited (funcf, jacf,  measdata:list, binit:list
             if mpm.fabs ((b[i]-bpriv[i])/bpriv[i])>math.pow(10,-1*NSIG):
                 condition=True
 
-        if numiter>500: #max number of iterations
-            throwError("Break due to max number of iteration exceed")
+        if numiter>1000: #max number of iterations
+            log+="Break due to max number of iteration exceed"
+            return b, numiter, log, Sklist, Sk
+
 
     return b, numiter, log, Sklist, Sk

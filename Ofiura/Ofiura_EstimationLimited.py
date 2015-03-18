@@ -129,7 +129,7 @@ def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:li
 
         condition=False
         for i in range (len(b)):
-            if math.fabs ((b[i]-bpriv[i])/bpriv[i]) > math.pow(10,-1*NSIGGENERAL):
+            if math.fabs ((b[i  ]-bpriv[i])/bpriv[i]) > math.pow(10,-1*NSIGGENERAL):
                 condition=True
         if not condition:
             break

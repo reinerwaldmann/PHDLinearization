@@ -152,8 +152,6 @@ def printQualitatNeat(measdata:list, b:list, Ve,  func, c, jac):
 
 
 
-
-
 def logTruthness (measdata:list, b:list, Ve,  func, c):
     """
     Считает логарифм функции правдоподобия для известной ковариационной матрицы Ve - ошибок экспериментальных данных
@@ -172,13 +170,23 @@ def logTruthness (measdata:list, b:list, Ve,  func, c):
 
         S.append(np.dot(np.dot(dif.T, np.linalg.inv(Ve)), dif))
 
-
     K=Ve.shape[0] #число откликов
     M=len(b) #число коэффициентов
     N=len(measdata)
     shift=K*N/(K*N-M)
 
-    Average=np.average(S)*shift
+
+    Snp=list(map(np.float64, S))
+
+    # for item in S:
+    #     item = np.float96(item)
+    # print (S)
+
+    #print (S)
+    #print (Snp)
+
+
+    Average=np.average(Snp)*shift
     Disp = np.var(S)*shift*shift
 
     return Average, Disp, math.sqrt(Disp)
@@ -203,7 +211,11 @@ def averageDif(measdata:list, b:list, Ve,  func, c):
         diflist.append(np.abs(dif ))
         diflistNoAbs.append(dif)
 
-    return np.average(diflist), np.var(diflist), math.sqrt(np.var(diflist)), diflistNoAbs
+        diflistn=list(map(np.float64, diflist))
+        diflistna=list(map(np.float64, diflistNoAbs))
+
+
+    return np.average(diflistn), np.var(diflistn), math.sqrt(np.var(diflistn)), diflistna
 
 def getQualitat(measdata:list, b:list, Ve,  func, c):
     """

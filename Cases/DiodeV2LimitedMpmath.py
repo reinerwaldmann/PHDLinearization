@@ -179,7 +179,12 @@ def extraction_Kirch_DiodeV2Mod2DirectBranchMpmath():
     #     o_p.writePlanToFile(oplan, filename)
 
     filename='cachedPlans/DiodeV2Mod2Part1N20_plan'
-    oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла - читаем  библиотечный файл!
+    try:
+        oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла - читаем  библиотечный файл!
+        print ("Read file successful")
+    except:
+        exit(0)
+
 
     # newxstart=1.4
     # oplan = [item for item in oplan if item[0]<newxstart]
