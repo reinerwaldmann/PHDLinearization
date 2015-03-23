@@ -154,8 +154,8 @@ def extraction_Kirch_DiodeV2Mod2DirectBranchMpmath():
     Ve=np.array([ [1e-5] ]  )
     #       0           1       2     3   4    5    6
     btrue=[mpm.mpf('1.238e-14'), mpm.mpf('1.8'),  mpm.mpf('1.123e-14'), mpm.mpf('1.5'), mpm.mpf('1.1'), mpm.mpf('0.852'), mpm.mpf('123.')]
-    bstart = [item-item*.1 for item in btrue]
-    bend = [item+item*.12 for item in btrue]
+    bstart = [item-item*.2 for item in btrue]
+    bend = [item+item*.22 for item in btrue]
     #binit=[mpm.mpf('1e-14'), mpm.mpf('1.1'),  mpm.mpf('1e-14'), mpm.mpf('1.'), mpm.mpf('1.'), mpm.mpf('0.5'), mpm.mpf('100.')]
     binit=mpm.matrix([['1e-14', '1.1',  '1e-14', '1.', '1.', '0.5', '100.']]).T
 
@@ -191,7 +191,7 @@ def extraction_Kirch_DiodeV2Mod2DirectBranchMpmath():
     #
     oplanmpm=o_pmpm.planToMpm(oplan)
     measdata = o_pmpm.makeMeasAccToPlan_lognorm(funcf, oplanmpm, btrue, c, Ve)
-    gknuxlimmpm = o_elm.grandCountGN_UltraX1_Limited_wrapperMpmath(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=True )
+    gknuxlimmpm = o_elm.grandCountGN_UltraX1_Limited_wrapperMpmath(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=True, isBinitGood=True )
     print (gknuxlimmpm)
     gknuxlimmpm2=o_q.convertToQualitatStandart (gknuxlimmpm, funcf, jacf,  measdata, c, Ve, name='Limited Count Aprior')
     o_q.printQualitatStandart (gknuxlimmpm2)
