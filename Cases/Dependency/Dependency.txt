@@ -66,3 +66,30 @@ NSIG число разрядов, показывающее, с какой точ
 
 
 
+
+
+#INPARAMETERS
+plantype
+n
+lbinitbtrue
+diapwidth
+assym
+nsiggen
+nsig
+detve
+maxnumiter
+isbinitgood
+
+
+'plantype'
+'n'
+'lbinitbtrue'
+'diapwidth'
+'assym'
+'nsiggen'
+'nsig'
+'detve'
+'maxnumiter'
+'isbinitgood'
+
+

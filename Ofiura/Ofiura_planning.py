@@ -202,7 +202,7 @@ def makeMeasAccToPlan(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilenam
         if y is None: #если функция вернула чушь, то в measdata её не записывать!
             continue
         #Внесём возмущения:
-        if Ve is not None:
+        if Ve is not None and np.linalg.det(Ve)>10e-15:
             ydisps=np.diag(Ve)
             for k in range(len(y)):
                 y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
@@ -230,7 +230,7 @@ def makeMeasOneDot(func, xdot, b:list, c:dict, Ve=[]):
     if y is None: #если функция вернула чушь, то в measdata её не записывать!
         return None
     #Внесём возмущения:
-    if  Ve is not None:
+    if Ve is not None and np.linalg.det(Ve)>10e-15:
         ydisps=np.diag(Ve)
         for k in range(len(y)):
             y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
@@ -258,7 +258,7 @@ def makeMeasOneDot_lognorm(func, xdot, b:list, c:dict, Ve=[]):
     if y is None: #если функция вернула чушь, то в measdata её не записывать!
         return None
     #Внесём возмущения:
-    if Ve is not None:
+    if Ve is not None and np.linalg.det(Ve)>10e-15:
         ydisps=np.diag(Ve)
         for k in range(len(y)):
             #y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
@@ -288,7 +288,7 @@ def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, ou
         if y is None: #если функция вернула чушь, то в measdata её не записывать!
             continue
         #Внесём возмущения:
-        if  Ve is not None:
+        if Ve is not None and np.linalg.det(Ve)>10e-15:
             ydisps=np.diag(Ve)
             for k in range(len(y)):
                 if (y[k]<0):

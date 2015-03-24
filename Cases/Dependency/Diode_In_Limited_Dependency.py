@@ -15,6 +15,8 @@ import Ofiura.Ofiura_planning as o_p
 
 
 
+#Этот файл полностью повторяет по сути Diode_In_Limited, но адаптирован к эксперименту Dependency
+
 
 #Part1: прямая ветвь ВАХ диода
 #Стандарт: implicit
