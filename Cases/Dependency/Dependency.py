@@ -2,20 +2,60 @@ __author__ = 'vasilev_is'
 
 
 
-#конкретно к модели диода относящиеся вещи
 import pickle
 
 import numpy as np
 
 
+#конкретно к модели диода относящиеся вещи
+
+btrue = [1.238e-14, 1.8, 100]
+print (np.linalg.norm(btrue))
+
+
+
+
+def makeplan_l (plantype, n ):
+    #- делает нужный план в зависимости от параметров plantype и n
+    #Надо создать пачку априорных планов - 5 10 15 20 25 30 35 40 значений
+    global btrue
+
+
+
+
+def makebinit_lambda (lbinitbtrue):
+    #- делает начальное значение в зависимости от параметров lbinitbtrue
+    global btrue
+
+
+def makediap_lambda (diapwidth, assym):
+    #- делает диапазон в зависимости от параметров diapwidth, assym
+    global btrue
+
+
+def makeVe_lambda(detVe):
+    #- делает Ve в зависимости от detVe
+    global btrue
+
+
+
+#INPARAMETERS RANGES
+# 'conditions'
+# 'plantype'   1 Aprior 0 unif [True,False]
+# 'n'  (5,50,5)  5 10 15 20 25 30 35 40 значений
+# 'lbinitbtrue'
+# 'diapwidth'
+# 'assym'
+# 'nsiggen'
+# 'nsig'
+# 'detve'
+# 'isbinitgood'
 
 
 
 
 #INPARAMETERS
-
 'conditions'
-
 'plantype'
 'n'
 'lbinitbtrue'
@@ -24,7 +64,6 @@ import numpy as np
 'nsiggen'
 'nsig'
 'detve'
-'maxnumiter'
 'isbinitgood'
 
 
