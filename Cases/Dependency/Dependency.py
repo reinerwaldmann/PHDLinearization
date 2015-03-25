@@ -16,9 +16,18 @@ print (np.linalg.norm(btrue))
 
 
 def makeplan_l (plantype, n ):
+    global btrue
     #- делает нужный план в зависимости от параметров plantype и n
     #Надо создать пачку априорных планов - 5 10 15 20 25 30 35 40 значений
-    global btrue
+
+    if plantype: #если априорный
+        pass
+    else:
+        pass
+
+
+
+
 
 
 

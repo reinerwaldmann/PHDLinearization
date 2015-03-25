@@ -36,6 +36,24 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 
 """
 
+def makePlanCached (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True, foldername='../Cases/cachedPlans', cachname='plan.plan'):
+    import os
+    filename =foldername+'/'+cachname  #os.path.basename(__file__).replace('.py','_plan')
+    try:
+        oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
+        print ("Read file successful")
+    except BaseException as e:
+        oplan=grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True)[1]
+        o_p.writePlanToFile(oplan, filename)
+
+    return oplan
+
+
+
+
+
+
+
 def countMeanVbForAprior_S4000(expplan:list, bstart:list, bend:list, c, Ve, jac, func=None):
     """
 
