@@ -1,20 +1,21 @@
 __author__ = 'vasilev_is'
 
-
-
 import pickle
 
 import numpy as np
+
 import Ofiura.Ofiura_general as o_g
 
 
 #конкретно к модели диода относящиеся вещи
 
 btrue = [1.238e-14, 1.8, 100]
+leny=1 #длина выходного вектора
+
 #print (np.linalg.norm(btrue))
 
 
-def makeplan_l (plantype, n ):
+def makeplan_lambda (plantype, n, bstart, bend):
     global btrue
     #- делает нужный план в зависимости от параметров plantype и n
     #Надо создать пачку априорных планов - 5 10 15 20 25 30 35 40 значений
@@ -32,26 +33,51 @@ def makebinit_lambda (bstart, bend):
 
 
 
-def makediap_lambda (diapwidth, assym):
+def makediap_lambda_absolute (diapwidth, assym):
     #- делает диапазон в зависимости от параметров diapwidth, assym
+    # diapwisth, assym задаются абсолютными диапазонами.
     global btrue
-
     btrue1=np.array(btrue)
-
-    bcenter = np.array(btrue) * (1+np.linalg.norm(btrue)/assym)
-
-    print (np.linalg.norm(btrue1)/assym)
-
-    bstart, bend = bcenter* (1-np.linalg.norm(bcenter)/(2*diapwidth)), bcenter* (1+np.linalg.norm(bcenter)/(2*diapwidth))
+    m = len(btrue) #длина вектора b
+    centervector=np.array([assym/(m**.5)]*m) + btrue1
+    halfrange = np.array([.5*diapwidth/(m**.5)]*m)
+    bstart, bend = centervector-halfrange, centervector+halfrange
     return bstart, bend
 
-print (makediap_lambda (0.1, 0.2))
+def makediap_lambda (diapwidth, assym):
+    """ делает диапазон в зависимости от параметров diapwidth, assym
+     diapwisth, assym задаются в долях от btrue """
+        #тестовый сет для этой функции
+    # btrue1=np.array(btrue)
+    # bassym = .1  #дельта, расстояние, на которое надо отойти от оригинального вектора
+    # diapwidth=.40
+    # crisp=makediap_lambda(diapwidth, bassym)
+    #
+    # print (crisp)
+    # print ((crisp[1]-crisp[0])/2+crisp[0]-bassym*btrue1)
 
-
+    global btrue
+    btrue1=np.array(btrue)
+    m = len(btrue) #длина вектора b
+    centervector=btrue1*assym + btrue1
+    halfrange = btrue1*diapwidth/2
+    bstart, bend = centervector-halfrange, centervector+halfrange
+    return bstart, bend
 
 def makeVe_lambda(detVe):
-    #- делает Ve в зависимости от detVe
+    """- делает Ve в зависимости от detVe
+    """
+
     global btrue
+    global leny
+    #длина выходного вектора, я не знаю, как её
+    x = detVe**(1/leny)
+    Ve=np.zeros((leny,leny))
+    np.fill_diagonal(Ve,x)
+    return Ve
+
+#архитектура этого скрипта такова, что её как будто бы делал наркоман
+
 
 
 
@@ -132,26 +158,30 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
     res  =  list()
     resfolder= 'Results'
     #проверка доступности папки записи результатов
-    with open (resfolder+'/'+'test.txt', 'wt')  as file:
-        file.write('test')
+    with open (resfolder+'/'+'rescsv.csv', 'w')  as file:
+        file.write("Commit: ")
+        file.write (input("Please a comment, will be written first in results file. Preferably current commit hash: "))
+        file.write('\n\n')
 
     print (locals()) #чтоб не расслабляться при чтении логов
 
+    firstiteration=True
+
     for plantype in i_plantype:
         for n in i_n:
-            for lbinitbtrue in i_lbinitbtrue:
-                for diapwidth in i_diapwidth:
-                    for assym in i_assym:
-                        for nsiggen in i_nsiggen:
-                            for nsig in i_nsig:
-                                for detVe in i_detve:
-                                    for isbinitgood in i_isbinitgood:
+            for lbinitbtrue in i_lbinitbtrue: #этот цикл идёт по вариантам инит-вектора, который берётся по равномерному распределению из диапазона
+                for diapwidth in i_diapwidth: #задаётся в долях от btrue
+                    for assym in i_assym: #задаётся в долях от btrue
+                        for nsiggen in i_nsiggen: #кандидат на удаление
+                            for nsig in i_nsig: #кандидат на удаление
+                                for detVe in i_detve: #в случае однооткликовой модели это - единственный элемент оной матрицы
+                                    for isbinitgood in i_isbinitgood: #только 1 и 0
 
-                                        binit=bb[0]
-                                        plan = makeplan_lambda(plantype, n)
                                         bstart, bend = makediap_lambda(diapwidth, assym)
+                                        plan = makeplan_lambda(plantype, n, bstart, bend)
                                         Ve = makeVe_lambda (detVe)
                                         bb=makebinit_lambda(bstart, bend)
+                                        binit=bb[0]
 
                                         condition = {'plantype': plantype,
                                                      'n':n,
@@ -163,33 +193,38 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                                      'detve':detVe,
                                                      'isbinitgood':isbinitgood}
 
+                                        dellist = ['log', 'Sklist', 'DispLT', 'DispDif', 'Diflist', 'name', 'Vb', 'VbSigmas']
 
                                         if detVe<10e-15:  #считаем Ve практически нулевой, разброс - отсутствующим
                                             result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
-                                            del  (result['log'])
-                                            del  (result['Sklist'])
-                                            del  (result['DispLT'])
-                                            del  (result['DispDif'])
-                                            del  (result['Diflist'])
-                                            del  (result['name'])
-                                            del  (result['Vb'])
-                                            del  (result['VbSigmas'])
+                                            for i in dellist:
+                                                del (result[i])
+
                                         else:
                                             minilist=list()
                                             for i in range (0, 20): #выборка 20
                                                 result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
-                                                del  (result['log'])
-                                                del  (result['Sklist'])
-                                                del  (result['DispLT'])
-                                                del  (result['DispDif'])
-                                                del  (result['Diflist'])
-                                                del  (result['name'])
-                                                del  (result['Vb'])
-                                                del  (result['VbSigmas'])
+                                                for j in dellist:
+                                                    del (result[j])
                                                 minilist.append(result)
-                                            result=makeav(minilist)
+                                            result=makeav(minilist)  #усредняет все показатели в списке
+                                        conditionkeys = sorted(condition.keys())
+                                        resultkeys = sorted(result.keys())
+                                        with open (resfolder+'/'+'rescsv.csv', 'a')  as file:
+                                            if firstiteration:
+                                                print (','.join(str(x) for x in conditionkeys+resultkeys), file) #вывели заголовок CSV столбцов
+                                                firstiteration=False
+                                            file.write(','.join(str(condition[x]) for x in conditionkeys))
+                                            file.write(','.join(str(result[x]) for x in resultkeys))
+                                            file.write('\n')
+
+                                            #данные пишутся постепенно и файл тотчас закрывается, как только они записаны
+
 
                                         res.append ({'condition': condition, 'result':result})
+
+
+
 
     #что мы делаем с res
     #сперва вкатаем в pickle
