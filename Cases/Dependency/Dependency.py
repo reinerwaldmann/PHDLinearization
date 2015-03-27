@@ -3,27 +3,64 @@ __author__ = 'vasilev_is'
 import pickle
 
 import numpy as np
+import hashlib
 
 import Ofiura.Ofiura_general as o_g
+import Ofiura.Ofiura_ApriorPlanning  as o_ap
+import Ofiura.Ofiura_EstimationLimited  as o_el
+import Cases.Dependency.Diode_In_Limited_Dependency as cdld
+import Ofiura.Ofiura_planning as o_p
+import Ofiura.Ofiura_Qualitat as o_q
+
+
+
 
 
 #конкретно к модели диода относящиеся вещи
 
 btrue = [1.238e-14, 1.8, 100]
+c={}
 leny=1 #длина выходного вектора
+xstart, xend =   [0.001], [2]
+
+funcf = cdld.solver_Diode_In_Limited
+jacf = cdld.jac_Diode_In_Limited
+
+
+usercomment=''
 
 #print (np.linalg.norm(btrue))
 
 
-def makeplan_lambda (plantype, n, bstart, bend):
-    global btrue
+
+def  gknuxfunc_lambda (plan, binit, bstart, bend, Ve):
+    """
+
+    :param plan:
+    :param binit:
+    :param bstart:
+    :param bend:
+    :param Ve:
+    :return:
+    """
+    global btrue, c, xstart, xend, funcf, jacf
+    measdata = o_p.makeMeasAccToPlan_lognorm(funcf, plan, btrue, c,Ve )
+    gknuxlim = o_el.grandCountGN_UltraX1_Limited_wrapper(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=False )
+    gknuxlim2=o_q.convertToQualitatStandart (gknuxlim, funcf, jacf,  measdata, c, Ve, name='Limited Count Aprior Dependency')
+    return gknuxlim2
+
+
+def makeplan_lambda (plantype, n, bstart, bend, Ve):
+    global xstart, xend, btrue,c
     #- делает нужный план в зависимости от параметров plantype и n
     #Надо создать пачку априорных планов - 5 10 15 20 25 30 35 40 значений
-
+    hash= hashlib.md5((n,bstart,bend,Ve).__str__())
+    filename = usercomment.join('_').join(hash)
     if plantype: #если априорный
-        pass
+        return o_ap.makePlanCached (xstart, xend, n, bstart, bend, c, Ve, jacf, funcf, Ntries=4, verbose=False, foldername='../Cases/cachedPlans/DependencyPlans', cachname=filename)
     else:
         pass
+
 
 def makebinit_lambda (bstart, bend):
     global btrue
@@ -155,19 +192,23 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
         btrue фиксировано. Всё остальное определяется, отталкиваясь от него
     """
+
+    global usercomment
     res  =  list()
     resfolder= 'Results'
     #проверка доступности папки записи результатов
     with open (resfolder+'/'+'rescsv.csv', 'w')  as file:
         file.write("Commit: ")
-        file.write (input("Please a comment, will be written first in results file. Preferably current commit hash: "))
+        usercomment=input("Please a comment, will be written first in results file. Preferably current commit hash: ")
+        file.write (usercomment)
         file.write('\n\n')
 
     print (locals()) #чтоб не расслабляться при чтении логов
 
     firstiteration=True
 
-    for plantype in i_plantype:
+    #for plantype in i_plantype:
+    for plantype in [1]:
         for n in i_n:
             for lbinitbtrue in i_lbinitbtrue: #этот цикл идёт по вариантам инит-вектора, который берётся по равномерному распределению из диапазона
                 for diapwidth in i_diapwidth: #задаётся в долях от btrue
@@ -178,8 +219,8 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                     for isbinitgood in i_isbinitgood: #только 1 и 0
 
                                         bstart, bend = makediap_lambda(diapwidth, assym)
-                                        plan = makeplan_lambda(plantype, n, bstart, bend)
                                         Ve = makeVe_lambda (detVe)
+                                        plan = makeplan_lambda(plantype, n, bstart, bend,Ve)
                                         bb=makebinit_lambda(bstart, bend)
                                         binit=bb[0]
 
@@ -241,6 +282,42 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
 
 
+def test ():
+    """
+    Вся необходимая информация для запуска размещается либо в глобальных переменных, на которые ссылаются функции напрямую, либо в Diode_In_LimitedDependency,
+    на которые идут ссылки из тех же глобальных переменных
+    Mainfunc launcher
+    :return: nothing
+    """
+    #RANGES:
+    #Здесь задаются диапазоны изменения входных параметров эксперимента
+
+    i_plantype=[1] #мы будем  работать только с априорными планами, их эффективность можно доказать и с помощью более узких экспериментов
+    #но эксперименты по сравнению нужны!
+    #априорный план может сработать плохо при очень широких границах, возможно, нужен-таки равномерный план
+
+    i_n=[5,10,20,30,40]
+    i_lbinitbtrue = range(10) #десять попыток uniform-выбора
+    i_diapwidth = np.arange(0.10, 0.4, 0.05) #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов
+    i_assym = np.arange(0.001, 0.04, 0.01) #ассиметрия
+    i_nsiggen = (10, 20, 70)
+    i_nsig = (10, 20, 70)
+    i_detve = (10e-3, )
+    i_isbinitgood
+
+    #LAMBDAS
+    gknuxfunc_lambda,
+    makeplan_lambda
+    makebinit_lambda
+    makediap_lambda
+    makeVe_lambda
+
+    mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
+              gknuxfunc_lambda,
+              makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda
+              )
 
 
 
+#список более узких экспериментов:
+#2 кривые: зависимость качества от количества точек в плане, одна кривая для равномерного плана, другая - для априорного
