@@ -1,9 +1,11 @@
 __author__ = 'vasilev_is'
 
 import pickle
+import hashlib
+import time
+import datetime
 
 import numpy as np
-import hashlib
 
 import Ofiura.Ofiura_general as o_g
 import Ofiura.Ofiura_ApriorPlanning  as o_ap
@@ -11,9 +13,6 @@ import Ofiura.Ofiura_EstimationLimited  as o_el
 import Cases.Dependency.Diode_In_Limited_Dependency as cdld
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
-
-
-
 
 
 #конкретно к модели диода относящиеся вещи
@@ -206,6 +205,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
     print (locals()) #чтоб не расслабляться при чтении логов
 
     firstiteration=True
+    iternum=0
 
     #for plantype in i_plantype:
     for plantype in [1]:
@@ -217,6 +217,8 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                             for nsig in i_nsig: #кандидат на удаление
                                 for detVe in i_detve: #в случае однооткликовой модели это - единственный элемент оной матрицы
                                     for isbinitgood in i_isbinitgood: #только 1 и 0
+
+                                        prevtime = time.time()
 
                                         bstart, bend = makediap_lambda(diapwidth, assym)
                                         Ve = makeVe_lambda (detVe)
@@ -260,9 +262,11 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                             file.write('\n')
 
                                             #данные пишутся постепенно и файл тотчас закрывается, как только они записаны
-
-
                                         res.append ({'condition': condition, 'result':result})
+
+                                        st = datetime.datetime.fromtimestamp(time.time()-prevtime).strftime('%H:%M:%S')
+                                        print ('Iteration number {0} finished in time {1}'.format(iternum, st  ))
+                                        iternum+=1
 
 
 
@@ -292,31 +296,36 @@ def test ():
     #RANGES:
     #Здесь задаются диапазоны изменения входных параметров эксперимента
 
+
     i_plantype=[1] #мы будем  работать только с априорными планами, их эффективность можно доказать и с помощью более узких экспериментов
     #но эксперименты по сравнению нужны!
     #априорный план может сработать плохо при очень широких границах, возможно, нужен-таки равномерный план
-
-    i_n=[5,10,20,30,40]
+    i_n=[5,10,20,30,40] #число точек в плане (априорном, внимание!)
     i_lbinitbtrue = range(10) #десять попыток uniform-выбора
-    i_diapwidth = np.arange(0.10, 0.4, 0.05) #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов
-    i_assym = np.arange(0.001, 0.04, 0.01) #ассиметрия
+    i_diapwidth = np.arange(0.10, 0.4, 0.05) #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
+    i_assym = np.arange(0.001, 0.04, 0.005) #ассиметрия //
     i_nsiggen = (10, 20, 70)
     i_nsig = (10, 20, 70)
-    i_detve = (10e-3, )
-    i_isbinitgood
+    i_detve = (10e-2, 10e-3, 10e-4, 10e-7, 10e-10, 10e-20) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
+    i_isbinitgood =[0,1] #включать или нет "хорошесть" начального приближения A
+
+    #вывод параметров поставленной задачи - длина всех последовательностей
+    tl=0
+    for i, val in locals().items():
+        if i.startswith('i_'):
+            print (i, len(val))
+            tl*=len(val)
+    print ('Total task length is {0} iterations'.format(tl))
+
 
     #LAMBDAS
-    gknuxfunc_lambda,
-    makeplan_lambda
-    makebinit_lambda
-    makediap_lambda
-    makeVe_lambda
-
     mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
               gknuxfunc_lambda,
               makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda
               )
 
+
+test ()
 
 
 #список более узких экспериментов:
