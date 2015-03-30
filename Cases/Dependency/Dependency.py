@@ -201,7 +201,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
     res  =  list()
     resfolder= 'Results'
     #проверка доступности папки записи результатов
-    with open (resfolder+'/'+'rescsv.csv', 'w')  as file:
+    with open (resfolder+'/'+'rescsv.csv', 'wt')  as file:
         file.write("Commit: ")
         usercomment=input("Please a comment, will be written first in results file. Preferably current commit hash. Mind that cached plans will be prefixed with this line: ")
         file.write (usercomment)
@@ -231,6 +231,10 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                         bb=makebinit_lambda(bstart, bend)
                                         binit=bb[0]
 
+
+                                        print ('mainfunc: iteration parameters:')
+                                        print (iternum, binit, bstart, bend)
+
                                         condition = {'plantype': plantype,
                                                      'n':n,
                                                      'lbinitbtrue':bb[1],
@@ -245,20 +249,15 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
                                         if detVe<10e-15:  #считаем Ve практически нулевой, разброс - отсутствующим
                                             result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
-
-                                            if result is None:
-                                                pass
-                                            else:
+                                            if result is not None:
                                                 for i in dellist:
                                                     del (result[i])
-
                                         else:
                                             minilist=list()
                                             for i in range (0, 20): #выборка 20
                                                 result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
-                                                if result is None:
-                                                    pass
-                                                else:
+
+                                                if result is not None:
                                                     for j in dellist:
                                                         del (result[j])
                                                     minilist.append(result)
@@ -266,8 +265,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                             if (len(minilist)>0):
                                                 result=makeav(minilist)  #усредняет все показатели в списке
                                             else:
-                                                continue
-                                                #TODO FIXME Надлежит нормально реагировать в случае ошибок оценочной процедуры
+                                                result=None
 
                                         conditionkeys = sorted(condition.keys())
                                         resultkeys = sorted(result.keys())
@@ -276,8 +274,13 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                                 file.write(','.join(str(x) for x in ['iteration num',]+conditionkeys+resultkeys)) #вывели заголовок CSV столбцов
                                                 firstiteration=False
 
-                                            file.write(','.join(str(condition[x]) for x in [iternum,]+conditionkeys))
-                                            file.write(','.join(str(result[x]) for x in resultkeys))
+                                            file.write(iternum.join(','))
+                                            file.write(','.join(str(condition[x]) for x in conditionkeys))
+
+                                            if  result is not None:
+                                                file.write(','.join(str(result[x]) for x in resultkeys))
+                                            else:
+                                                file.write(','.join('None' for x in resultkeys))
                                             file.write('\n')
 
                                             #данные пишутся постепенно и файл тотчас закрывается, как только они записаны
