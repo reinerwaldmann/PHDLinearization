@@ -70,10 +70,10 @@ def countN (A, b, bstart, bend):
         N[j][j]+=parttwo+partone #так как матрица нулевая
     return N
 
-#TODO требуется добавить функцию с оценкой качества, вопрос, сюда ли это добавить или же сделать враппер-функцию оценки качества в qualitat файле, и её надевать на разные gknux
 
 
-def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, NSIG=50, NSIGGENERAL=50, implicit=False, verbose=False, verbose_wrapper=False, isBinitGood=True):
+
+def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, NSIG=50, NSIGGENERAL=50, implicit=False, verbose=False, verbose_wrapper=False, isBinitGood=False):
     """
     Обёртка для grandCountGN_UltraX1_Limited для реализации общего алгоритма
     :param funcf callable функция, параметры по формату x,b,c

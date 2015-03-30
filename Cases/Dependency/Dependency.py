@@ -15,12 +15,13 @@ import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
 
 
+
 #конкретно к модели диода относящиеся вещи
 
 btrue = [1.238e-14, 1.8, 100]
 c={}
 leny=1 #длина выходного вектора
-xstart, xend =   [0.001], [2]
+xstart, xend =   [0.001], [1.4]
 
 funcf = cdld.solver_Diode_In_Limited
 jacf = cdld.jac_Diode_In_Limited
@@ -45,7 +46,10 @@ def  gknuxfunc_lambda (plan, binit, bstart, bend, Ve):
     global btrue, c, xstart, xend, funcf, jacf
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, plan, btrue, c,Ve )
     gknuxlim = o_el.grandCountGN_UltraX1_Limited_wrapper(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=False )
-    gknuxlim2=o_q.convertToQualitatStandart (gknuxlim, funcf, jacf,  measdata, c, Ve, name='Limited Count Aprior Dependency')
+    try:
+        gknuxlim2=o_q.convertToQualitatStandart (gknuxlim, funcf, jacf,  measdata, c, Ve, name='Limited Count Aprior Dependency')
+    except:
+        return None
     return gknuxlim2
 
 
@@ -53,10 +57,13 @@ def makeplan_lambda (plantype, n, bstart, bend, Ve):
     global xstart, xend, btrue,c
     #- делает нужный план в зависимости от параметров plantype и n
     #Надо создать пачку априорных планов - 5 10 15 20 25 30 35 40 значений
-    hash= hashlib.md5((n,bstart,bend,Ve).__str__())
-    filename = usercomment.join('_').join(hash)
+    hash= hashlib.md5((n,bstart,bend,Ve).__str__().encode('utf-8')).hexdigest()
+
+    #hashlib.md5("whatever your string is".encode('utf-8')).
+
+    filename = usercomment+'_'+str(hash)
     if plantype: #если априорный
-        return o_ap.makePlanCached (xstart, xend, n, bstart, bend, c, Ve, jacf, funcf, Ntries=4, verbose=False, foldername='../Cases/cachedPlans/DependencyPlans', cachname=filename)
+        return o_ap.makePlanCached (xstart, xend, n, bstart, bend, c, Ve, jacf, funcf, Ntries=4, verbose=False, foldername='DependencyPlans', cachname=filename)
     else:
         pass
 
@@ -202,7 +209,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
         file.write (usercomment)
         file.write('\n\n')
 
-    print (locals()) #чтоб не расслабляться при чтении логов
+#    print (locals()) #чтоб не расслабляться при чтении логов
 
     firstiteration=True
     iternum=0
@@ -240,22 +247,37 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
                                         if detVe<10e-15:  #считаем Ve практически нулевой, разброс - отсутствующим
                                             result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
-                                            for i in dellist:
-                                                del (result[i])
+                                            if result is None:
+                                                pass
+                                            else:
+                                                for i in dellist:
+                                                    del (result[i])
 
                                         else:
                                             minilist=list()
                                             for i in range (0, 20): #выборка 20
                                                 result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
-                                                for j in dellist:
-                                                    del (result[j])
-                                                minilist.append(result)
-                                            result=makeav(minilist)  #усредняет все показатели в списке
+                                                if result is None:
+                                                    pass
+                                                else:
+                                                    for j in dellist:
+                                                        del (result[j])
+                                                    minilist.append(result)
+
+                                            if (len(minilist)>0):
+                                                result=makeav(minilist)  #усредняет все показатели в списке
+                                            else:
+                                                continue
+
+
+
                                         conditionkeys = sorted(condition.keys())
                                         resultkeys = sorted(result.keys())
                                         with open (resfolder+'/'+'rescsv.csv', 'a')  as file:
                                             if firstiteration:
                                                 print (','.join(str(x) for x in conditionkeys+resultkeys), file) #вывели заголовок CSV столбцов
+                                                print (conditionkeys+resultkeys)
+
                                                 firstiteration=False
                                             file.write(','.join(str(condition[x]) for x in conditionkeys))
                                             file.write(','.join(str(result[x]) for x in resultkeys))
@@ -303,14 +325,14 @@ def test ():
     i_n=[5,10,20,30,40] #число точек в плане (априорном, внимание!)
     i_lbinitbtrue = range(10) #десять попыток uniform-выбора
     i_diapwidth = np.arange(0.10, 0.4, 0.05) #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
-    i_assym = np.arange(0.001, 0.04, 0.005) #ассиметрия //
-    i_nsiggen = (10, 20, 70)
-    i_nsig = (10, 20, 70)
+    i_assym = np.arange(0.001, 0.04, 0.01) #ассиметрия //
+    i_nsiggen = (20,)
+    i_nsig = (20,)
     i_detve = (10e-2, 10e-3, 10e-4, 10e-7, 10e-10, 10e-20) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
     i_isbinitgood =[0,1] #включать или нет "хорошесть" начального приближения A
 
     #вывод параметров поставленной задачи - длина всех последовательностей
-    tl=0
+    tl=1
     for i, val in locals().items():
         if i.startswith('i_'):
             print (i, len(val))
