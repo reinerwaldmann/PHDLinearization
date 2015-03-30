@@ -257,7 +257,7 @@ def countVbForMeasdata(b:list,  c:dict, Ve, jac, measdata):
         jj=jac(point['x'], b, c, point['y'])
         #G+=jj*np.linalg.inv(Ve)*jj.T
 
-        print  (jj.T, np.linalg.inv(Ve), jj)
+        #print  (jj.T, np.linalg.inv(Ve), jj)
 
         G+=np.dot ( np.dot(jj.T, np.linalg.inv(Ve)), jj)
 

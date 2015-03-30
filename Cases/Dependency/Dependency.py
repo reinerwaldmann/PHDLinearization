@@ -4,6 +4,7 @@ import pickle
 import hashlib
 import time
 import datetime
+import itertools
 
 import numpy as np
 
@@ -164,9 +165,6 @@ def makeav(minilist):
         res[key]=makeavlst(minilist, key)
     return res
 
-def fffunctionformatting(res, file):
-    printf = lambda x: print (x, file)
-
 
 
 
@@ -205,7 +203,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
     #проверка доступности папки записи результатов
     with open (resfolder+'/'+'rescsv.csv', 'w')  as file:
         file.write("Commit: ")
-        usercomment=input("Please a comment, will be written first in results file. Preferably current commit hash: ")
+        usercomment=input("Please a comment, will be written first in results file. Preferably current commit hash. Mind that cached plans will be prefixed with this line: ")
         file.write (usercomment)
         file.write('\n\n')
 
@@ -247,6 +245,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
                                         if detVe<10e-15:  #считаем Ve практически нулевой, разброс - отсутствующим
                                             result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
+
                                             if result is None:
                                                 pass
                                             else:
@@ -268,18 +267,16 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                                 result=makeav(minilist)  #усредняет все показатели в списке
                                             else:
                                                 continue
-
-
+                                                #TODO FIXME Надлежит нормально реагировать в случае ошибок оценочной процедуры
 
                                         conditionkeys = sorted(condition.keys())
                                         resultkeys = sorted(result.keys())
                                         with open (resfolder+'/'+'rescsv.csv', 'a')  as file:
-                                            if firstiteration:
-                                                print (','.join(str(x) for x in conditionkeys+resultkeys), file) #вывели заголовок CSV столбцов
-                                                print (conditionkeys+resultkeys)
-
+                                            if firstiteration==True:
+                                                file.write(','.join(str(x) for x in ['iteration num',]+conditionkeys+resultkeys)) #вывели заголовок CSV столбцов
                                                 firstiteration=False
-                                            file.write(','.join(str(condition[x]) for x in conditionkeys))
+
+                                            file.write(','.join(str(condition[x]) for x in [iternum,]+conditionkeys))
                                             file.write(','.join(str(result[x]) for x in resultkeys))
                                             file.write('\n')
 
@@ -301,8 +298,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
     with (resfolder+'/'+'respickledh.pkl', 'wb') as f2:
         pickle.dump(res, f2, -1)
 
-    with (resfolder+'/'+'restext.text', 'wt') as f3:
-        fffunctionformatting(res, f3)
+
 
     return 0
 
@@ -322,7 +318,7 @@ def test ():
     i_plantype=[1] #мы будем  работать только с априорными планами, их эффективность можно доказать и с помощью более узких экспериментов
     #но эксперименты по сравнению нужны!
     #априорный план может сработать плохо при очень широких границах, возможно, нужен-таки равномерный план
-    i_n=[5,10,20,30,40] #число точек в плане (априорном, внимание!)
+    i_n=[10,20,30,40] #число точек в плане (априорном, внимание!)
     i_lbinitbtrue = range(10) #десять попыток uniform-выбора
     i_diapwidth = np.arange(0.10, 0.4, 0.05) #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
     i_assym = np.arange(0.001, 0.04, 0.01) #ассиметрия //
@@ -348,6 +344,8 @@ def test ():
 
 
 test ()
+
+
 
 
 #список более узких экспериментов:

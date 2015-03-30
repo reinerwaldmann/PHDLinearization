@@ -107,17 +107,14 @@ def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:li
     for numiter in range (maxiter):
         bpriv=copy.copy(b)
         gknux=grandCountGN_UltraX1_Limited (funcf, jacf,  measdata, b, bstart, bend, c, A, NSIG, implicit, verbose) #посчитали b
+
         if gknux is None:
             print ("grandCountGN_UltraX1_Limited_wrapper crashed on some iteration")
             return None
-
         gknuxlist.append(gknux)
-
         if verbose_wrapper:
             print ('Iteration \n',numiter,'\n' ,gknux)
-
         b=gknux[0]
-
         if not gknux[2]=='':
             #log+="On gknux iteration "+numiter+": "+ gknux[2]+"\n"
             log+="On gknux iteration {0}: {1}\n".format (numiter, gknux[2])
@@ -138,9 +135,9 @@ def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:li
 
 #  return b, numiter, log, Sklist, Sk
 
-    print ('grandCountGN_UltraX1_Limited_wrapper iterations number:', numiter)
-
-    print (gknux[0], gknux[1], log, gknux[3], gknux[4])
+    if verbose_wrapper:
+        print ('grandCountGN_UltraX1_Limited_wrapper iterations number:', numiter)
+        print (gknux[0], gknux[1], log, gknux[3], gknux[4])
 
     return gknux[0], gknux[1], log, gknux[3], gknux[4]
 
@@ -184,21 +181,17 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
 
             if jac is None:
                 return None
-
-            #print (G.shape, jac.T.shape, jac.shape)
             G+=np.dot(jac.T,jac)
 
             try:
                 dif=np.array(point['y'])-np.array(funcf(point['x'],b,c))
             except BaseException as e:
-                print('grandCountGN_UltraX1_limited: As funcf returned None, method  stops:', e)
-                print (point, b, sep='\n')
+                if verbose:
+                    print('grandCountGN_UltraX1_limited: As funcf returned None, method  stops:', e)
+                    print (point, b, sep='\n')
                 return None
 
-            # print(dif, jac)
-            # print('-----')
-            #
-            # print()
+
             if B5 is None:
                 B5=np.dot(dif, jac)
             else:
@@ -219,8 +212,9 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
         try:
             deltab=np.dot(np.linalg.inv(G), B5)
         except BaseException as e:
-            print('Error in G:', e)
-            print('G=',G)
+            if verbose:
+                print('Error in G:', e)
+                print('G=',G)
             return None
 
 
