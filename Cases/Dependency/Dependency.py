@@ -183,6 +183,14 @@ def makeav(minilist):
     return res
 
 
+def safe_str(arg):
+    #if (type(arg)=='list'):
+    if isinstance(arg,list):
+        return "[{0}]".format(';'.join(str(x) for x in arg   ))
+    return str(arg)
+
+
+
 
 
 #тестить сначала на интервалах, которые единичны
@@ -294,7 +302,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                             file.write(',') #потому что нужен разделитель между условиями и результатами
 
                                             if  result is not None:
-                                                file.write(','.join(str(result[x]) for x in resultkeys))
+                                                file.write(','.join(safe_str(result[x]) for x in resultkeys))
                                             else:
                                                 file.write(','.join('None' for x in resultkeys))
                                             file.write('\n')
