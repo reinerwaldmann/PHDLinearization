@@ -17,6 +17,7 @@ import Ofiura.Ofiura_Qualitat as o_q
 
 
 
+
 #конкретно к модели диода относящиеся вещи
 
 btrue = [1.238e-14, 1.8, 100]
@@ -154,15 +155,24 @@ def makeVe_lambda(detVe):
 
 
 
+def makeavlstvect (inl, word):
+    return np.average([i[word] for i in inl])
+
+
 def makeavlst (inl, word):
     return np.average([i[word] for i in inl])
 
 
 def makeav(minilist):
+    if len(minilist)==1:
+        return minilist[0]
     keys = list(minilist[0].keys())
     res=dict()
     for key in keys:
-        res[key]=makeavlst(minilist, key)
+        if key=='b':
+            pass
+        else:
+            res[key]=makeavlst(minilist, key)
     return res
 
 
@@ -213,7 +223,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
     iternum=0
 
     #for plantype in i_plantype:
-    for plantype in [1]:
+    for plantype in (1,):
         for n in i_n:
             for lbinitbtrue in i_lbinitbtrue: #этот цикл идёт по вариантам инит-вектора, который берётся по равномерному распределению из диапазона
                 for diapwidth in i_diapwidth: #задаётся в долях от btrue
@@ -235,7 +245,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                         binit=bb[0]
 
                                         print ('mainfunc: iteration parameters:')
-                                        print (iternum, binit, bstart, bend)
+                                        print (iternum, binit, bstart, bend, Ve)
 
                                         condition = {'plantype': plantype,
                                                      'n':n,
@@ -249,20 +259,15 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
                                         dellist = ['log', 'Sklist', 'DispLT', 'DispDif', 'Diflist', 'name', 'Vb', 'VbSigmas']
 
-                                        if detVe<10e-15:  #считаем Ve практически нулевой, разброс - отсутствующим
+                                        size=1 if detVe<10e-15 else 10 #размер выборки
+                                        minilist=list()
+                                        for i in range (size): #выборка 20
                                             result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
-                                            if result is not None:
-                                                for i in dellist:
-                                                    del (result[i])
-                                        else:
-                                            minilist=list()
-                                            for i in range (0, 20): #выборка 20
-                                                result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
 
-                                                if result is not None:
-                                                    for j in dellist:
-                                                        del (result[j])
-                                                    minilist.append(result)
+                                            if result is not None:
+                                                for j in dellist:
+                                                    del (result[j])
+                                                minilist.append(result)
 
                                             if (len(minilist)>0):
                                                 result=makeav(minilist)  #усредняет все показатели в списке
@@ -276,7 +281,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                                 file.write(','.join(str(x) for x in ['iteration num',]+conditionkeys+resultkeys)) #вывели заголовок CSV столбцов
                                                 file.write('\n')
 
-                                            file.write(str(iternum).join(','))
+                                            file.write(str(iternum)+",")
                                             file.write(','.join(str(condition[x]) for x in conditionkeys))
 
 
