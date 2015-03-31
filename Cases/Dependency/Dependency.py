@@ -155,13 +155,20 @@ def makeVe_lambda(detVe):
 
 
 
-def makeavlstvect (inl, word):
-    return np.average([i[word] for i in inl])
+def makeavlstvect (inl,word):
+    blist=[i[word] for i in inl] #список векторов b
+
+    # reslst=list()
+    # for k in range (len(blist[0])):
+    #     reslst.append(np.average(      ))
+
+    return [ np.average ([i[k] for i in blist]) for k in range(len(blist[0]))  ]
+
+
 
 
 def makeavlst (inl, word):
     return np.average([i[word] for i in inl])
-
 
 def makeav(minilist):
     if len(minilist)==1:
@@ -169,10 +176,10 @@ def makeav(minilist):
     keys = list(minilist[0].keys())
     res=dict()
     for key in keys:
-        if key=='b':
-            pass
+        if key==' b':
+            res[key]=makeavlstvect (minilist,key) #специальная усреднялка для векторов
         else:
-            res[key]=makeavlst(minilist, key)
+            res[key]=makeavlst(minilist, key) #усредняет просто числовые значения
     return res
 
 
@@ -284,12 +291,15 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                             file.write(str(iternum)+",")
                                             file.write(','.join(str(condition[x]) for x in conditionkeys))
 
+                                            file.write(',')
 
                                             if  result is not None:
                                                 file.write(','.join(str(result[x]) for x in resultkeys))
                                             else:
                                                 file.write(','.join('None' for x in resultkeys))
                                             file.write('\n')
+
+                                            #    return ";".join(["%s=%s" % (k, v) for k, v in params.items()])
 
                                             #данные пишутся постепенно и файл тотчас закрывается, как только они записаны
                                         res.append ({'condition': condition, 'result':result})
