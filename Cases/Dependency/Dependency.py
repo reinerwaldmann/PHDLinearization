@@ -291,7 +291,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                             file.write(str(iternum)+",")
                                             file.write(','.join(str(condition[x]) for x in conditionkeys))
 
-                                            file.write(',')
+                                            file.write(',') #потому что нужен разделитель между условиями и результатами
 
                                             if  result is not None:
                                                 file.write(','.join(str(result[x]) for x in resultkeys))
