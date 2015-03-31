@@ -4,7 +4,6 @@ import pickle
 import hashlib
 import time
 import datetime
-import itertools
 
 import numpy as np
 
@@ -14,6 +13,7 @@ import Ofiura.Ofiura_EstimationLimited  as o_el
 import Cases.Dependency.Diode_In_Limited_Dependency as cdld
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
+
 
 
 
@@ -224,13 +224,15 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                     for isbinitgood in i_isbinitgood: #только 1 и 0
 
                                         prevtime = time.time()
+                                        print ('iteration ', iternum)
+
+
 
                                         bstart, bend = makediap_lambda(diapwidth, assym)
                                         Ve = makeVe_lambda (detVe)
                                         plan = makeplan_lambda(plantype, n, bstart, bend,Ve)
                                         bb=makebinit_lambda(bstart, bend)
                                         binit=bb[0]
-
 
                                         print ('mainfunc: iteration parameters:')
                                         print (iternum, binit, bstart, bend)
@@ -270,12 +272,13 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                         conditionkeys = sorted(condition.keys())
                                         resultkeys = sorted(result.keys())
                                         with open (resfolder+'/'+'rescsv.csv', 'a')  as file:
-                                            if firstiteration==True:
+                                            if iternum==0:
                                                 file.write(','.join(str(x) for x in ['iteration num',]+conditionkeys+resultkeys)) #вывели заголовок CSV столбцов
-                                                firstiteration=False
+                                                file.write('\n')
 
-                                            file.write(iternum.join(','))
+                                            file.write(str(iternum).join(','))
                                             file.write(','.join(str(condition[x]) for x in conditionkeys))
+
 
                                             if  result is not None:
                                                 file.write(','.join(str(result[x]) for x in resultkeys))
@@ -291,8 +294,6 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                         iternum+=1
 
 
-
-
     #что мы делаем с res
     #сперва вкатаем в pickle
     with (resfolder+'/'+'respickled0.pkl', 'wb') as f1:
@@ -300,8 +301,6 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
     with (resfolder+'/'+'respickledh.pkl', 'wb') as f2:
         pickle.dump(res, f2, -1)
-
-
 
     return 0
 
