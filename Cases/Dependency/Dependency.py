@@ -196,7 +196,8 @@ def safe_str(arg):
 #тестить сначала на интервалах, которые единичны
 def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
               gknuxfunc_lambda,
-              makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda
+              makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
+              fappend=False
               ):
     """
         plantype
@@ -226,11 +227,12 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
     res  =  list()
     resfolder= 'Results'
     #проверка доступности папки записи результатов
-    with open (resfolder+'/'+'rescsv.csv', 'wt')  as file:
-        file.write("Commit: ")
-        usercomment=input("Please a comment, will be written first in results file. Preferably current commit hash. Mind that cached plans will be prefixed with this line: ")
-        file.write (usercomment)
-        file.write('\n\n')
+    if not fappend:
+        with open (resfolder+'/'+'rescsv.csv', 'wt')  as file:
+            file.write("Commit: ")
+            usercomment=input("Please a comment, will be written first in results file. Preferably current commit hash. Mind that cached plans will be prefixed with this line: ")
+            file.write (usercomment)
+            file.write('\n\n')
 
 #    print (locals()) #чтоб не расслабляться при чтении логов
 
@@ -250,6 +252,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
                                         prevtime = time.time()
                                         print ('iteration ', iternum)
+                                        print (datetime.datetime.now().isoformat())
 
 
 
@@ -298,7 +301,6 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
                                             file.write(str(iternum)+",")
                                             file.write(','.join(str(condition[x]) for x in conditionkeys))
-
                                             file.write(',') #потому что нужен разделитель между условиями и результатами
 
                                             if  result is not None:
@@ -346,7 +348,7 @@ def test ():
     i_n=[10,20,30,40] #число точек в плане (априорном, внимание!)
     i_lbinitbtrue = range(10) #десять попыток uniform-выбора
     i_diapwidth = np.arange(0.10, 0.4, 0.05) #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
-    i_assym = np.arange(0.001, 0.04, 0.01) #ассиметрия //
+    i_assym = np.arange(0.001, 0.04, 0.01) #асс иметрия //
     i_nsiggen = (20,)
     i_nsig = (20,)
     i_detve = (10e-2, 10e-3, 10e-4, 10e-7, 10e-10, 10e-20) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
@@ -364,7 +366,8 @@ def test ():
     #LAMBDAS
     mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
               gknuxfunc_lambda,
-              makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda
+              makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
+              fappend=True
               )
 
 
