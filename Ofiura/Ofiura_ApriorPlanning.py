@@ -37,7 +37,11 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
 """
 
 def makePlanCached (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True, foldername='../Cases/cachedPlans', cachname='plan.plan'):
-    import os
+
+    descrfilename = 'description.csv'
+    descrfilepath = foldername+'/'+descrfilename
+
+
     filename =foldername+'/'+cachname  #os.path.basename(__file__).replace('.py','_plan')
     try:
         oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
@@ -45,6 +49,20 @@ def makePlanCached (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6,
     except BaseException as e:
         oplan=grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True)[1]
         o_p.writePlanToFile(oplan, filename)
+
+
+ #      работаем с csv-базой планов
+
+        with open(descrfilepath, 'a+') as dfile:
+            #mine: при открытии файла а+ читальный курсор перемещается в конец файла, надо его вернуть
+            dfile.seek(0) #иначе и при заполненном csv он будет выдавать пустой файл
+            if dfile.read()=='': #если считываем пустую строку в начале файла
+                dfile.write ('xstart, xend, N, bstart, bend, c, Ve, cachname \n') #то пишем туда заголовки
+            dfile.write(','.join([str(x) for x in [xstart, xend, N, bstart, bend, c, Ve, cachname]] )) #и информацию
+            dfile.write('\n')
+
+
+
 
     return oplan
 
