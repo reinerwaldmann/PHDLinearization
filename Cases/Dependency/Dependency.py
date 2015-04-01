@@ -18,6 +18,7 @@ import Ofiura.Ofiura_Qualitat as o_q
 
 
 
+
 #конкретно к модели диода относящиеся вещи
 
 btrue = [1.238e-14, 1.8, 100]
@@ -197,7 +198,7 @@ def safe_str(arg):
 def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
               gknuxfunc_lambda,
               makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
-              fappend=False
+              fappend=False, ifilename='rescsv.csv'
               ):
     """
         plantype
@@ -228,7 +229,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
     resfolder= 'Results'
     #проверка доступности папки записи результатов
     if not fappend:
-        with open (resfolder+'/'+'rescsv.csv', 'wt')  as file:
+        with open (resfolder+'/'+ifilename, 'wt')  as file:
             file.write("Commit: ")
             usercomment=input("Please a comment, will be written first in results file. Preferably current commit hash. Mind that cached plans will be prefixed with this line: ")
             file.write (usercomment)
@@ -294,7 +295,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
                                         conditionkeys = sorted(condition.keys())
                                         resultkeys = sorted(result.keys())
-                                        with open (resfolder+'/'+'rescsv.csv', 'a')  as file:
+                                        with open (resfolder+'/'+ifilename, 'a')  as file:
                                             if iternum==0:
                                                 file.write(','.join(str(x) for x in ['iteration num',]+conditionkeys+resultkeys)) #вывели заголовок CSV столбцов
                                                 file.write('\n')
@@ -361,8 +362,6 @@ def test ():
             print (i, len(val))
             tl*=len(val)
     print ('Total task length is {0} iterations'.format(tl))
-
-
     #LAMBDAS
     mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
               gknuxfunc_lambda,
@@ -371,7 +370,181 @@ def test ():
               )
 
 
-test ()
+
+def test1 ():
+    """
+    Вся необходимая информация для запуска размещается либо в глобальных переменных, на которые ссылаются функции напрямую, либо в Diode_In_LimitedDependency,
+    на которые идут ссылки из тех же глобальных переменных
+    Mainfunc launcher
+    :return: nothing
+    """
+    #RANGES:
+    #Здесь задаются диапазоны изменения входных параметров эксперимента
+
+    #Опыт1: Plantype&&N
+    print ('\n===experiment 1===\n')
+    i_plantype=[0,1]
+    i_n=range(10,40,5)
+
+    i_lbinitbtrue = [1,] #1 uniform-выбор
+    i_diapwidth = [0.3,] #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
+    i_assym = [0.05,] #ассиметрия //
+    i_nsiggen = (20,)
+    i_nsig = (20,)
+    i_detve = (10e-4,) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
+    i_isbinitgood =[0,] #включать или нет "хорошесть" начального приближения A
+
+    #вывод параметров поставленной задачи - длина всех последовательностей
+    tl=1
+    for i, val in locals().items():
+        if i.startswith('i_'):
+            print (i, len(val))
+            tl*=len(val)
+    print ('Total task length is {0} iterations'.format(tl))
+    #LAMBDAS
+    mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
+              gknuxfunc_lambda,
+              makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
+              fappend=True, ifilename='1factor_1.csv'
+              )
+
+
+def test2():
+
+    #Опыт2: Plantype&&N
+    print ('\n===experiment 2===\n')
+    i_plantype=[1,]
+    i_n=range(20,)
+
+    i_lbinitbtrue = range(10) #десять попыток uniform-выбора
+    i_diapwidth = [0.3,] #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
+    i_assym = [0.05,] #ассиметрия //
+    i_nsiggen = (20,)
+    i_nsig = (20,)
+    i_detve = (10e-4,) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
+    i_isbinitgood =[0,] #включать или нет "хорошесть" начального приближения A
+
+    #вывод параметров поставленной задачи - длина всех последовательностей
+    tl=1
+    for i, val in locals().items():
+        if i.startswith('i_'):
+            print (i, len(val))
+            tl*=len(val)
+    print ('Total task length is {0} iterations'.format(tl))
+    #LAMBDAS
+    mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
+              gknuxfunc_lambda,
+              makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
+              fappend=True, ifilename='1factor_2.csv'
+              )
+
+
+
+def test3():
+
+    #Опыт2: Plantype&&N
+    print ('\n===experiment 3===\n')
+    i_plantype=[1]
+    i_n=range(20,)
+
+    i_lbinitbtrue = [1,] #десять попыток uniform-выбора
+    i_diapwidth = np.arange(0.10, 0.6, 0.05) #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6    i_assym = [0.05,] #ассиметрия //
+    i_assym = [0.05,] #ассиметрия //
+
+    i_nsiggen = (20,)
+    i_nsig = (20,)
+    i_detve = (10e-4,) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
+    i_isbinitgood =[0,] #включать или нет "хорошесть" начального приближения A
+
+    #вывод параметров поставленной задачи - длина всех последовательностей
+    tl=1
+    for i, val in locals().items():
+        if i.startswith('i_'):
+            print (i, len(val))
+            tl*=len(val)
+    print ('Total task length is {0} iterations'.format(tl))
+    #LAMBDAS
+    mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
+              gknuxfunc_lambda,
+              makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
+              fappend=True, ifilename='1factor_3.csv'
+              )
+
+
+
+def test4():
+
+    #Опыт2: Plantype&&N
+    print ('\n===experiment 4===\n')
+    i_plantype=[1,]
+    i_n=range(20,)
+
+    i_lbinitbtrue = [1,] #десять попыток uniform-выбора
+    i_diapwidth = [0.3,] #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
+    i_assym = np.arange(0.001, 0.04, 0.01) #асс иметрия //
+
+    i_nsiggen = (20,)
+    i_nsig = (20,)
+    i_detve = (10e-4,) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
+    i_isbinitgood =[0,] #включать или нет "хорошесть" начального приближения A
+
+    #вывод параметров поставленной задачи - длина всех последовательностей
+    tl=1
+    for i, val in locals().items():
+        if i.startswith('i_'):
+            print (i, len(val))
+            tl*=len(val)
+    print ('Total task length is {0} iterations'.format(tl))
+    #LAMBDAS
+    mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
+              gknuxfunc_lambda,
+              makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
+              fappend=True, ifilename='1factor_4.csv'
+              )
+
+
+def test5():
+
+    #Опыт2: Plantype&&N
+    print ('\n===experiment 5===\n')
+    i_plantype=[1,]
+    i_n=range(20,)
+
+    i_lbinitbtrue = [1,] #десять попыток uniform-выбора
+    i_diapwidth = [0.3,] #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
+    i_assym = [0.05,] #ассиметрия //
+
+    i_nsiggen = (20,)
+    i_nsig = (20,)
+    i_detve = (10e-2, 10e-3, 10e-4, 10e-7, 10e-10, 10e-20) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
+
+    i_isbinitgood =[0,] #включать или нет "хорошесть" начального приближения A
+
+    #вывод параметров поставленной задачи - длина всех последовательностей
+    tl=1
+    for i, val in locals().items():
+        if i.startswith('i_'):
+            print (i, len(val))
+            tl*=len(val)
+    print ('Total task length is {0} iterations'.format(tl))
+    #LAMBDAS
+    mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
+              gknuxfunc_lambda,
+              makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
+              fappend=True, ifilename='1factor_5.csv'
+              )
+
+
+test1()
+test2()
+test3()
+test4()
+test5()
+
+#test ()
+
+
+
 
 
 
