@@ -386,7 +386,8 @@ def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
 
     for point in expplan:
         jj=np.array(jac(point, b, c, func(point,b,c) if func else None))
-        #G+=jj*np.linalg.inv(Ve)*jj.T  #
+
+          #G+=jj*np.linalg.inv(Ve)*jj.T  #
 
         #G+=np.dot ( np.dot(jj.T, np.linalg.inv(Ve)), jj)  #поправлено в соответствии с формулой
 
@@ -400,7 +401,8 @@ def countVbForPlan(expplan:list, b:list,  c:dict, Ve, jac, func=None):
         print('b vector=',b)
         print('expplan=',expplan)
         print('G=',G)
-        exit(0)
+        return None
+
 
 def countVbForMeasdata(b:list,  c:dict, Ve, jac, measdata):
     """
