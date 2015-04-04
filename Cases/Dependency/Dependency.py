@@ -1,7 +1,6 @@
 __author__ = 'vasilev_is'
 
 import copy
-import pickle
 import hashlib
 import time
 import datetime
@@ -14,6 +13,7 @@ import Ofiura.Ofiura_EstimationLimited  as o_el
 import Cases.Dependency.Diode_In_Limited_Dependency as cdld
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
+
 
 
 
@@ -204,7 +204,7 @@ def safe_str(arg):
 def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
               gknuxfunc_lambda,
               makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
-              fappend=False, ifilename='rescsv.csv'
+              fappend=False, ifilename='rescsv.csv', prefix=None
               ):
     """
         plantype
@@ -237,7 +237,10 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
     if not fappend:
         with open (resfolder+'/'+ifilename, 'wt')  as file:
             file.write("Commit: ")
-            usercomment=input("Please a comment, will be written first in results file. Preferably current commit hash. Mind that cached plans will be prefixed with this line: ")
+            if prefix is None:
+                usercomment=input("Please a comment, will be written first in results file. Preferably current commit hash. Mind that cached plans will be prefixed with this line: ")
+            else:
+                usercomment=prefix
             file.write (usercomment)
             file.write('\n\n')
 
@@ -328,11 +331,11 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
     #что мы делаем с res
     #сперва вкатаем в pickle
-    with (resfolder+'/'+'respickled0.pkl', 'wb') as f1:
-        pickle.dump(res, f1)
-
-    with (resfolder+'/'+'respickledh.pkl', 'wb') as f2:
-        pickle.dump(res, f2, -1)
+    # with (resfolder+'/'+'respickled0.pkl', 'wb') as f1:
+    #     pickle.dump(res, f1)
+    #
+    # with (resfolder+'/'+'respickledh.pkl', 'wb') as f2:
+    #     pickle.dump(res, f2, -1)
 
     return 0
 
@@ -411,7 +414,7 @@ def test1 ():
     mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
               gknuxfunc_lambda,
               makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
-              fappend=False, ifilename='1factor_1.csv'
+              fappend=False, ifilename='1factor_1.csv', prefix='00'
               )
 
 
@@ -441,7 +444,7 @@ def test2():
     mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
               gknuxfunc_lambda,
               makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
-              fappend=False, ifilename='1factor_2.csv'
+              fappend=False, ifilename='1factor_2.csv', prefix='00'
               )
 
 
@@ -473,7 +476,7 @@ def test3():
     mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
               gknuxfunc_lambda,
               makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
-              fappend=False, ifilename='1factor_3.csv'
+              fappend=False, ifilename='1factor_3.csv', prefix='00'
               )
 
 
@@ -506,7 +509,7 @@ def test4():
     mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
               gknuxfunc_lambda,
               makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
-              fappend=False, ifilename='1factor_4.csv'
+              fappend=False, ifilename='1factor_4.csv', prefix='00'
               )
 
 
@@ -538,15 +541,16 @@ def test5():
     mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i_nsig, i_detve,  i_isbinitgood,
               gknuxfunc_lambda,
               makeplan_lambda, makebinit_lambda, makediap_lambda, makeVe_lambda,
-              fappend=False, ifilename='1factor_5.csv'
+              fappend=False, ifilename='1factor_5.csv', prefix='00'
               )
 
 
 #test1()
 #test2()
 #test3()
-test4()
+#test4()
 test5()
+test3()
 
 #test ()
 
