@@ -287,20 +287,30 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
                                         dellist = ['log', 'Sklist', 'DispLT', 'DispDif', 'Diflist', 'name', 'Vb', 'VbSigmas']
 
-                                        size=1 if detVe<10e-15 else 10 #размер выборки
-                                        minilist=list()
-                                        for i in range (size): #выборка 20
-                                            result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
+                                        #size=1 if detVe<10e-15 else 10 #размер выборки
 
-                                            if result is not None:
-                                                for j in dellist:
-                                                    del (result[j])
-                                                minilist.append(result)
 
-                                            if (len(minilist)>0):
-                                                result=makeav(minilist)  #усредняет все показатели в списке
-                                            else:
-                                                result=None
+                                        #удалили усреднение
+                                        result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
+                                        if result is not None:
+                                            for j in dellist:
+                                                del (result[j])
+
+
+
+                                        # minilist=list()
+                                        # for i in range (size): #выборка 20
+                                        #     result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
+                                        #
+                                        #     if result is not None:
+                                        #         for j in dellist:
+                                        #             del (result[j])
+                                        #         minilist.append(result)
+                                        #
+                                        #     if (len(minilist)>0):
+                                        #         result=makeav(minilist)  #усредняет все показатели в списке
+                                        #     else:
+                                        #         result=None
 
                                         conditionkeys = sorted(condition.keys())
                                         resultkeys = sorted(result.keys())
@@ -393,14 +403,14 @@ def test1 ():
     #Опыт1: Plantype&&N
     print ('\n===experiment 1===\n')
     i_plantype=[0,1]
-    i_n=range(10,40,5)
+    i_n=range(5,50,5)
 
     i_lbinitbtrue = [1,] #1 uniform-выбор
     i_diapwidth = [0.3,] #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
     i_assym = [0.05,] #ассиметрия //
     i_nsiggen = (20,)
     i_nsig = (20,)
-    i_detve = (10e-10,) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
+    i_detve = (10e-20,) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
     i_isbinitgood =[0,] #включать или нет "хорошесть" начального приближения A
 
     #вывод параметров поставленной задачи - длина всех последовательностей
@@ -420,7 +430,7 @@ def test1 ():
 
 def test2():
 
-    #Опыт2: Plantype&&N
+    #Опыт2: lbinitbtrue
     print ('\n===experiment 2===\n')
     i_plantype=[1,]
     i_n=[20,]
@@ -457,7 +467,7 @@ def test3():
     i_n=[20,]
 
     i_lbinitbtrue = [1,] #десять попыток uniform-выбора
-    i_diapwidth = np.arange(0.10, 0.6, 0.05) #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6    i_assym = [0.05,] #ассиметрия //
+    i_diapwidth = np.arange(0.10, .8, 0.05)
     i_assym = [0.05,] #ассиметрия //
 
     i_nsiggen = (20,)
@@ -488,9 +498,9 @@ def test4():
     i_plantype=[1,]
     i_n=[20,]
 
-    i_lbinitbtrue = [1,] #десять попыток uniform-выбора
-    i_diapwidth = [0.3,] #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
-    i_assym = np.arange(0.001, 0.04, 0.01) #асс иметрия //
+    i_lbinitbtrue = [1,]
+    i_diapwidth = [0.4,]
+    i_assym = np.arange(0.001, 0.1, 0.01) #асс иметрия //
 
     i_nsiggen = (20,)
     i_nsig = (20,)
@@ -526,7 +536,7 @@ def test5():
 
     i_nsiggen = (20,)
     i_nsig = (20,)
-    i_detve = (10e-2, 10e-3, 10e-4, 10e-7, 10e-10, 10e-20) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
+    i_detve = (10e-2, 10e-3, 10e-4, 10e-5, 10e-6,  10e-7, 10e-10, 10e-20) #последнее значение отключает внедрение дисперсии, то есть y становится неслучайным
 
     i_isbinitgood =[0,] #включать или нет "хорошесть" начального приближения A
 
@@ -545,14 +555,14 @@ def test5():
               )
 
 
-#test1()
-#test2()
-#test3()
-#test4()
-test5()
-test3()
 
-#test ()
+#test2()
+test3()
+test4()
+test5()
+test1()
+
+
 
 
 
