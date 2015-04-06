@@ -403,7 +403,7 @@ def test1 ():
     #Опыт1: Plantype&&N
     print ('\n===experiment 1===\n')
     i_plantype=[0,1]
-    i_n=range(5,50,5)
+    i_n=range(5,35,2)
 
     i_lbinitbtrue = [1,] #1 uniform-выбор
     i_diapwidth = [0.3,] #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
