@@ -73,11 +73,22 @@ def makeplan_lambda (plantype, n, bstart, bend, Ve):
         return o_p.makeUniformExpPlan(xstart,xend,n)
 
 
-def makebinit_lambda (bstart, bend):
-    global btrue
-    #- делает начальное значение в зависимости от параметров lbinitbtrue
-    binit = o_g.uniformVector(bstart, bend)
+bprev=list()
+lbinitbtrueprev=None
+
+def makebinit_lambda (bstart, bend, lbinitbtrue):
+    global btrue, bprev, lbinitbtrueprev
+
+    if lbinitbtrueprev is None or lbinitbtrueprev!=lbinitbtrue:
+        binit = o_g.uniformVector(bstart, bend)
+        lbinitbtrueprev=lbinitbtrue
+        bprev=binit
+    else:
+        binit=bprev
+
+
     return binit, np.linalg.norm(np.array(binit)-np.array(btrue))
+
 
 
 
@@ -287,11 +298,12 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
 
 
                                         #удалили усреднение
-                                        result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
-                                        if result is not None:
-                                            for j in dellist:
-                                                del (result[j])
-
+                                        for i in range (5):
+                                            result = gknuxfunc_lambda (plan, binit, bstart, bend, Ve)
+                                            if result is not None:
+                                                for j in dellist:
+                                                    del (result[j])
+                                                break
 
 
                                         # minilist=list()
@@ -308,28 +320,33 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                         #     else:
                                         #         result=None
 
-                                        conditionkeys = sorted(condition.keys())
-                                        resultkeys = sorted(result.keys())
-                                        with open (resfolder+'/'+ifilename, 'a')  as file:
-                                            if iternum==0:
-                                                file.write(','.join(str(x) for x in ['iteration num',]+conditionkeys+resultkeys)) #вывели заголовок CSV столбцов
+
+
+                                        if result is not None:
+                                            conditionkeys = sorted(condition.keys())
+                                            resultkeys = sorted(result.keys())
+                                            with open (resfolder+'/'+ifilename, 'a')  as file:
+                                                if iternum==0:
+                                                    file.write(','.join(str(x) for x in ['iteration num',]+conditionkeys+resultkeys)) #вывели заголовок CSV столбцов
+                                                    file.write('\n')
+
+                                                file.write(str(iternum)+",")
+                                                file.write(','.join(str(condition[x]) for x in conditionkeys))
+                                                file.write(',') #потому что нужен разделитель между условиями и результатами
+
+                                                if  result is not None:
+                                                    file.write(','.join(safe_str(result[x]) for x in resultkeys))
+                                                else:
+                                                    file.write(','.join('None' for x in resultkeys))
                                                 file.write('\n')
 
-                                            file.write(str(iternum)+",")
-                                            file.write(','.join(str(condition[x]) for x in conditionkeys))
-                                            file.write(',') #потому что нужен разделитель между условиями и результатами
+                                                #    return ";".join(["%s=%s" % (k, v) for k, v in params.items()])
 
-                                            if  result is not None:
-                                                file.write(','.join(safe_str(result[x]) for x in resultkeys))
-                                            else:
-                                                file.write(','.join('None' for x in resultkeys))
-                                            file.write('\n')
+                                                #данные пишутся постепенно и файл тотчас закрывается, как только они записаны
+                                            res.append ({'condition': condition, 'result':result})
 
-                                            #    return ";".join(["%s=%s" % (k, v) for k, v in params.items()])
-
-                                            #данные пишутся постепенно и файл тотчас закрывается, как только они записаны
-                                        res.append ({'condition': condition, 'result':result})
-
+                                        else:
+                                            print ('this iteration failed')
                                         st = datetime.datetime.fromtimestamp(time.time()-prevtime).strftime('%H:%M:%S')
                                         print ('Iteration number {0} finished in time {1}'.format(iternum, st  ))
                                         iternum+=1
@@ -399,7 +416,7 @@ def test1 ():
     #Опыт1: Plantype&&N
     print ('\n===experiment 1===\n')
     i_plantype=[0,1]
-    i_n=range(10,40,5)
+    i_n=range(10,50,5)
 
     i_lbinitbtrue = [1,] #1 uniform-выбор
     i_diapwidth = [0.3,] #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
@@ -552,12 +569,12 @@ def test5():
 
 
 
-#test2()
-#test3()
+
 test1()
 test4()
 test5()
-
+test2()
+test3()
 
 
 
