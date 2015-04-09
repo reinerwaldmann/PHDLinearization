@@ -276,7 +276,7 @@ def mainfunc (i_plantype, i_n, i_lbinitbtrue, i_diapwidth, i_assym, i_nsiggen, i
                                         bstart, bend = makediap_lambda(diapwidth, assym)
                                         Ve = makeVe_lambda (detVe)
                                         plan = makeplan_lambda(plantype, n, bstart, bend,Ve)
-                                        bb=makebinit_lambda(bstart, bend)
+                                        bb=makebinit_lambda(bstart, bend, lbinitbtrue)
                                         binit=bb[0]
 
                                         print ('mainfunc: iteration parameters:')
@@ -448,7 +448,7 @@ def test2():
     i_plantype=[1,]
     i_n=[20,]
 
-    i_lbinitbtrue = range(10) #десять попыток uniform-выбора
+    i_lbinitbtrue = range(30) #десять попыток uniform-выбора
     i_diapwidth = [0.3,] #ширина диапазона от десяти процентов до 40 процентов с шагом в 5 процентов //6
     i_assym = [0.05,] #ассиметрия //
     i_nsiggen = (20,)
@@ -538,7 +538,7 @@ def test4():
 
 def test5():
 
-    #Опыт2: Plantype&&N
+    #detve
     print ('\n===experiment 5===\n')
     i_plantype=[1,]
     i_n=[20,]
@@ -570,8 +570,8 @@ def test5():
 
 
 
-test1()
-test4()
+#test1()
+#test4()
 test5()
 test2()
 test3()
