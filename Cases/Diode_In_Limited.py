@@ -42,7 +42,7 @@ foldername='cachedPlans'
 
 
 def func_Diode_In_Limited(y,x,b,c=None):
-    FT=0.02586419 #подогнанное по pspice
+    global FT
     mm=float(b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0])
     return [mm]
 
@@ -141,12 +141,20 @@ def extraction_Diode_In_Limited():
     jacf = jac_Diode_In_Limited
     #теперь попробуем сделать эксперимент.
     c={}
-    Ve=np.array([ [0.00000001] ]  )
-    btrue=[1.238e-14, 1.8, 100]
-    #btrue=[1.5e-14, 1.75, 150]
 
-    bstart=np.array(btrue)-np.array(btrue)*0.3
-    bend=np.array(btrue)+np.array(btrue)*0.3002
+    Ve=np.array([ [1.34e-7] ]  ) #согласно погрешности на мультиметре CHROMA 12061
+    #btrue=[5.31656e-8,2 ,.0392384] #номинальные значения диода D1N4001
+    btrue=[7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
+
+    # V=x[0] #напряжение на диоде
+
+    # Is=b[0]
+    # N=b[1]
+    # R=b[2]
+
+
+    bstart=np.array(btrue)-np.array(btrue)*0.2
+    bend=np.array(btrue)+np.array(btrue)*0.2
     #binit=np.array(btrue)-np.array(btrue)*0.1
 
     print('conditions:')
@@ -154,16 +162,16 @@ def extraction_Diode_In_Limited():
     print(bend)
 
 
-    binit=[1.1e-14, 1.5, 90]
+    binit=[7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
     xstart=[0.001]
-    xend=[2]
+    xend=[1.1]
     N=20
     print("performing aprior plan:")
 
 #примитивная попытка автоматизировать, риальни надо кешировать в файл под хешем параметров
 
     import os
-    filename =foldername+'/'+os.path.basename(__file__).replace('.py','_plan')
+    filename =foldername+'/'+'RD_11N4004_'+os.path.basename(__file__).replace('.py','_plan')
     try:
         oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
         print ("Read file successful")
@@ -195,4 +203,4 @@ def extraction_Diode_In_Limited():
 
 
 
-#extraction_Diode_In_Limited()
+extraction_Diode_In_Limited()
