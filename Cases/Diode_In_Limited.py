@@ -181,6 +181,7 @@ def extraction_Diode_In_Limited():
 
 #    получаем измеренные данные
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
+    plotPlanAndMeas2D(measdata)
 #     #чертим эти данные
 #     #o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
 #

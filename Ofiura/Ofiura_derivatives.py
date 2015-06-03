@@ -72,15 +72,34 @@ def test ():
     funlst=["b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0]"]
     b=[1,2,2]
     y=[1]
-    #print (makeDerivListb(funstr,
-    # b) )
-    print (makeDerivMatrix(funlst, y, 'y'))
-    funstr = "b0*(exp((x0-y0*b2)/(FT*b1)) -1)-y0"
-    print (sympy.diff(funstr,'y0').__str__())
+
+    #print (makeDerivMatrix(funlst, y, 'y'))
+    #funstr = "b0*(exp((x0-y0*b2)/(FT*b1)) -1)-y0"
+    #print (sympy.diff(funstr,'y0').__str__())
+
+
+
+     # V=x[0] #напряжение на диоде, в данном случае обратное
+    # IBV=b[0]
+    # BV=b[1]
+    # R=b[2]
+
+
+    #mm=float(b[0]*(math.exp(-1*(b[1]+x[0]-y[0]*b[2])/(FT*b[1])))-y[0])
+
+    funstr = 'b[0]*(math.exp(-1*(b[1]+x[0]-y[0]*b[2])/(FT*1)))-y[0]'
+
+    funlst=[funstr]
+
+    print (makeDerivMatrix(funlst, b, 'b'))
 
 
 
 
+
+
+
+test()
 
 
 

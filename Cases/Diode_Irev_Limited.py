@@ -49,7 +49,10 @@ def func_Diode_Irev_Limited(y,x,b,c=None):
     # R=b[2]
 
 
-    mm=float(b[0]*(math.exp(-1*(b[1]+x[0]-y[0]*b[2])/(FT*b[1])))-y[0])
+    #в оригинальной формуле FT умножается на NBV, но она по умолчанию равна 1
+
+    mm=float(b[0]*(math.exp(-1*(b[1]-x[0]+y[0]*b[2])/(FT*1)))-y[0])
+
     return [mm]
 
 
@@ -74,20 +77,20 @@ def solver_Diode_Irev_Limited (x,b,c=None):
     global numnone
     global resultsOfEstimation
 
-    # V=x[0] #напряжение на диоде
-    # Is=b[0]
-    # N=b[1]
+     # V=x[0] #напряжение на диоде, в данном случае обратное
+    # IBV=b[0]
+    # BV=b[1]
     # R=b[2]
     global FT
 
-#    dfdy=lambda y,x,b,c=None: np.array ([[ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]])
+    dfdy=lambda y,x,b,c=None: np.array ([[-1 + b[0]*b[2]*math.exp((-b[1] + b[2]*y[0] - x[0])/(FT*1))/(FT*1)]]  )
 
 
 
     solvinit=[1]
 
     try:
-        solx=optimize.root(func_Diode_Irev_Limited, solvinit, args=(x,b,c), jac=dfdy, method='lm').x
+        solx=optimize.root(func_Diode_Irev_Limited, solvinit, args=(x,b,c), jac=None, method='lm').x
         #http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
         #http://codereview.stackexchange.com/questions/28207/is-this-the-fastest-way-to-find-the-closest-point-to-a-list-of-points-using-nump
     except BaseException as e:
@@ -99,22 +102,21 @@ def solver_Diode_Irev_Limited (x,b,c=None):
          numnone+=1
          return None
 
+
     return solx
 
 
-def jac_Diode_In_Limited (x,b,c,y):
+def jac_Diode_Irev_Limited (x,b,c,y):
     global FT
+    dfdb=lambda y,x,b,c: np.matrix( [[math.exp((-b[1] + b[2]*y[0] - x[0])/FT),
+                                      -b[0]*math.exp((-b[1] + b[2]*y[0] - x[0])/FT)/FT,
+                                      b[0]*y[0]*math.exp((-b[1] + b[2]*y[0] - x[0])/FT)/FT]]
+                                    )
 
+    dfdy=lambda y,x,b,c=None: np.array ([[-1 + b[0]*b[2]*math.exp((-b[1] + b[2]*y[0] - x[0])/(FT*1))/(FT*1)]]  )
 
-    dfdb=lambda y,x,b,c: np.matrix( [ [math.exp((-b[2]*y[0] + x[0])/(FT*b[1])) - 1,
-                                      -b[0]*(-b[2]*y[0] + x[0])*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**2),
-                                      -b[0]*y[0]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])]     ])
-
-
-    dfdy=lambda y,x,b,c: np.matrix ([ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(FT*b[1]))/(FT*b[1])])
 
     jacf=np.dot(np.linalg.inv(dfdy(y,x,b,c)), dfdb(y,x,b,c) )
-
 
     return jacf
 
@@ -131,7 +133,7 @@ def plotPlanAndMeas2D(measdata):
     plt.show()
 
 
-def extraction_Diode_In_Limited():
+def extraction_Diode_Irev_Limited():
     """
     пробуем экстрагировать коэффициенты из модели диода
     коэффициенты модели: Ток утечки Is, коэффициент неидеальности N, омическое сопротивление, параллельное диоду R
@@ -146,34 +148,52 @@ def extraction_Diode_In_Limited():
 
     #возвращает значение y
     funcf=solver_Diode_Irev_Limited
-    jacf = jac_Diode_In_Limited
+    jacf = jac_Diode_Irev_Limited
     #теперь попробуем сделать эксперимент.
     c={}
 
     Ve=np.array([ [1.34e-7] ]  ) #согласно погрешности на мультиметре CHROMA 12061
     #btrue=[5.31656e-8,2 ,.0392384] #номинальные значения диода D1N4001
-    btrue=[7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
+    btrue=[5e-8, 400 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
 
-    # V=x[0] #напряжение на диоде
 
-    # Is=b[0]
-    # N=b[1]
+    # V=x[0] #напряжение на диоде, в данном случае обратное
+    # IBV=b[0]
+    # BV=b[1]
     # R=b[2]
 
+    bstart=np.array(btrue)-np.array(btrue)*0.1
+    bend=np.array(btrue)+np.array(btrue)*0.1
 
-    bstart=np.array(btrue)-np.array(btrue)*0.2
-    bend=np.array(btrue)+np.array(btrue)*0.2
-    #binit=np.array(btrue)-np.array(btrue)*0.1
 
     print('conditions:')
     print(bstart)
     print(bend)
 
 
-    binit=[7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
-    xstart=[0.001]
-    xend=[1.1]
-    N=20
+    binit=[5e-8, 400 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
+
+
+
+    xstart=[399]
+    xend=[401]
+    N=30
+
+
+    print("performing uniform plan:")
+    plan = o_p.makeUniformExpPlan(xstart,xend, N)
+    measdata = o_p.makeMeasAccToPlan(funcf, plan, btrue, c,None )
+    print (measdata)
+    plotPlanAndMeas2D(measdata)
+
+    exit(0)
+
+
+
+
+
+
+
     print("performing aprior plan:")
 
 #примитивная попытка автоматизировать, риальни надо кешировать в файл под хешем параметров
@@ -186,6 +206,10 @@ def extraction_Diode_In_Limited():
     except BaseException as e:
         oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True)[1]
         o_p.writePlanToFile(oplan, filename)
+
+
+
+
 
 #    получаем измеренные данные
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
@@ -211,4 +235,4 @@ def extraction_Diode_In_Limited():
 
 
 
-extraction_Diode_In_Limited()
+extraction_Diode_Irev_Limited()
