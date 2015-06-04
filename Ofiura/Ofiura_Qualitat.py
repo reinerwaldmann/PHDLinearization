@@ -81,6 +81,8 @@ def convertToQualitatStandart (gknux, funcf, jacf,  measdata:list, c, Ve, name='
     for i in range (Vb.shape[0]):
         sigmas.append(math.sqrt(Vb[i][i]))
     rs['VbSigmas'] = sigmas
+
+
     return rs
 
 
@@ -105,7 +107,8 @@ def printQualitatStandart(gknux_dict:dict):
     vallist = [tg[i] for i in klist]
 
 
-    num=4
+
+    num=2 #здесь некоторая магия. Дефолтно - 4, текущие -2, и, вроде, показывает все значения
     klists=[klist[i::num] for i in range(num)]
     vallists=[vallist[i::num] for i in range(num)]
 
