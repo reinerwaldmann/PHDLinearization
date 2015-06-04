@@ -224,7 +224,7 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
         it=0
         Skmu=0
         while (cond2):
-            Skmu=countSklims(A,b,bstart, bend) #добавиляем объектную функцию от штрафных функций
+            Skmu=countSklims(A,b,bstart, bend) #добавляем объектную функцию от штрафных функций
             mu/=2
             for point in measdata:
                 try:
