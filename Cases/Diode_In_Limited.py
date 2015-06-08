@@ -165,13 +165,14 @@ def extraction_Diode_In_Limited():
     binit=[7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
     xstart=[0.001]
     xend=[1.1]
-    N=30
+    N=20
     print("performing aprior plan:")
 
 #примитивная попытка автоматизировать, риальни надо кешировать в файл под хешем параметров
 
     import os
     filename =foldername+'/'+'RD_11N4004_N{0}_'.format(N)+os.path.basename(__file__).replace('.py','_plan')
+
     try:
         oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
         print ("Read file successful")
