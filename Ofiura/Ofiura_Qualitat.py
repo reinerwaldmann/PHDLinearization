@@ -1,10 +1,10 @@
 author__ = 'vasilev_is'
 import copy
 import math
-import os
 
 import numpy as np
 from prettytable import PrettyTable
+
 """
 logTruthness (measdata:list, b:list, Ve,  func, c):
     Считает логарифм функции правдоподобия для известной ковариационной матрицы Ve - ошибок экспериментальных данных
@@ -70,10 +70,10 @@ def convertToQualitatStandart (gknux, funcf, jacf,  measdata:list, c, Ve, name='
 
 
     """
-    names = [' b', 'numiter', 'log' , 'Sklist', 'Sk']
+    names = ['b', 'numiter', 'log' , 'Sklist', 'Sk']
     gknuxdict = dict(zip (names, list(gknux)))
     #    names=['AvLogTruth','DispLT', 'SigmaLT', 'AvDif', 'DispDif', 'SigmaDif', 'Diflist']
-    rs= dict(list(getQualitatDict(measdata, gknuxdict[' b'], Ve,  funcf, c).items()) + list(gknuxdict.items()))
+    rs= dict(list(getQualitatDict(measdata, gknuxdict['b'], Ve,  funcf, c).items()) + list(gknuxdict.items()))
     rs['name']=name
     Vb = countVbForMeasdata(gknux[0],  c, Ve, jacf, measdata)
     rs['Vb'] = Vb
@@ -310,7 +310,7 @@ def printSeqPlanData(seq):
 
 
 
-def analyseDifList(arg, plot=True, imagename='img' ): #числовой режим, вектора не поддерживаются
+def analyseDifList(arg, plot=True, title='', filename=None ): #числовой режим, вектора не поддерживаются
     """
     Функция, выводит гистограмму остатков
     в будущем будет возвращать True, если распределение нормальное и false, если таки нет
@@ -318,7 +318,6 @@ def analyseDifList(arg, plot=True, imagename='img' ): #числовой режи
     :param arg
     :param plot
     """
-    global foldername
 
 
     if type(arg)==dict:
@@ -329,7 +328,11 @@ def analyseDifList(arg, plot=True, imagename='img' ): #числовой режи
         print  ('analyseDifList erroneous arg')
         return None
 
-    superlist = list(map(lambda x: x[0], diflist)) #костыль для тех случаев, когда на вход всё одно вектор, но единичной длины
+    try:
+        superlist = list(map(lambda x: x[0], diflist)) #костыль для тех случаев, когда на вход всё одно вектор, но единичной длины
+    except:
+        superlist = diflist
+
 
     #1. Определение нормальности распределения
     #пока не имплементим
@@ -338,20 +341,19 @@ def analyseDifList(arg, plot=True, imagename='img' ): #числовой режи
     # с векторами можно работать как - 1. рассматривая каждый компонент по отдельности
 
 
-    if plot:
-        #посмотреть диаграмму остатков у лучшей оценки
-        import matplotlib.pyplot as plt
-        plt.hist(superlist, 25, label=imagename)
+    import matplotlib.pyplot as plt
 
-        if foldername:
-            try:
-                os.makedirs(foldername)
-            except OSError:
-                if not os.path.isdir(foldername):
-                    raise
-            plt.savefig(foldername+imagename+'.png')
-        else:
-            plt.show()
+
+    fig1 = plt.figure()
+
+    ax1 = fig1.add_subplot(111)
+
+    ax1.hist(superlist, 25, label=title)
+
+    if filename:
+        fig1.savefig (filename)
+    else:
+        fig1.show()
 
     return np.average(superlist), True
 

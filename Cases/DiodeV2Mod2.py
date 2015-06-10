@@ -12,6 +12,7 @@ import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
 
+
 #Part1: прямая ветвь ВАХ диода
 #Стандарт: implicit
 #Таблица переменных:
@@ -175,7 +176,7 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
     #xend=[20,60]
     xend=[1.1]
     N=40 #число точек в плане (для планов, кроме априорного)
-    NArprior=30 #число точек в априорном плане
+    NArprior=20 #число точек в априорном плане
 
 
     #Получаем априорный план

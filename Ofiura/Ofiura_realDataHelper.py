@@ -11,8 +11,8 @@ def readMeasdata (infilename):
     for line in lines:
         try:
             bl=line.split(',')
-            x=float(bl[0].strip())
-            y=float(bl[1].strip())
+            x=[float(bl[0].strip())]
+            y=[float(bl[1].strip())]
             rs.append( {'x':x, 'y':y } )
 
         except:
@@ -26,7 +26,7 @@ def grfiles (folder):
     rs=list() #то будет список списков
     for file in os.listdir(folder):
         if file.endswith('.txt'):
-            rs.append(readMeasdata(folder+file))
+            rs.append((readMeasdata(folder+'/'+file), file) )
     return rs
 
 

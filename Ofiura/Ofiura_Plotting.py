@@ -18,7 +18,7 @@ def plotPlanAndMeas2D(measdata, title=''):
 
 
 
-def plotSkGraph(gknu, title=''):
+def plotSkGraph(gknu, title='', filename=None):
     #plotting Sk graph
     rng=np.arange(0,len(gknu[3]))
     plt.plot(rng , gknu[3], label='Sk drop')
@@ -27,7 +27,12 @@ def plotSkGraph(gknu, title=''):
     plt.ylabel('Sk')
     plt.xlabel('Interation')
     plt.grid()
-    plt.show()
+
+    if filename:
+        plt.savefig (filename)
+    else:
+        plt.show()
+
 
 
 def cutPlanToTwoList(plan):

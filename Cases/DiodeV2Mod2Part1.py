@@ -7,7 +7,6 @@ from scipy import optimize
 import matplotlib.pyplot as plt
 
 import Ofiura.Ofiura_EstimationLimited as o_el
-import Ofiura.Ofiura_Estimation as o_e
 import Ofiura.Ofiura_ApriorPlanning as o_ap
 import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
@@ -166,9 +165,11 @@ def extraction_Kirch_DiodeV2Mod2DirectBranch():
     Ve=np.array([ [1e-5] ]  )
     #       0           1       2     3   4    5    6
     btrue=[1.238e-14, 1.8,  1.123e-14, 1.5, 1.12, 0.5, 123.]
-    bstart=np.array(btrue)-np.array(btrue)*0.1
-    bend=np.array(btrue)+np.array(btrue)*0.102
-    binit=[1.1e-14, 1.5,  1.1e-14, 1.9, 1.0, 0.8, 100.]
+    bstart=np.array(btrue)-np.array(btrue)*0.3
+    bend=np.array(btrue)+np.array(btrue)*0.3
+    #binit=[1.1e-14, 1.5,  1.1e-14, 1.9, 1.0, 0.8, 100.]
+    binit = np.array(btrue)-np.array(btrue)*0.1
+
     xstart=[0.001]
     xend=[1.5]
     N=40 #число точек в плане (для планов, кроме априорного)
