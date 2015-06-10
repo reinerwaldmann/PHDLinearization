@@ -13,6 +13,7 @@ import Ofiura.Ofiura_planning as o_p
 import Ofiura.Ofiura_Qualitat as o_q
 
 
+
 #Part1: прямая ветвь ВАХ диода
 #Стандарт: implicit
 #Таблица переменных:

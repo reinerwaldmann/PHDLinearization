@@ -5,6 +5,7 @@ import math
 import numpy as np
 from prettytable import PrettyTable
 
+
 """
 logTruthness (measdata:list, b:list, Ve,  func, c):
     Считает логарифм функции правдоподобия для известной ковариационной матрицы Ve - ошибок экспериментальных данных

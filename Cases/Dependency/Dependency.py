@@ -18,6 +18,7 @@ import Ofiura.Ofiura_Qualitat as o_q
 
 
 
+
 #конкретно к модели диода относящиеся вещи
 
 btrue = [1.238e-14, 1.8, 100]
