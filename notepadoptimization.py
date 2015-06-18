@@ -1,6 +1,117 @@
+import mpmath as mpm
 
 
 
+
+
+mpm.mp.dps=50
+
+gf=mpm.mpf('1.0000000000000000  001')
+print (gf)
+
+
+
+a =mpm.mpf (9.999999999)
+b= mpm.mpf (0.0000000001)
+
+print (a, b)
+
+c=a+b
+print (c)
+
+
+
+
+deltam=1
+with mpm.workdps(mpm.mp.dps+deltam):
+    c=a+b
+    print (c)
+
+print (c)
+
+
+
+
+
+
+
+
+
+
+#
+# with mpm.workdps(30):
+#     print (g)
+#
+# with mpm.extradps(10):
+#     print (g)
+#
+# print (g)
+
+
+
+
+
+
+
+
+exit(0)
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from math import sqrt
+#x = range(100)
+#y = [sqrt(i) for i in x]
+
+x=[0,5]
+y=[10/3,0]
+
+s=0
+d=None
+for xx in np.arange (0,5,.001):
+   yy=(1-xx/5)*3.3
+   if xx*yy>s:
+       s=xx*yy
+       d=(xx,yy)
+print (d)
+
+
+
+
+plt.plot(x,y,color='k')
+
+plt.plot ([0, d[0], d[0]], [d[1], d[1], 0 ], color='r' )
+
+
+plt.axis([0,5,0,5])
+plt.fill_between(x,y,0,color='0.8')
+plt.show()
+
+
+
+# import matplotlib as mpl
+# from mpl_toolkits.mplot3d import Axes3D
+# import numpy as np
+# import matplotlib.pyplot as plt
+#
+# mpl.rcParams['legend.fontsize'] = 10
+#
+# fig = plt.figure()
+# ax = fig.gca(projection='3d')
+# theta = np.linspace(-4 * np.pi, 4 * np.pi, 100)
+# z = np.linspace(-2, 2, 100)
+# r = z**2 + 1
+# x = r * np.sin(theta)
+# y = r * np.cos(theta)
+# ax.plot(x, y, z, label='parametric curve')
+# ax.legend()
+#
+# plt.show()
+
+
+
+exit(0)
 
 
 g = {'one':1, 'two':2, 'three':3, '1':23}

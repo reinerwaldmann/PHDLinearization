@@ -144,7 +144,11 @@ def extraction_Diode_In_Limited():
     #теперь попробуем сделать эксперимент.
     c={}
 
-    Ve=np.array([ [1.34e-7] ]  ) #согласно погрешности на мультиметре CHROMA 12061
+    #Ve=np.array([ [1.34e-7] ]  ) #согласно погрешности на мультиметре CHROMA 12061
+
+    Ve=np.array([[1.9e-5]])
+
+
     #btrue=[5.31656e-8,2 ,.0392384] #номинальные значения диода D1N4001
     btrue=[7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
 
@@ -166,14 +170,14 @@ def extraction_Diode_In_Limited():
 
     binit=[7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
     xstart=[0.001]
-    xend=[1.1]
+    xend=[1]
     N=20
     print("performing aprior plan:")
 
 #примитивная попытка автоматизировать, риальни надо кешировать в файл под хешем параметров
 
     import os
-    filename =foldername+'/'+'RD_11N4004_N{0}_'.format(N)+os.path.basename(__file__).replace('.py','_plan')
+    filename =foldername+'/'+'RD_11N4004_N{0}_Dev-62012P_'.format(N)+os.path.basename(__file__).replace('.py','_plan')
 
     try:
         oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
@@ -181,6 +185,32 @@ def extraction_Diode_In_Limited():
     except BaseException as e:
         oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True)[1]
         o_p.writePlanToFile(oplan, filename)
+
+    N=30
+    print("performing aprior plan:")
+
+#примитивная попытка автоматизировать, риальни надо кешировать в файл под хешем параметров
+
+    import os
+    filename =foldername+'/'+'RD_11N4004_N{0}_Dev-62012P_'.format(N)+os.path.basename(__file__).replace('.py','_plan')
+
+    try:
+        oplan=o_p.readPlanFromFile(filename) #переключение на чтение априорного плана из файла
+        print ("Read file successful")
+    except BaseException as e:
+        oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True)[1]
+        o_p.writePlanToFile(oplan, filename)
+
+
+
+
+
+
+
+
+
+
+    exit (0)
 
 #    получаем измеренные данные
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
@@ -323,7 +353,7 @@ def plotMeasAndModelled(measdata,  funcf, b, filename=None, title=None):
 
 
 #
-extractionRD()
+
 # b=[  8.20330068e-08  , 2.14581108e+00,   4.95984473e-02]
 # folderData = '/home/reiner/RDReports'
 # filename = '02.txt'
@@ -331,13 +361,5 @@ extractionRD()
 # plotMeasAndModelled(measdata, solver_Diode_In_Limited, b, folderData+'/'+'df.png', title='sd')
 
 
-
-
-
-
-
-
-
-
-
-#extraction_Diode_In_Limited()
+#extractionRD()
+extraction_Diode_In_Limited()

@@ -15,8 +15,9 @@ mpm.pretty = True
 
 
 
+
 def makeSkInitMpmath (funcf, measdata, binit, c):
-    Sk=mpm.mpf(0.0)#или mpm.mpf(0.0)
+    Sk=mpm.mpf(0)#или mpm.mpf(0.0)
     for point in measdata:
         fxbc=funcf(point['x'],binit,c)
         if fxbc is None:
@@ -56,8 +57,8 @@ def countSklimsMpmath(A,b,bstart, bend):
 def countNMpmath (A, b, bstart, bend):
     N=mpm.matrix(len(b),len(b))
     for j in range (len(b)):
-        partone=2*A[j,0]/(b[j]-bstart[j])**3
-        parttwo=2*A[j,1]/(bend[j]-b[j])**3
+        partone=mpm.mpf(2)*A[j,0]/(b[j]-bstart[j])**mpm.mpf(3)
+        parttwo=mpm.mpf(2)*A[j,1]/(bend[j]-b[j])**mpm.mpf(3)
         N[j,j]+=parttwo+partone #так как матрица нулевая
     return N
 
@@ -109,7 +110,7 @@ def  grandCountGN_UltraX1_Limited_wrapperMpmath (funcf, jacf,  measdata:list, bi
             A[j,1]*=mpm.mpf('0.5')
         condition=False
         for i in range (len(b)):
-            if mpm.fabs ((b[i]-bpriv[i])/bpriv[i]) > math.pow(10,-1*NSIGGENERAL):
+            if mpm.fabs ((b[i]-bpriv[i])/bpriv[i]) > math.pow(10,-1*NSIGGENERAL): #сравнение идёт по обычному флоат
                 condition=True
         if not condition:
             break
@@ -165,19 +166,17 @@ def grandCountGN_UltraX1_mpmath_Limited (funcf, jacf,  measdata:list, binit:list
                 log+="Jac is None"
                 return b, numiter, log, Sklist, Sk
 
-
             G+=jac.T*jac
 
             fxbc=funcf(point['x'],b,c)
             if fxbc is None:
-                log+="Funkf is None"
+                log+="Funcf is None"
                 return b, numiter, log, Sklist, Sk
 
 
             dif=point['y']-fxbc
 
             if B5 is None:
-            #if B5==mpm.matrix(1,m):
                 B5=dif*jac
             else:
                 B5+=dif*jac

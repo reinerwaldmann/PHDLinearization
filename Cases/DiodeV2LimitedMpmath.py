@@ -22,8 +22,8 @@ import Ofiura.Ofiura_Qualitat as o_q
 #Таблица переменных:
 
 #Установка точности для mpmath. В проекте принято 50
-mpm.mp.dps=40
-mpm.pretty = True
+#mpm.mp.dps=40 #данные параметры уже выставлены в офиуре
+#mpm.pretty = True
 
 
 #Описание стандартных функций приводятся в Методике программирования оценочных скриптов
@@ -51,8 +51,12 @@ def func_Kirch_DiodeV2Mod2DirectBranchMpmath(y,x,b,c):
     Ifwd_direct=(b[0]*(mpm.exp( (x[0]-y[0]*b[6])/(FT*b[1]))-1 ))+ (b[2]*(mpm.exp((x[0]-y[0]*b[6])/(FT*b[3]))-1 )) * (((1- (x[0]-y[0]*b[6])/b[4])**2+0.005 )**(b[5]/2))-y[0]
 
 
-    return [Ifwd_direct]
+    zero_sum=(b[0]*(mpm.exp( (x[0]-y[0]*b[7])/(FT*b[1]))-mpm.mpf(1) )) *\
+                mpm.sqrt (b[2]/(b[2]+(b[0]*mpm.exp( (x[0]-y[0]*b[7])/(FT*b[1]))-mpm.mpf(1))))+\
+                (b[3]*(mpm.exp((x[0]-y[0]*b[7])/(FT*b[4]))-mpm.mpf(1) )) * \
+                (((mpm.mpf(1)- (x[0]-y[0]*b[7])/b[5])**mpm.mpf(2)+mpm.mpf('0.005'))**(b[6]/mpm.mpf(2))) -y[0]
 
+    return [zero_sum]
 
 
 
@@ -69,7 +73,7 @@ def solver_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c=None):
     global FT
 
 
-    dfdy = lambda y, x, b, c=None:  [b[2]*b[5]*b[6]*(1 - (-b[6]*y[0] + x[0])/b[4])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)) - 1 - b[0]*b[6]*math.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + 0.005)**(b[5]/2)*math.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]
+    dfdy = lambda y, x, b, c=None:  [b[2]*b[5]*b[6]*(mpm.mpf(1)-(-b[6]*y[0]+x[0])/b[4])*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))**(b[5]/mpm.mpf(2))*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - mpm.mpf(1))/(b[4]*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))) - mpm.mpf(1) - b[0]*b[6]*math.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))**(b[5]/mpm.mpf(2))*math.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]
     #func = lambda y, x, b, c: [np.float(x) for x in func_Kirch_DiodeV2Mod2DirectBranchMpmath(y,x,b,c)]
     func = func_Kirch_DiodeV2Mod2DirectBranchMpmath
 
@@ -85,12 +89,14 @@ def solver_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c=None):
         print ("solver: ERROR first stage: "+e.__str__())
         return [None]
     funcMPM = lambda y:  func_Kirch_DiodeV2Mod2DirectBranchMpmath ([y],x,b,c)
-    #dfdyMPM=lambda y: [b[2]*b[5]*b[6]*(1 - (-b[6]*[y][0] + x[0])/b[4])*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))) - 1 - b[0]*b[6]*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]
-    dfdyMPM=lambda y: [b[2]*b[5]*b[6]*(1 - (-b[6]*[y][0] + x[0])/b[4])*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))) - 1 - b[0]*b[6]*mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3]))/(FT*b[3])]
-    solvinitMPM=solx[0]
+
+    #dfdyMPM=lambda y: [b[2]*b[5]*b[6]*(1 - (-b[6]*[y][0] + x[0])/b[4])*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))) - 1 - b[0]*b[6]*mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3]))/(FT*b[3])]
+    dfdyMPM=dfdy
+
+    solvinitMPM=mpm.mpf(solx[0].__str__())
     try:
         precsolx=mpm.calculus.optimization.findroot(mpm.mp, f=funcMPM, x0=solvinitMPM, solver=MDNewton, multidimensional=True, J=dfdyMPM, verify=False)
-        #   precsolx=mpm.calculus.optimization.findroot(mpm.mp, f=funcMPM, x0=solvinitMPM, solver=MDNewton, multidimensional=True, verify=False)
+
     except BaseException as e:
         numnone+=1
         print ("solver MPM: ERROR second stage: "+e.__str__())
@@ -110,25 +116,33 @@ def Jac_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c,y):
     :return:
     """
     global FT
-    dfdyMPM=lambda y,x,b,c=None: mpm.matrix([[b[2]*b[5]*b[6]*(1 - (-b[6]*y[0] + x[0])/b[4])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))) - 1 - b[0]*b[6]*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]])
-    dfdbMPM=lambda y,x,b,c: mpm.matrix([[mpm.exp((-b[6]*y[0] + x[0])/(FT*b[1])) - 1,
-                                         -b[0]*(-b[6]*y[0] + x[0])*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**2),
-                                         ((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1),
-                                         -b[2]*(-b[6]*y[0] + x[0])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3]**2),
-                                         b[2]*b[5]*(1 - (-b[6]*y[0] + x[0])/b[4])*(-b[6]*y[0] + x[0])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]**2*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))), b[2]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)*math.log((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))/2, b[2]*b[5]*y[0]*(1 - (-b[6]*y[0] + x[0])/b[4])*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))) - b[0]*y[0]*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*y[0]*((1 - (-b[6]*y[0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]])
-    return dfdyMPM(y,x,b,c)**-1 * dfdbMPM(y,x,b,c)
+    dfdyMPM= lambda y, x, b, c=None:  [b[2]*b[5]*b[6]*(mpm.mpf(1)-(-b[6]*y[0]+x[0])/b[4])*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))**(b[5]/mpm.mpf(2))*(math.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - mpm.mpf(1))/(b[4]*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))) - mpm.mpf(1) - b[0]*b[6]*math.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))**(b[5]/mpm.mpf(2))*math.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]
+
+
+    dfdbMPM=lambda y,x,b,c: mpm.matrix([[mpm.exp((-b[6]*y[0] + x[0])/(FT*b[1])) - mpm.mpf(1),
+                                         -b[0]*(-b[6]*y[0] + x[0])*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]**mpm.mpf(2)),
+                                         ((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))**(b[5]/mpm.mpf(2))*(mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - mpm.mpf(1)),
+                                         -b[2]*(-b[6]*y[0] + x[0])*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))**(b[5]/mpm.mpf(2))*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3]**mpm.mpf(2)),
+                                         b[2]*b[5]*(mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])*(-b[6]*y[0] + x[0])*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))**(b[5]/mpm.mpf(2))*(mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - mpm.mpf(1))/(b[4]**mpm.mpf(2)*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))),
+                                         b[2]*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))**(b[5]/mpm.mpf(2))*(mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - mpm.mpf(1))*math.log((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))/mpm.mpf(2),
+                                         b[2]*b[5]*y[0]*(mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))**(b[5]/mpm.mpf(2))*(mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3])) - mpm.mpf(1))/(b[4]*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))) - b[0]*y[0]*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*y[0]*((mpm.mpf(1) - (-b[6]*y[0] + x[0])/b[4])**mpm.mpf(2) + mpm.mpf('0.005'))**(b[5]/mpm.mpf(2))*mpm.exp((-b[6]*y[0] + x[0])/(FT*b[3]))/(FT*b[3])]])
+    return dfdyMPM(y,x,b,c)**mpm.mpf(-1) * dfdbMPM(y,x,b,c)
 
 
 def test_Kirch_DiodeV2Mod2DirectBranchMpmath():
-    btrue=[mpm.mpf('1.238e-14'), mpm.mpf('1.8'),  mpm.mpf('1.123e-14'), mpm.mpf('1.5'), mpm.mpf('1.1'), mpm.mpf('0.5'), mpm.mpf('123.')]
+    btrue=[mpm.mpf('341.4e-6'), mpm.mpf('2.664'), mpm.mpf('37.08e-3'), mpm.mpf('17.26e-27'), mpm.mpf('5.662'), mpm.mpf('4.282'), mpm.mpf('0.5751'), mpm.mpf('3.65e-3')]
+
+
     b=btrue
     rng=mpm.arange('0.01','2','0.01')
-    Ve=np.array([ [0.0001] ]  )
+    Ve=np.array([ [1.9e-5] ]  )
     c=None
 
     #снимем ВАХ
-    resrng=[solver_Kirch_DiodeV2Mod2DirectBranchMpmath ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
+    #resrng=[solver_Kirch_DiodeV2Mod2DirectBranchMpmath ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
+
     resrng=[o_pmpm.makeMeasOneDot_lognorm(solver_Kirch_DiodeV2Mod2DirectBranchMpmath, [x],b,c,Ve) for x in rng]
+
     resrng1=[solver_Kirch_DiodeV2Mod2DirectBranchMpmath ([x],b)[0] for x in rng] # изменяем напряжение на базе при постоянном напряжении на коллекторе - снимаем ток базы.
     plt.plot(rng , resrng, label='r=1000')
     plt.plot(rng , resrng1, label='r=3000')
@@ -211,5 +225,7 @@ funstr="(b[0]*(math.exp( (x[0]-y[0]*b[6])/(FT*b[1]))-1 ))+ (b[2]*(math.exp((x[0]
 #
 
 #test_Kirch_DiodeV2Mod2DirectBranch()
-extraction_Kirch_DiodeV2Mod2DirectBranchMpmath()
+#extraction_Kirch_DiodeV2Mod2DirectBranchMpmath()
+test_Kirch_DiodeV2Mod2DirectBranchMpmath()
+
 
