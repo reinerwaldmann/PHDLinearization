@@ -1,3 +1,37 @@
+
+#великолепно же!!! (стянуто с лурка)
+
+
+import sys;
+
+class Cout(object):
+    def __lshift__(self, anything):
+        sys.stdout.write(str(anything));
+        return self;
+
+cout = Cout();
+endl = '\n';
+
+cout << 'Hello, World!' << endl;
+
+gg=[2,3,4]
+cout <<gg
+
+
+
+exit(0)
+
+
+
+
+
+
+
+
+
+
+
+
 import mpmath as mpm
 
 

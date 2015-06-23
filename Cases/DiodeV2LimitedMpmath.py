@@ -41,6 +41,13 @@ XF=mpm.mpf('0.005')
 
 
 
+def mpm_to_np_matrix_conv (mt):
+    a = np.zeros ((mt.rows, mt.cols))
+    for i in range (mt.rows):
+        for j in range (mt.cols):
+            a[i][j]=float(mt[i,j])
+    return a
+
 def func_Kirch_DiodeV2Mod2DirectBranchMpmath(y,x,b,c):
     """
     [Реестровая] +
@@ -104,9 +111,7 @@ def dfdy (y,x,b,c):
     fh = iss**XT*rs*mpm.sqrt(ikf/(ikf + iss*(mpm.exp((-i*rs + v)/(ft*n)) - XO)))*(mpm.exp((-i*rs + v)/(ft*n)) - XO)*mpm.exp((-i*rs + v)/(ft*n))/(XT*ft*n*(ikf + iss*(mpm.exp((-i*rs + v)/(ft*n)) - XO))) - iss*rs*mpm.sqrt(ikf/(ikf + iss*(mpm.exp((-i*rs + v)/(ft*n)) - XO)))*mpm.exp((-i*rs + v)/(ft*n))/(ft*n)
     sh = isr*m*rs*(XO - (-i*rs + v)/vj)*((XO - (-i*rs + v)/vj)**XT + XF)**(m/XT)*(mpm.exp((-i*rs + v)/(ft*nr)) - XO)/(vj*((XO - (-i*rs + v)/vj)**XT + XF)) - isr*rs*((XO - (-i*rs + v)/vj)**XT + XF)**(m/XT)*mpm.exp((-i*rs + v)/(ft*nr))/(ft*nr)
 
-
-
-    return fh+sh
+    return mpm.matrix ([[fh+sh]])
 
 def dfdb (y,x,b,c):
 
@@ -149,26 +154,22 @@ def Jac_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c,y):
     :param y:
     :return:
     """
-    return dfdy(y,x,b,c)**mpm.mpf(-1) * dfdb(y,x,b,c)
+    return dfdy(y,x,b,c)**(-1) * dfdb(y,x,b,c)
 
-def solver_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c=None):
+def solver_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c=None, npVersion=False):
     """
     [Реестровая] +
     двухступенчатый - сначала np solver, затем mpm solver
     :param x:
     :param b:
     :param c:
+    :param npVersion: если true, то возвращает numpy-compatible результат первой ступени, иначе идёт дальше
     :return:
     """
     global numnone
     global FT
-
-
     func = lambda y, x, b, c:  [float(func_Kirch_DiodeV2Mod2DirectBranchMpmath (y,x,b,c)[0])]
-
-
-    dfdynumpy=lambda y,x,b,c=None: np.array ([[  float( dfdy(y,x,b,c) )     ]])
-
+    dfdynumpy=lambda y,x,b,c=None: mpm_to_np_matrix_conv(dfdy(y,x,b,c))
     solvinit=[0.001]
     try:
         solx=optimize.root(func, solvinit, args=(x,b,c), jac=dfdynumpy, method='lm').x
@@ -180,10 +181,16 @@ def solver_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c=None):
         numnone+=1
         print ("solver: ERROR first stage: "+e.__str__())
         return [None]
+
+    if npVersion:
+        return solx
+
+
     funcMPM = lambda y:  func_Kirch_DiodeV2Mod2DirectBranchMpmath ([y],x,b,c)
 
     dfdyMPM=lambda y: [b[2]*b[5]*b[6]*(1 - (-b[6]*[y][0] + x[0])/b[4])*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*(mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3])) - 1)/(b[4]*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))) - 1 - b[0]*b[6]*mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[1]))/(FT*b[1]) - b[2]*b[6]*((1 - (-b[6]*[y][0] + x[0])/b[4])**2 + mpm.mpf('0.005'))**(b[5]/2)*mpm.exp((-b[6]*[y][0] + x[0])/(FT*b[3]))/(FT*b[3])]
-    #dfdyMPM=dfdy
+    dfdyMPM=lambda y: dfdy([y],x,b,c)
+
 
     solvinitMPM=mpm.mpf(solx[0].__str__())
     try:
@@ -195,17 +202,6 @@ def solver_Kirch_DiodeV2Mod2DirectBranchMpmath (x,b,c=None):
 
         return [None]
     return precsolx
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -230,9 +226,9 @@ def test_Kirch_DiodeV2Mod2DirectBranchMpmath():
     resrng1,nrng1=list(), list()
 
     for x in rng:
-        slv=solver_Kirch_DiodeV2Mod2DirectBranchMpmath ([x],b)
+        slv=solver_Kirch_DiodeV2Mod2DirectBranchMpmath ([x],b, npVersion=True)
 
-        slv1=solver_Kirch_DiodeV2Mod2DirectBranchMpmath ([x],btrueNormalDiode)
+        slv1=solver_Kirch_DiodeV2Mod2DirectBranchMpmath ([x],btrueNormalDiode,npVersion=True)
 
         if slv[0]:
             if (slv[0]>=1):
@@ -324,7 +320,7 @@ def extraction_Kirch_DiodeV2Mod2DirectBranchMpmath():
 
 
 
-
+test_Kirch_DiodeV2Mod2DirectBranchMpmath()
 
 
 

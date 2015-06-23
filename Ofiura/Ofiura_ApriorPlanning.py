@@ -6,6 +6,7 @@ import copy
 import numpy as np
 
 import Ofiura.Ofiura_general as o_g
+import Ofiura.Ofiura_planning as o_p
 import traceback
 
 import time, datetime
@@ -35,6 +36,8 @@ def grandApriornPlanning (xstart:list, xend:list, N:int, bstart:list, bend:list,
     :return: кортеж: 0: оптимизированное значение определителя Vb, 1: оптимальный план эксперимента
 
 """
+
+
 
 def makePlanCached (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True, foldername='../Cases/cachedPlans', cachname='plan.plan'):
 

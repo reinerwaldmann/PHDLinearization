@@ -43,13 +43,21 @@ foldername='cachedPlans'
 #В этом случае рабочая функция должна возвращать none, а создатель плана - вежливо вытряхивать точку из measdata
 
 
+
+def mpm_to_np_matrix_conf(mt):
+    def converted():
+        a = np.matrix (mt.rows, mt.cols)
+        #классика
+        for i in range (mt.rows):
+            for j in range (mt.cols):
+                a[i][j]=float(mt[i][j])
+    return converted()
+
+
 def func_Diode_In_Limited(y,x,b,c=None):
     global FT
     mm=float(b[0]*(math.exp((x[0]-y[0]*b[2])/(FT*b[1])) -1)-y[0])
     return [mm]
-
-
-
 
 def solver_Diode_In_Limited (x,b,c=None):
     """
