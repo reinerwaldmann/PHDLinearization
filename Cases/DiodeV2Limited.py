@@ -274,9 +274,8 @@ def extraction_Kirch_DiodeV2Mod2DirectBranchmathath():
     print("performing aprior plan:")
 
     import os
-    filename ='_'.format(N)+os.path.basename(__file__).replace('.py','_plan')
-    oplan = o_ap.makePlanCached (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True, foldername=foldername, cachname=filename)
-
+    filename ='N{0}_'.format(N)+os.path.basename(__file__).replace('.py','_plan')
+    oplan = o_ap.makePlanCached (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True, foldername=foldername, cachname=filename, verbosePlan=True)
 
 
 #test_Kirch_DiodeV2Mod2DirectBranchmathath()

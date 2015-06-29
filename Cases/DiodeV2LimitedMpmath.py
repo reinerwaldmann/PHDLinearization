@@ -83,7 +83,9 @@ def func_Kirch_DiodeV2Mod2DirectBranchMpmath(y,x,b,c):
     First_half = IS * (math.exp((v-i*RS)/(FT*N))-1  ) *  math.sqrt( IKF/ (IKF+IS * (math.exp((v-i*RS)/(FT*N))-1  )) )
     Second_half = ISR*(math.exp((v-i*RS)/(FT*NR))-1) * ((1-(v-i*RS)/VJ)**2 +.005)**(M/2)
 
-    zero_sum = First_half + Second_half -i
+    #print (First_half, Second_half)
+
+    zero_sum = First_half  + Second_half -i
 
     return [zero_sum]
 
@@ -316,7 +318,6 @@ def extraction_Kirch_DiodeV2Mod2DirectBranchMpmath():
     except BaseException as e:
         oplan=o_ap.grandApriornPlanning (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True)[1]
         o_p.writePlanToFile(oplan, filename)
-
 
 
 
