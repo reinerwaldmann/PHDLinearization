@@ -33,7 +33,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
     """
     Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом
     В стандартный поток вывода выводит отладочную информацию по каждой итерации
-    :param funcf callable функция, параметры по формату x,b,c
+    :param funcf callable функция, параметры по формату x,b,cTrue
     :param jacf callable функция, параметры по формату x,b,c,y
     :param measdata:list список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
     :param binit:list начальное приближение b

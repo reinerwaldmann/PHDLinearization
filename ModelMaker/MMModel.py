@@ -18,15 +18,21 @@ class MMModel:
     #    self._modelstring=''
      #   self._jacstring=''
 
-    def makeModelStr(self):
-        pass
+    def showModel(self):
+        strmodel = 'y0='+'+'.join(self.modelparts) #возвращает строку модели
+        strassigns = '\n'.join(self.assigns)
+        evalstr = strassigns+'\n'+strmodel
+
+        print (evalstr)
+
+
+
+
 
 
     def solver (self, x,b,c=None):
         strmodel = 'y0='+'+'.join(self.modelparts) #возвращает строку модели
-
         strassigns = '\n'.join(self.assigns)
-
         evalstr = strassigns+'\n'+strmodel
 
         ns={}
@@ -69,28 +75,43 @@ class MMModel:
         return np.matrix([diflist])
 
 
+    def makeLinearRegression(self, nvar):
+        """
+    Функция уровнем повыше: создать уравнение линейной регрессии
+        :param nvar: число переменных регрессии
+        :return:
+        """
+        self.assigns = ['x{0}=x[{0}]'.format(i) for i in range (nvar)]
+        self.assigns+= ['b{0}=b[{0}]'.format(i) for i in range (nvar+1)]
 
+        self.modelparts = ['b0']
+        self.modelparts += ['b{0}*x{1}'.format(i+1, i) for i in range(nvar) ]
+        #http://habrahabr.ru/post/63539/
+        # это пост на хабре про сложение списков. Он и говорит, что самый быстрый способ -
+        # имено такой - extend или +=
 
-
-
-
+        # http://pythonworld.ru/tipy-dannyx-v-python/vse-o-funkciyax-i-ix-argumentax.html
+        # статья о функциях с произвольным числом аргументов
 
 
 
 def test():
-    assigns=['x0=x[0]', 'x1=x[1]', 'x2=x[2]'] +  ['b0=b[0]', 'b1=b[1]', 'b2=b[2]', 'b3=b[3]']
-
-    modelparts=['b0', 'b1*x0', 'b2*x1', 'b3*x2']
-
+#    assigns=['x0=x[0]', 'x1=x[1]', 'x2=x[2]'] +  ['b0=b[0]', 'b1=b[1]', 'b2=b[2]', 'b3=b[3]']
+ #   modelparts=['b0', 'b1*x0', 'b2*x1', 'b3*x2']
     x=[1,2,3]
     b=[1,2,3,4]
-
+    #
+    # model = MMModel()
+    #
+    # model.assigns = assigns
+    # model.modelparts = modelparts
+    #
+    # print (model.jacf(x,b,None, None))
     model = MMModel()
+    model.makeLinearRegression(3)
+    model.showModel()
+    print (model.solver(x,b))
+    print (model.jacf(x,b,None,None))
 
-    model.assigns = assigns
-    model.modelparts = modelparts
-
-    print (model.jacf(x,b,None, None))
-
-test()
+#test()
 

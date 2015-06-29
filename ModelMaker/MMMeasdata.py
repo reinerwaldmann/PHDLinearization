@@ -65,7 +65,19 @@ class MMMeasdata:
         else:
             raise AttributeError('Inlist or/and Outlist not set, thus method cannot work')
 
-
+    def showReadableNames(self,shouldBeFromModel=False):
+        """
+        Показывает читаемые названия полей
+        :param shouldBeFromModel: если тру, тогда только те, которые в модели (in, out)
+        :return:
+        """
+        if shouldBeFromModel:
+            print("Input Variables: ")
+            print([self.readableNames[self.ids.index(i)] for i in self.inlist ])
+            print("Output Variables: ")
+            print([self.readableNames[self.ids.index(i)] for i in self.outlist ])
+        else:
+            print (self.readableNames)
 
 
 

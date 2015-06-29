@@ -269,7 +269,7 @@ def makeMeasOneDot_lognorm(func, xdot, b:list, c:dict, Ve=[]):
 
 
 
-def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, outfilename="", listOfOutvars=None):
+def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=None, n=1, outfilename="", listOfOutvars=None):
     """
     :param func: векторная функция
     :param expplan: план эксперимента (список значений вектора x)
@@ -288,13 +288,14 @@ def makeMeasAccToPlan_lognorm(func, expplan:list, b:list, c:dict, Ve=[], n=1, ou
         if y is None: #если функция вернула чушь, то в measdata её не записывать!
             continue
         #Внесём возмущения:
-        if Ve is not None and np.linalg.det(Ve)>10e-15:
-            ydisps=np.diag(Ve)
-            for k in range(len(y)):
-                if (y[k]<0):
-                    y[k]=-1*math.exp(random.normalvariate(math.log(math.fabs(y[k])), math.sqrt(ydisps[k])))
-                else:
-                    y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
+        if Ve is not None:
+            if np.linalg.det(Ve)>10e-15:
+                ydisps=np.diag(Ve)
+                for k in range(len(y)):
+                    if (y[k]<0):
+                        y[k]=-1*math.exp(random.normalvariate(math.log(math.fabs(y[k])), math.sqrt(ydisps[k])))
+                    else:
+                        y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
 
         curdict = {'x':expplan[i], 'y':y}
         #res[i]["y"]=y
