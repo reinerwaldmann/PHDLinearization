@@ -35,6 +35,9 @@ class MMMeasdata:
         self.outlist=[]
 
 
+    def __len__(self):
+        return len(self.data)
+
     def setAccessList(self, inlist, outlist):
         """
         Устанавливаем, кто будет членами  вектора x, кто будет членами вектора y
@@ -65,19 +68,23 @@ class MMMeasdata:
         else:
             raise AttributeError('Inlist or/and Outlist not set, thus method cannot work')
 
-    def showReadableNames(self,shouldBeFromModel=False):
+    def showReadableNames(self,shouldBeFromModel=False, shouldBeIds=False):
         """
         Показывает читаемые названия полей
         :param shouldBeFromModel: если тру, тогда только те, которые в модели (in, out)
         :return:
         """
+        if shouldBeIds: pl=self.ids
+        else: pl=self.readableNames
+
+        print("Variabnles in model description")
         if shouldBeFromModel:
             print("Input Variables: ")
-            print([self.readableNames[self.ids.index(i)] for i in self.inlist ])
+            print([pl[self.ids.index(i)] for i in self.inlist ])
             print("Output Variables: ")
-            print([self.readableNames[self.ids.index(i)] for i in self.outlist ])
+            print([pl[self.ids.index(i)] for i in self.outlist ])
         else:
-            print (self.readableNames)
+            print (pl)
 
 
 

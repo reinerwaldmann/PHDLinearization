@@ -68,6 +68,9 @@ class MMModel:
 
         for dif in bdiffstrlst:
             evalstr = strassigns+'\n'+'d0='+dif
+
+
+
             ns={}
             exec(evalstr, locals(), ns)
             diflist.append(ns['d0'])
