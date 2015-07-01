@@ -29,7 +29,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
 
 
 
-def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=False):
+def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=False, maxiter=1000):
     """
     Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом
     В стандартный поток вывода выводит отладочную информацию по каждой итерации
@@ -134,7 +134,7 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, im
                 condition=True
 
 
-        if numiter>1000: #max number of iterations
+        if numiter>maxiter: #max number of iterations
             log+="GKNUX1: Break due to max number of iteration exceed"
             break
 

@@ -87,6 +87,17 @@ class MMMeasdata:
             print (pl)
 
 
+    def getCut(self,id_):
+        """
+        получает срез  (список переменной) по идентификатору
+        :param id:
+        :return:
+        """
+        idx = self.ids.index(id_)
+        return [lst[idx] for lst in self.data]
+
+
+
 
 def test():
     measdata = MMMeasdata('test.csv')

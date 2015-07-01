@@ -5,7 +5,7 @@ import ModelMaker.MMMeasdata as mmsd
 
 import Ofiura.Ofiura_planning as op
 import Ofiura.Ofiura_Estimation as o_e
-
+from statistics import mean
 """
 Главный управляющий файл
 +++  Тестирование  +++
@@ -16,7 +16,7 @@ import Ofiura.Ofiura_Estimation as o_e
 4. Оценить коэффициенты регресии
 """
 
-def test ():
+def mainModellingPrc ():
     measdata = mmsd.MMMeasdata('Table.csv')
     pool=['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2', 'In5.3', 'In5.4']
     modelcls=mmd.MMModel()
@@ -37,18 +37,9 @@ def test ():
 
 
 
-
-
-
-test()
-
-
-
-
 def ifgrp (instr:str, grp:int, inoit='In'):
     instr1 = instr.replace('In','').replace('O','')
     return (int(instr1.split('.')[0])==grp) and (inoit in instr)
-
 
 def util():
     #описание пулов исходных данных по подгруппам
@@ -102,3 +93,171 @@ def util():
     #         csvf.write(line)
     #         csvf.write('\n')
 
+
+
+def simpleTest():
+    measdata = mmsd.MMMeasdata('testData.csv')
+    pool=['in1','in2','in3','in4','in5']
+
+    modelcls=mmd.MMModel()
+    modelcls.makeLinearRegression(nvar=len(pool))
+    binit=[1]*(len(pool)+1)
+    #считаем для полного пула
+    measdata.outlist=['o1']
+    measdata.inlist=pool
+    rs1=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=1, maxiter=30)
+    rs2=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=0, maxiter=30)
+    #здесь присутствует некоторая проблема - implicit может и на explicit поменяться, фиг его
+    # объектная (Sk и есть наше MCLL - Maximizing Component of Logarithm of Likelihood function)
+    s1=rs1
+    if rs1[4]>rs2[4]: s1=rs2
+    else: s1=rs1
+    #сделали регрессию
+    Skinit = s1[4] #это значение Sk для полного набора регрессии
+
+    print ('Initial SK', Skinit)
+
+
+
+    import copy
+    minipool=copy.copy(pool)
+
+    varskdict={}
+    for var in pool:
+        minipool.remove(var)
+        #print (var)
+        #print (minipool)
+        measdata.outlist=['o1']
+        measdata.inlist=minipool
+        modelcls=mmd.MMModel()
+        modelcls.makeLinearRegression(nvar=len(minipool))
+        binit=[1]*(len(minipool)+1)
+        rs1=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=1, maxiter=30)
+        rs2=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=0, maxiter=30)
+        #здесь присутствует некоторая проблема - implicit может и на explicit поменяться, фиг его
+        # объектная (Sk и есть наше MCLL - Maximizing Component of Logarithm of Likelihood function)
+
+        if rs1[4]>rs2[4]: s1=rs2
+        else: s1=rs1
+        #print (s1)
+        varskdict[var]=s1[4]
+        minipool.append(var)
+    print (varskdict)
+
+    import math
+    for var,sk in varskdict.items(): #перебираем все переменные
+        if math.fabs(Skinit-sk)<3: #типа критическое число статистики хиквадрат уровень 0,05 степени свободы 9, по факту может надо степень свободы 1, тогда 0,0039
+            minipool.remove(var) #если меньше, то вытряхнуть данную переменную
+
+
+    print (minipool)
+    #распечатываем пул переменных, который получился после фильтрования
+
+
+    pool=['in1','in2','in5']
+    measdata.inlist=pool
+    measdata.outlist=['o1']
+    modelcls.makeLinearRegression(nvar=len(pool))
+    binit=[1]*(len(pool)+1)
+
+    rs1=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=1, maxiter=30)
+    rs2=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=0, maxiter=30)
+
+
+
+    if rs1[4]>rs2[4]: s1=rs2
+    else: s1=rs1
+
+    print (s1) #в итоге печатаем результаты оценки
+
+
+
+
+
+
+
+
+
+
+
+
+simpleTest()
+exit(0)
+
+
+
+
+
+
+
+
+
+
+def factorSelectionTest():
+
+    measdata = mmsd.MMMeasdata('testData.csv')
+    pool=['in1','in2','in3','in4','in5']
+    measdata.outlist=['o1']
+
+    modelcls=mmd.MMModel()
+
+    #1 посчитать среднее по выходной переменной
+    ylist = measdata.getCut('o1')
+    print (ylist)
+    avy=mean(ylist)
+    #это и является самой примитивной, вырожденной регрессией
+
+    Skinit=sum([(y-avy)**2 for y in ylist])
+    print ('Initial Sk: {0}'.format(Skinit))
+
+    for nvars in range(1,len(pool)):
+        #для числа переменных от 1 до длины пула
+        modelcls.makeLinearRegression(nvars) #построим регрессию с 1 переменной
+        binit=[1]*(nvars+1)
+
+
+
+        SkCurr=Skinit
+        AddingVarcurr=''
+        rscurr=None
+
+        #measdata.inlist.append(pool[0]) #сразу всунем первую переменную, чтоб потом вытягивать её, если шо
+
+        for var in pool: #для каждой переменной в пуле
+            if measdata.inlist:
+                measdata.inlist.pop()
+            measdata.inlist.append(var) #заменить последнюю переменную такой
+
+            #вывод отладочных данных
+            print ('Model, variables number={0}'.format(nvars))
+            measdata.showReadableNames(1,1)
+
+            rs1=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=1, maxiter=10)
+            rs2=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=0, maxiter=10)
+            #здесь присутствует некоторая проблема - implicit может и на explicit поменяться, фиг его
+            # объектная (Sk и есть наше MCLL - Maximizing Component of Logarithm of Likelihood function)
+            if rs1[4]>rs2[4]: rs=rs2
+            else: rs=rs1
+
+            if rs[4]<SkCurr: #если полученная на шаге Sk меньше, чем текущая. Здесь разница должна сравниваться по статистике! В таком исполнении последовательность переменных будет по степени важности
+                print ('difference - LR statistics value {0}'.format(SkCurr-rs[4]))
+                SkCurr=rs[4]
+                AddingVarcurr=var
+                rscurr=rs
+
+        measdata.inlist.pop()
+
+        if AddingVarcurr: #если есть, что добавлять
+            print ('added a variable in regression')
+            measdata.inlist.append(AddingVarcurr)
+            pool.remove(AddingVarcurr)
+        else:
+            print ('finished, no significant variables left')
+            print (rscurr)
+
+
+
+    print (rs)
+
+
+factorSelectionTest()
