@@ -96,6 +96,18 @@ class MMMeasdata:
         idx = self.ids.index(id_)
         return [lst[idx] for lst in self.data]
 
+    def getXarray(self):
+        """
+        :return:
+        """
+        return [v['x'] for v in self]
+    def getY(self):
+        """
+        :return:
+        """
+        return [v['y'][0] for v in self]
+
+
 
 
 

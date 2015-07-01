@@ -1,4 +1,5 @@
 __author__ = 'reiner'
+import scipy.optimize as scp
 
 import ModelMaker.MMModel as mmd
 import ModelMaker.MMMeasdata as mmsd
@@ -6,6 +7,9 @@ import ModelMaker.MMMeasdata as mmsd
 import Ofiura.Ofiura_planning as op
 import Ofiura.Ofiura_Estimation as o_e
 from statistics import mean
+
+
+import numpy as np
 """
 Главный управляющий файл
 +++  Тестирование  +++
@@ -96,27 +100,24 @@ def util():
 
 
 def simpleTest():
-    measdata = mmsd.MMMeasdata('testData.csv')
-    pool=['in1','in2','in3','in4','in5']
+    measdata = mmsd.MMMeasdata('test1.csv')
+    pool=['in0','in1','in2','in3','in4','in5']
 
     modelcls=mmd.MMModel()
     modelcls.makeLinearRegression(nvar=len(pool))
     binit=[1]*(len(pool)+1)
     #считаем для полного пула
-    measdata.outlist=['o1']
+    measdata.outlist=['out0']
     measdata.inlist=pool
-    rs1=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=1, maxiter=30)
-    rs2=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=0, maxiter=30)
-    #здесь присутствует некоторая проблема - implicit может и на explicit поменяться, фиг его
-    # объектная (Sk и есть наше MCLL - Maximizing Component of Logarithm of Likelihood function)
-    s1=rs1
-    if rs1[4]>rs2[4]: s1=rs2
-    else: s1=rs1
-    #сделали регрессию
-    Skinit = s1[4] #это значение Sk для полного набора регрессии
+    xarr=np.matrix(measdata.getXarray()).T
+    yarr=measdata.getY()
 
-    print ('Initial SK', Skinit)
+    bestinit=scp.curve_fit(modelcls.solverSc,xarr,yarr,p0=[1]*(len(pool)+1))[0]
+    print (bestinit) #получили вектор b изначальный
 
+    Skbestinit = sum (   [ (modelcls.solver(point['x'],bestinit)[0]-point['y'][0])**2 for point in measdata ])
+
+    print (Skbestinit)
 
 
     import copy
@@ -125,28 +126,32 @@ def simpleTest():
     varskdict={}
     for var in pool:
         minipool.remove(var)
-        #print (var)
+        print (var)
         #print (minipool)
-        measdata.outlist=['o1']
+
         measdata.inlist=minipool
         modelcls=mmd.MMModel()
         modelcls.makeLinearRegression(nvar=len(minipool))
         binit=[1]*(len(minipool)+1)
-        rs1=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=1, maxiter=30)
-        rs2=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=0, maxiter=30)
-        #здесь присутствует некоторая проблема - implicit может и на explicit поменяться, фиг его
-        # объектная (Sk и есть наше MCLL - Maximizing Component of Logarithm of Likelihood function)
 
-        if rs1[4]>rs2[4]: s1=rs2
-        else: s1=rs1
-        #print (s1)
-        varskdict[var]=s1[4]
+        xarr=np.matrix(measdata.getXarray()).T
+        yarr=measdata.getY()
+
+        best=scp.curve_fit(modelcls.solverSc,xarr,yarr,p0=[1]*(len(pool)+1))[0]
+        print (best) #получили вектор b изначальный
+
+        Skbest = sum (   [ (modelcls.solver(point['x'],best)[0]-point['y'][0])**2 for point in measdata ])
+
+        print (Skbest)
+
+
+        varskdict[var]=Skbest
         minipool.append(var)
     print (varskdict)
 
     import math
     for var,sk in varskdict.items(): #перебираем все переменные
-        if math.fabs(Skinit-sk)<3: #типа критическое число статистики хиквадрат уровень 0,05 степени свободы 9, по факту может надо степень свободы 1, тогда 0,0039
+        if math.fabs(Skbestinit-sk)<3: #типа критическое число статистики хиквадрат уровень 0,05 степени свободы 9, по факту может надо степень свободы 1, тогда 0,0039
             minipool.remove(var) #если меньше, то вытряхнуть данную переменную
 
 
@@ -154,11 +159,10 @@ def simpleTest():
     #распечатываем пул переменных, который получился после фильтрования
 
 
-    pool=['in1','in2','in5']
-    measdata.inlist=pool
-    measdata.outlist=['o1']
+    pool = minipool
+    measdata.inlist = pool
     modelcls.makeLinearRegression(nvar=len(pool))
-    binit=[1]*(len(pool)+1)
+    binit = [1]*(len(pool)+1)
 
     rs1=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=1, maxiter=30)
     rs2=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=0, maxiter=30)
@@ -169,27 +173,6 @@ def simpleTest():
     else: s1=rs1
 
     print (s1) #в итоге печатаем результаты оценки
-
-
-
-
-
-
-
-
-
-
-
-
-simpleTest()
-exit(0)
-
-
-
-
-
-
-
 
 
 
@@ -260,4 +243,4 @@ def factorSelectionTest():
     print (rs)
 
 
-factorSelectionTest()
+simpleTest()

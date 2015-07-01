@@ -26,8 +26,14 @@ class MMModel:
         print (evalstr)
 
 
-
-
+    def solverSc(self, x, *b):
+        """
+        солвер, оптимизированный для curve_fit
+        :param x:
+        :param b:
+        :return:
+        """
+        return self.solver(x,list(b))[0]
 
 
     def solver (self, x,b,c=None):
