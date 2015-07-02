@@ -10,6 +10,9 @@ from statistics import mean
 
 
 import numpy as np
+import copy
+import math
+
 """
 Главный управляющий файл
 +++  Тестирование  +++
@@ -98,81 +101,92 @@ def util():
     #         csvf.write('\n')
 
 
-
-def simpleTest():
-    measdata = mmsd.MMMeasdata('test1.csv')
-    pool=['in0','in1','in2','in3','in4','in5']
+def estimateLinRegrPool (measdata):
+    """
+    функция, принимает на вход measdata, строит модель по длине входных переменных,
+    определяет коэффициенты линейной регрессии
+    :param measdata:
+    :param pool:
+    :return:
+    """
+    pool=measdata.inlist
 
     modelcls=mmd.MMModel()
     modelcls.makeLinearRegression(nvar=len(pool))
     binit=[1]*(len(pool)+1)
-    #считаем для полного пула
-    measdata.outlist=['out0']
-    measdata.inlist=pool
     xarr=np.matrix(measdata.getXarray()).T
     yarr=measdata.getY()
-
-    bestinit=scp.curve_fit(modelcls.solverSc,xarr,yarr,p0=[1]*(len(pool)+1))[0]
-    print (bestinit) #получили вектор b изначальный
-
+    bestinit=scp.curve_fit(modelcls.solverSc,xarr,yarr,p0=binit)[0]
     Skbestinit = sum (   [ (modelcls.solver(point['x'],bestinit)[0]-point['y'][0])**2 for point in measdata ])
+    return bestinit, Skbestinit
 
-    print (Skbestinit)
 
 
-    import copy
+
+
+
+
+def simpleTest(measdata, pool):
+    """
+    отбирает наиболее важные факторы из пула, строит линейную регрессию, выводит все данные.
+    Первый компонент вектора регрессии - свободный член.
+    :param measdata:
+    :param pool:
+    :return:
+    """
+
+    measdata.inlist=pool
+    bestinit, Skbestinit= estimateLinRegrPool(measdata)
+    print ('Initial guess and Sk')
+    print (bestinit, Skbestinit)
+
+
     minipool=copy.copy(pool)
 
     varskdict={}
     for var in pool:
         minipool.remove(var)
         print (var)
-        #print (minipool)
 
         measdata.inlist=minipool
-        modelcls=mmd.MMModel()
-        modelcls.makeLinearRegression(nvar=len(minipool))
-        binit=[1]*(len(minipool)+1)
+        best, Skbest= estimateLinRegrPool(measdata)
 
-        xarr=np.matrix(measdata.getXarray()).T
-        yarr=measdata.getY()
-
-        best=scp.curve_fit(modelcls.solverSc,xarr,yarr,p0=[1]*(len(pool)+1))[0]
-        print (best) #получили вектор b изначальный
-
-        Skbest = sum (   [ (modelcls.solver(point['x'],best)[0]-point['y'][0])**2 for point in measdata ])
-
-        print (Skbest)
-
+        print (best, Skbest)
 
         varskdict[var]=Skbest
         minipool.append(var)
-    print (varskdict)
 
-    import math
+    print ('SK for pool without this variable')
+    print (varskdict)
+    print ('Diffence with initial Sk, means importance of the variable')
+    importance  = {}
+    for k, v in varskdict.items():
+        importance[k]=math.fabs(v-Skbestinit)
+    print (importance)
+
+
     for var,sk in varskdict.items(): #перебираем все переменные
         if math.fabs(Skbestinit-sk)<3: #типа критическое число статистики хиквадрат уровень 0,05 степени свободы 9, по факту может надо степень свободы 1, тогда 0,0039
             minipool.remove(var) #если меньше, то вытряхнуть данную переменную
 
-
     print (minipool)
     #распечатываем пул переменных, который получился после фильтрования
 
+    print ('estimation via reduced model')
 
-    pool = minipool
-    measdata.inlist = pool
-    modelcls.makeLinearRegression(nvar=len(pool))
-    binit = [1]*(len(pool)+1)
-
-    rs1=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=1, maxiter=30)
-    rs2=o_e.grandCountGN_UltraX1(modelcls.solver,modelcls.jacf,measdata,binit,None,NSIG=5,implicit=0, maxiter=30)
+    measdata.inlist=minipool
+    print (estimateLinRegrPool(measdata))
 
 
 
-    if rs1[4]>rs2[4]: s1=rs2
-    else: s1=rs1
 
-    print (s1) #в итоге печатаем результаты оценки
+measdata = mmsd.MMMeasdata('test1.csv')
+pool=['in0','in1','in2','in3','in4','in5']
+measdata.outlist=['out0']
+
+simpleTest(measdata,pool)
+
+
 
 
 
@@ -243,4 +257,3 @@ def factorSelectionTest():
     print (rs)
 
 
-simpleTest()
