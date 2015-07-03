@@ -126,70 +126,6 @@ def estimateLinRegrPool (measdata):
 
 
 
-def simpleTest(measdata, pool):
-    """
-    отбирает наиболее важные факторы из пула, строит линейную регрессию, выводит все данные.
-    Первый компонент вектора регрессии - свободный член.
-    :param measdata:
-    :param pool:
-    :return:
-    """
-
-    measdata.inlist=pool
-    bestinit, Skbestinit= estimateLinRegrPool(measdata)
-    print ('Initial guess and Sk')
-    print (bestinit, Skbestinit)
-
-
-    minipool=copy.copy(pool)
-
-    varskdict={}
-    for var in pool:
-        minipool.remove(var)
-        print (var)
-
-        measdata.inlist=minipool
-        best, Skbest= estimateLinRegrPool(measdata)
-
-        print (best, Skbest)
-
-        varskdict[var]=Skbest
-        minipool.append(var)
-
-    print ('SK for pool without this variable')
-    print (varskdict)
-    print ('Diffence with initial Sk, means importance of the variable')
-    importance  = {}
-    for k, v in varskdict.items():
-        importance[k]=math.fabs(v-Skbestinit)
-    print (importance)
-
-
-    for var,sk in varskdict.items(): #перебираем все переменные
-        if math.fabs(Skbestinit-sk)<3: #типа критическое число статистики хиквадрат уровень 0,05 степени свободы 9, по факту может надо степень свободы 1, тогда 0,0039
-            minipool.remove(var) #если меньше, то вытряхнуть данную переменную
-
-    print (minipool)
-    #распечатываем пул переменных, который получился после фильтрования
-
-    print ('estimation via reduced model')
-
-    measdata.inlist=minipool
-    print (estimateLinRegrPool(measdata))
-
-
-
-
-measdata = mmsd.MMMeasdata('test1.csv')
-pool=['in0','in1','in2','in3','in4','in5']
-measdata.outlist=['out0']
-
-simpleTest(measdata,pool)
-
-
-
-
-
 def factorSelectionTest():
 
     measdata = mmsd.MMMeasdata('testData.csv')
@@ -255,5 +191,116 @@ def factorSelectionTest():
 
 
     print (rs)
+
+
+
+
+def simpleTest(measdata, pool):
+    """
+    отбирает наиболее важные факторы из пула, строит линейную регрессию, выводит все данные.
+    Первый компонент вектора регрессии - свободный член.
+    :param measdata:
+    :param pool:
+    :return:
+    """
+
+    measdata.inlist=pool
+    bestinit, Skbestinit= estimateLinRegrPool(measdata)
+    print ('Initial guess and Sk')
+    print (bestinit, Skbestinit)
+
+
+    minipool=copy.copy(pool)
+
+    varskdict={}
+    for var in pool:
+        minipool.remove(var)
+        print (var)
+
+        measdata.inlist=minipool
+        best, Skbest= estimateLinRegrPool(measdata)
+
+        print (best, Skbest)
+
+        varskdict[var]=Skbest
+        minipool.append(var)
+
+    print ('SK for pool without this variable')
+    print (varskdict)
+    print ('Diffence with initial Sk, means importance of the variable')
+    importance  = {}
+    for k, v in varskdict.items():
+        importance[k]=math.fabs(v-Skbestinit)
+    print (importance)
+
+
+    for var,sk in varskdict.items(): #перебираем все переменные
+        if math.fabs(Skbestinit-sk)<3: #типа критическое число статистики хиквадрат уровень 0,05 степени свободы 9, по факту может надо степень свободы 1, тогда 0,0039
+            minipool.remove(var) #если меньше, то вытряхнуть данную переменную
+
+    print ('Filtered Minipool',minipool)
+    #распечатываем пул переменных, который получился после фильтрования
+
+    print ('estimation via reduced model')
+
+    measdata.inlist=minipool
+    eslrr=estimateLinRegrPool(measdata)
+    print (eslrr)
+    return eslrr
+
+
+
+#исходные пулы для переменных
+# ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2', 'In5.3', 'In5.4']
+# ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In5.1', 'In5.2', 'In5.3', 'In5.4']
+# ['In1.1', 'In1.2', 'In1.3', 'In1.4']
+# ['In2.1', 'In2.2', 'In2.3', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
+# ['In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
+# ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
+# ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
+
+
+
+
+measdata = mmsd.MMMeasdata('Table.csv')
+#pool=['in0','in1','in2','in3','in4','in5']
+#measdata.outlist=['out0']
+pool = ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2'] #, 'In5.3', 'In5.4'
+measdata.outlist=['O1.1']
+
+
+
+resrr={}
+for i in range (8):
+    mp=copy.copy(pool)
+    mp [i:i+2:]=['In5.3', 'In5.4']
+    print ('\n\n')
+    print ('POOOL:',mp)
+
+    eslr=simpleTest(measdata,mp)
+
+    resrr[eslr[1]]=mp
+
+print ('FINAL RESULT')
+print (min(resrr.keys()), resrr[min(resrr.keys())]   )
+
+
+
+
+
+exit(0)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
