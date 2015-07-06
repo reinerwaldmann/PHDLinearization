@@ -8,8 +8,6 @@ from scipy import optimize
 import matplotlib.pyplot as plt
 
 import Ofiura.Ofiura_ApriorPlanning as o_ap
-import Ofiura.Ofiura_planning as o_p
-import Ofiura.Ofiura_Qualitat as o_q
 
 #Part1: прямая ветвь ВАХ диода
 #Стандарт: implicit
@@ -73,6 +71,7 @@ def func_Kirch_DiodeV2Mod2DirectBranchmathath(y,x,b,c):
 
     zero_sum = First_half + Second_half -i
 
+    print (First_half, Second_half, i)
     return [zero_sum]
 
 def dfdy (y,x,b,c):
@@ -278,8 +277,8 @@ def extraction_Kirch_DiodeV2Mod2DirectBranchmathath():
     oplan = o_ap.makePlanCached (xstart, xend, N, bstart, bend, c, Ve, jacf, funcf, Ntries=6, verbose=True, foldername=foldername, cachname=filename, verbosePlan=True)
 
 
-#test_Kirch_DiodeV2Mod2DirectBranchmathath()
-extraction_Kirch_DiodeV2Mod2DirectBranchmathath()
+test_Kirch_DiodeV2Mod2DirectBranchmathath()
+#extraction_Kirch_DiodeV2Mod2DirectBranchmathath()
 
 
 

@@ -18,6 +18,7 @@ import Ofiura.Ofiura_realDataHelper as ord
 
 
 
+
 #Part1: прямая ветвь ВАХ диода
 #Стандарт: implicit
 
@@ -184,7 +185,6 @@ def extraction_Diode_In_Limited():
 
 #примитивная попытка автоматизировать, риальни надо кешировать в файл под хешем параметров
 
-    import os
     filename =foldername+'/'+'RD_11N4004_N{0}_Dev-62012P_'.format(N)+os.path.basename(__file__).replace('.py','_plan')
 
     try:
@@ -283,7 +283,7 @@ def extractionRD():
     N=20
 
 
-    folderData = '/home/reiner/RDReports'
+    folderData = '/home/reiner/RDReports/DiodeProof'
     realout= sys.stdout
 
 

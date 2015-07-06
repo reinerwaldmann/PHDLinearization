@@ -1,21 +1,14 @@
-from numpy.core.fromnumeric import var
-
 __author__ = 'reiner'
+from statistics import mean
+import copy
+import math
+
 import scipy.optimize as scp
+import numpy as np
 
 import ModelMaker.MMModel as mmd
 import ModelMaker.MMMeasdata as mmsd
-
-import Ofiura.Ofiura_planning as op
 import Ofiura.Ofiura_Estimation as o_e
-
-from statistics import mean
-from statistics import variance
-
-
-import numpy as np
-import copy
-import math
 
 """
 Главный управляющий файл
@@ -54,25 +47,43 @@ def ifgrp (instr:str, grp:int, inoit='In'):
 
 def util():
     #описание пулов исходных данных по подгруппам
-    #рассматриваем только группу "Благосостояние"
+
     ps=[[1,2,5],    #1
         [1,3,5],    #2
         [1],        #3
         [2,6],      #4
         [6],        #5
         [1,3,6],    #6
-        [1,3,6]]    #7
+        [1,3,6],    #7
+        [4,5,6],
+         [4,5],
+         [1,4,5,6],
+         [4,5,6],
+         [1,3],
+         [1,3,5],
+         [5,6],
+         [5,6],
+         [5,6],
+         [5,6],
+         [5,6]
+        ]
 
     measdata = mmsd.MMMeasdata('Table.csv')
 
-    print (measdata.ids)
+    #print (measdata.ids)
 
+    res=[]
     for pp in ps:
         inpool=[]
         for i in pp:
             inpool+=[item for item in measdata.ids if ifgrp(item,i)]
 
-        print (inpool)
+        res.append(inpool)
+    return res
+
+
+
+
 
 #исходные пулы для переменных
 # ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2', 'In5.3', 'In5.4']
@@ -118,8 +129,22 @@ def estimateLinRegrPool (measdata):
     modelcls=mmd.MMModel()
     modelcls.makeLinearRegression(nvar=len(pool))
     binit=[1]*(len(pool)+1)
-    xarr=np.matrix(measdata.getXarray()).T
+
+    if len(measdata.inlist)==1:
+        xarr=np.array(measdata.getXarray()).T[0]
+    else:
+        xarr=np.array(measdata.getXarray()).T
+
+
     yarr=measdata.getY()
+
+
+
+
+
+
+
+
     bestinit=scp.curve_fit(modelcls.solverSc,xarr,yarr,p0=binit)[0]
     Skbestinit = sum (   [ (modelcls.solver(point['x'],bestinit)[0]-point['y'][0])**2 for point in measdata ])
     return bestinit, Skbestinit
@@ -296,17 +321,21 @@ def make_linear_regression_adding (potential_pool, measdata, reference_Sk):
     while potential_pool: #пока в пуле хоть что-то осталось, то есть, ещё можно добавить
         rating=make_add_to_pool_rating (curpool, potential_pool, measdata) #получили рейтинг
         minSk = min(rating.keys()) #нашли наименьшую
-        if math.fabs(minSk-curSk)<3: #граничная статистика
-            return curpool
+        if math.fabs(minSk-curSk)<0.0039: #граничная статистика хи квадрат уровень .05 степени свободы 1, типа разница между количествами переменных, т. е. 1
+                     return curpool
 
-        print (curpool)
-        if len(curpool)>7:
+
+
+        if len(curpool)>len(measdata.data)-3:  # Максимальное число переменных при нашем числе контрольных точек - 7
+            print (len(measdata.data))
             return curpool
 
 
         curpool.append(rating[minSk])
         potential_pool.remove(rating[minSk])
         curSk=minSk
+
+    return curpool
 
 
 #исходные пулы для переменных
@@ -321,6 +350,10 @@ input_variables= [
     ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
                 ]
 
+input_variables=util()
+print (input_variables)
+
+
 output_variables=  ['O1.1','O1.2','O1.3','O2.1','O2.2','O2.3','O2.4','O3.1','O3.2','O3.3','O3.4','O3.5','O3.6','O4.1','O4.2','O4.3','O4.4','O4.5']
 
 #for i,j in zip(a,b):  #для одинаковой длины
@@ -330,13 +363,31 @@ measdata = mmsd.MMMeasdata('Table.csv')
 
 
 for input_, output_ in zip(input_variables, output_variables):
-    print ('Model', input_, output_)
+
+    print ('\nModel', input_, output_, measdata.readableNames[measdata.ids.index(output_)])
+
 
     measdata.outlist=[output_]
     measdata.inlist = input_
-    Skinit = variance(measdata.getY())
+
+
+    averag = mean(measdata.getY())
+
+    Skinit = sum( [ (averag-y)**2 for y in measdata.getY()])
+
+
+
+
+
+
+
+
     print ('InitialSK', Skinit)
-    print (make_linear_regression_adding (input_, measdata, Skinit))
+    optpool = make_linear_regression_adding (input_, measdata, Skinit)
+    print (optpool)
+    measdata.inlist = optpool
+
+    print (estimateLinRegrPool(measdata))
 
 
 

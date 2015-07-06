@@ -15,10 +15,15 @@ def readMeasdata (infilename):
             y=[float(bl[1].strip())]
             rs.append( {'x':x, 'y':y } )
 
+
         except:
             pass
     if not rs:
         print ('empty'+infilename)
+
+    rs.sort(key=lambda x: x['x']) #сортировочка для тех случаев, когда план не упорядочен
+
+
     return rs
 
 
