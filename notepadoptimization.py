@@ -1,3 +1,15 @@
+for i in range (100):
+    if (i+1)*(i+2)/2>=10:
+        print (i)
+        exit(0)
+
+
+
+
+
+
+
+exit(0)
 
 #великолепно же!!! (стянуто с лурка)
 
@@ -92,9 +104,7 @@ exit(0)
 
 
 import matplotlib.pyplot as plt
-import numpy as np
 
-from math import sqrt
 #x = range(100)
 #y = [sqrt(i) for i in x]
 
@@ -249,7 +259,6 @@ N=17
 # print (sum1, sum2)
 # print (1-0.2, 0.2)
 #
-import numpy as np
 import decimal as dc
 
 

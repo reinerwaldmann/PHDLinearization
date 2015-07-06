@@ -102,6 +102,19 @@ class MMModel:
         # http://pythonworld.ru/tipy-dannyx-v-python/vse-o-funkciyax-i-ix-argumentax.html
         # статья о функциях с произвольным числом аргументов
 
+    def makeQuadRegression(self, nvar):
+        """
+        Делает уравнение квадратичной регрессии
+        """
+        self.makeLinearRegression(nvar)
+
+        nappend=len(self.modelparts) #длина вектора коэффициентов
+        for i in range(nvar):
+            for j in range (nvar):
+                if j>=i:
+                    self.assigns+=['b{0}=b[{0}]'.format(nappend)]
+                    self.modelparts += ['b{0}*x{1}*x{2}'.format(nappend, i, j )]
+                    nappend+=1
 
 
 def test():

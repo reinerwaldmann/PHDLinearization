@@ -10,6 +10,7 @@ import ModelMaker.MMModel as mmd
 import ModelMaker.MMMeasdata as mmsd
 import Ofiura.Ofiura_Estimation as o_e
 
+
 """
 Главный управляющий файл
 +++  Тестирование  +++
@@ -137,12 +138,6 @@ def estimateLinRegrPool (measdata):
 
 
     yarr=measdata.getY()
-
-
-
-
-
-
 
 
     bestinit=scp.curve_fit(modelcls.solverSc,xarr,yarr,p0=binit)[0]
@@ -324,8 +319,6 @@ def make_linear_regression_adding (potential_pool, measdata, reference_Sk):
         if math.fabs(minSk-curSk)<0.0039: #граничная статистика хи квадрат уровень .05 степени свободы 1, типа разница между количествами переменных, т. е. 1
                      return curpool
 
-
-
         if len(curpool)>len(measdata.data)-3:  # Максимальное число переменных при нашем числе контрольных точек - 7
             print (len(measdata.data))
             return curpool
@@ -338,17 +331,26 @@ def make_linear_regression_adding (potential_pool, measdata, reference_Sk):
     return curpool
 
 
-#исходные пулы для переменных
 
-input_variables= [
-    ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2', 'In5.3', 'In5.4'],
-    ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In5.1', 'In5.2', 'In5.3', 'In5.4'],
-    ['In1.1', 'In1.2', 'In1.3', 'In1.4'],
-    ['In2.1', 'In2.2', 'In2.3', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7'],
-    ['In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7'],
-    ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7'],
-    ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
-                ]
+# #исходные пулы для переменных
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# input_variables= [
+#     ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2', 'In5.3', 'In5.4'],
+#     ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In5.1', 'In5.2', 'In5.3', 'In5.4'],
+#     ['In1.1', 'In1.2', 'In1.3', 'In1.4'],
+#     ['In2.1', 'In2.2', 'In2.3', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7'],
+#     ['In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7'],
+#     ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7'],
+#     ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
+#                ]
 
 input_variables=util()
 print (input_variables)
@@ -363,112 +365,14 @@ measdata = mmsd.MMMeasdata('Table.csv')
 
 
 for input_, output_ in zip(input_variables, output_variables):
-
     print ('\nModel', input_, output_, measdata.readableNames[measdata.ids.index(output_)])
-
 
     measdata.outlist=[output_]
     measdata.inlist = input_
-
-
     averag = mean(measdata.getY())
-
     Skinit = sum( [ (averag-y)**2 for y in measdata.getY()])
-
-
-
-
-
-
-
-
     print ('InitialSK', Skinit)
     optpool = make_linear_regression_adding (input_, measdata, Skinit)
     print (optpool)
     measdata.inlist = optpool
-
     print (estimateLinRegrPool(measdata))
-
-
-
-
-#pool = ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2'] #, 'In5.3', 'In5.4'
-#pool=['in1','in2','in3','in4','in5']
-#measdata.outlist=['O1.1']
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#исходные пулы для переменных
-# ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2', 'In5.3', 'In5.4']
-# ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In5.1', 'In5.2', 'In5.3', 'In5.4']
-# ['In1.1', 'In1.2', 'In1.3', 'In1.4']
-# ['In2.1', 'In2.2', 'In2.3', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
-# ['In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
-# ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
-# ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
-
-
-
-#
-# resrr={}
-# for i in range (8):
-#     mp=copy.copy(pool)
-#     mp [i:i+2:]=['In5.3', 'In5.4']
-#     print ('\n\n')
-#     print ('POOOL:',mp)
-#     eslr=simpleTest(measdata,mp)
-#     resrr[eslr[1]]=mp
-# print ('FINAL RESULT')
-# print (min(resrr.keys()), resrr[min(resrr.keys())]   )
-#
-#
-# optpool = ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In5.3', 'In5.4', 'In5.2']
-#
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
