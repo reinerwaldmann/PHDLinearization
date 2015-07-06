@@ -1,3 +1,5 @@
+from numpy.core.fromnumeric import var
+
 __author__ = 'reiner'
 import scipy.optimize as scp
 
@@ -6,7 +8,9 @@ import ModelMaker.MMMeasdata as mmsd
 
 import Ofiura.Ofiura_planning as op
 import Ofiura.Ofiura_Estimation as o_e
+
 from statistics import mean
+from statistics import variance
 
 
 import numpy as np
@@ -192,9 +196,6 @@ def factorSelectionTest():
 
     print (rs)
 
-
-
-
 def simpleTest(measdata, pool):
     """
     отбирает наиболее важные факторы из пула, строит линейную регрессию, выводит все данные.
@@ -250,6 +251,132 @@ def simpleTest(measdata, pool):
 
 
 
+def make_add_to_pool_rating (initial_pool, potential_pool, measdata):
+    """
+    Последовательно добавляет переменные в пул
+    Делает так
+    Берёт исходный пул
+    Определяет рейтинги переменных, находящихся в нём - Sk, если взять и добавить эту переменную в пул
+    :param pool:
+    :param measdata:
+    :return:
+    """
+
+    measdata.inlist=initial_pool
+    rating={}
+
+    for var in potential_pool:
+        measdata.inlist.append(var) #добавить переменную в пул
+        best, Skbest= estimateLinRegrPool(measdata)
+        rating[Skbest]=var
+        measdata.inlist.pop()
+
+    return rating
+
+def make_linear_regression_adding (potential_pool, measdata, reference_Sk):
+    """
+    Делает линейную регрессию добавлением переменных. А именно
+    берёт начальный пул, без ничего
+    строит рейтинг всех переменных из пула
+    находит самый крутой
+    добавляет
+
+    :param pool: потенциальный пул данных.
+    :param measdata:
+    :param reference_Sk: начальное значение Sk (это Sk при вырожденной регрессии, когда аппроксиммируем средним.
+    По сути, это дисперсия данных), если мы строим линейную регрессию, значение модели на степень ниже при
+    квадратичной и кубической
+    :return: best, Sk
+
+    """
+
+    curpool=[] #начальный пул переменных
+    curSk=reference_Sk
+
+    while potential_pool: #пока в пуле хоть что-то осталось, то есть, ещё можно добавить
+        rating=make_add_to_pool_rating (curpool, potential_pool, measdata) #получили рейтинг
+        minSk = min(rating.keys()) #нашли наименьшую
+        if math.fabs(minSk-curSk)<3: #граничная статистика
+            return curpool
+
+        print (curpool)
+        if len(curpool)>7:
+            return curpool
+
+
+        curpool.append(rating[minSk])
+        potential_pool.remove(rating[minSk])
+        curSk=minSk
+
+
+#исходные пулы для переменных
+
+input_variables= [
+    ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2', 'In5.3', 'In5.4'],
+    ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In5.1', 'In5.2', 'In5.3', 'In5.4'],
+    ['In1.1', 'In1.2', 'In1.3', 'In1.4'],
+    ['In2.1', 'In2.2', 'In2.3', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7'],
+    ['In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7'],
+    ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7'],
+    ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In6.1', 'In6.2', 'In6.3', 'In6.4', 'In6.5', 'In6.6', 'In6.7']
+                ]
+
+output_variables=  ['O1.1','O1.2','O1.3','O2.1','O2.2','O2.3','O2.4','O3.1','O3.2','O3.3','O3.4','O3.5','O3.6','O4.1','O4.2','O4.3','O4.4','O4.5']
+
+#for i,j in zip(a,b):  #для одинаковой длины
+
+
+measdata = mmsd.MMMeasdata('Table.csv')
+
+
+for input_, output_ in zip(input_variables, output_variables):
+    print ('Model', input_, output_)
+
+    measdata.outlist=[output_]
+    measdata.inlist = input_
+    Skinit = variance(measdata.getY())
+    print ('InitialSK', Skinit)
+    print (make_linear_regression_adding (input_, measdata, Skinit))
+
+
+
+
+#pool = ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2'] #, 'In5.3', 'In5.4'
+#pool=['in1','in2','in3','in4','in5']
+#measdata.outlist=['O1.1']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #исходные пулы для переменных
 # ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2', 'In5.3', 'In5.4']
 # ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In3.1', 'In3.2', 'In3.3', 'In3.4', 'In3.5', 'In5.1', 'In5.2', 'In5.3', 'In5.4']
@@ -261,34 +388,24 @@ def simpleTest(measdata, pool):
 
 
 
-
-measdata = mmsd.MMMeasdata('Table.csv')
-#pool=['in0','in1','in2','in3','in4','in5']
-#measdata.outlist=['out0']
-pool = ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In2.3', 'In5.1', 'In5.2'] #, 'In5.3', 'In5.4'
-measdata.outlist=['O1.1']
-
-
-
-resrr={}
-for i in range (8):
-    mp=copy.copy(pool)
-    mp [i:i+2:]=['In5.3', 'In5.4']
-    print ('\n\n')
-    print ('POOOL:',mp)
-
-    eslr=simpleTest(measdata,mp)
-
-    resrr[eslr[1]]=mp
-
-print ('FINAL RESULT')
-print (min(resrr.keys()), resrr[min(resrr.keys())]   )
+#
+# resrr={}
+# for i in range (8):
+#     mp=copy.copy(pool)
+#     mp [i:i+2:]=['In5.3', 'In5.4']
+#     print ('\n\n')
+#     print ('POOOL:',mp)
+#     eslr=simpleTest(measdata,mp)
+#     resrr[eslr[1]]=mp
+# print ('FINAL RESULT')
+# print (min(resrr.keys()), resrr[min(resrr.keys())]   )
+#
+#
+# optpool = ['In1.1', 'In1.2', 'In1.3', 'In1.4', 'In2.1', 'In2.2', 'In5.3', 'In5.4', 'In5.2']
+#
 
 
 
-
-
-exit(0)
 
 
 
