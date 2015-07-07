@@ -73,6 +73,31 @@ def countN (A, b, bstart, bend):
 
 
 
+from scipy import optimize
+
+def make_object_func (funcf, jacf,  measdata:list):
+    """
+    Возвращает объектную функцию
+    """
+    def skfunk (b):
+        Sk=0
+        for point in measdata:
+            dif=np.array(point['y'])-np.array(funcf(point['x'],b))
+            Sk+=np.dot(dif.T,dif)
+        return Sk
+    return skfunk
+
+def optimizer_limited (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, NSIG=50, NSIGGENERAL=50, implicit=False, verbose=False, verbose_wrapper=False, isBinitGood=False):
+
+    skfunk = make_object_func(funcf, jacf,measdata)
+    return optimize.minimize(skfunk, binit, method='Nelder-Mead', jac=False)
+
+
+
+
+
+
+
 def  grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, NSIG=50, NSIGGENERAL=50, implicit=False, verbose=False, verbose_wrapper=False, isBinitGood=False):
     """
     Обёртка для grandCountGN_UltraX1_Limited для реализации общего алгоритма

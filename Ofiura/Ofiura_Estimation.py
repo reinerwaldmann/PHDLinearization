@@ -24,6 +24,95 @@ def grandCountGN_UltraX1 (funcf, jacf,  measdata:list, binit:list, c, NSIG=3):
 
 """
 
+from scipy import optimize
+
+def make_grad (funcf, jacf,  measdata:list):
+    """
+    Возвращает градиент объектной функции
+    """
+    def gradfunk (b):
+        gr=None
+        for point in measdata:
+            dif=np.array(point['y'])-np.array(funcf(point['x'],b))
+            jac = jacf(point['x'],b,None,point['y'])
+
+            if gr is None:
+                gr=np.dot(jac.T, dif)
+            else:
+                gr+=np.dot(jac.T, dif)
+
+        return  np.ravel(gr)
+
+    return gradfunk
+
+
+
+def make_object_func (funcf, jacf,  measdata:list):
+    """
+    Возвращает объектную функцию
+    """
+    def skfunk (b):
+
+
+
+
+        Sk=0
+        for point in measdata:
+
+
+
+            dif=np.array(point['y'])-np.array(funcf(point['x'],np.array(b)))
+            Sk+=np.dot(dif.T,dif)
+        return Sk
+    return skfunk
+
+
+def methodnamedecorator(f):
+    """
+    Хитрый декоратор, который добавляет к словарю, возвращаемому оптимизатором, название метода
+    :param f:
+    :return:
+    """
+    def tmp(*args, **kwargs):
+        f1= f(*args, **kwargs)
+        f1['method']=kwargs['method']
+        return f1
+
+    return tmp
+
+@methodnamedecorator
+def om (*args, **kwargs):
+    """
+    Прокладка, вызывающая функцию из оптимизатора, для того, чтоб можно было бы к нему прицепить декторатор
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    return optimize.minimize(*args, **kwargs)
+
+
+def optimizer (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=False, maxiter=1000):
+
+    skfunk = make_object_func(funcf, jacf,measdata)
+    grad = make_grad (funcf, jacf,  measdata)
+
+
+    methods = [om(skfunk, binit, method='Nelder-Mead', jac=False),
+               om(skfunk, binit, method='Nelder-Mead', jac=False),
+               om(skfunk, binit, method='‘Newton-CG', jac=grad)
+              ]
+
+
+    #powell = optimize.minimize(skfunk, binit, method='Nelder-Mead', jac=False)
+    #neldemead = optimize.minimize(skfunk, binit, method='Nelder-Mead', jac=False)
+
+    ret= min (methods, key=lambda x:  x.fun)
+    #ret['method'] =  'sdfsdfsdf'
+    return ret
+
+
+
+
 
 
 

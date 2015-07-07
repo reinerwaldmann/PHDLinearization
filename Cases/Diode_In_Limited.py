@@ -3,6 +3,7 @@ __author__ = 'reiner'
 
 import math
 import sys
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -178,12 +179,16 @@ def extraction_Diode_In_Limited():
 
 
     binit=[7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
+    #binit=np.array(btrue)-np.array(btrue)*0.03
+
+
     xstart=[0.001]
     xend=[1]
     N=20
     print("performing aprior plan:")
 
 #примитивная попытка автоматизировать, риальни надо кешировать в файл под хешем параметров
+    import os
 
     filename =foldername+'/'+'RD_11N4004_N{0}_Dev-62012P_'.format(N)+os.path.basename(__file__).replace('.py','_plan')
 
@@ -212,22 +217,20 @@ def extraction_Diode_In_Limited():
 
 
 
-
-
-
-
-
-
-    exit (0)
-
 #    получаем измеренные данные
     measdata = o_p.makeMeasAccToPlan_lognorm(funcf, oplan, btrue, c,Ve )
-    plotPlanAndMeas2D(measdata)
+#    plotPlanAndMeas2D(measdata)
 #     #чертим эти данные
 #     #o_pl.plotPlanAndMeas2D(measdata, 'Aprior Disp{0} measdata'.format(Ve))
 #
 #     #оценка
     #grandCountGN_UltraX1_Limited_wrapper (funcf, jacf,  measdata:list, binit:list, bstart:list, bend:list, c, A, NSIG=50, NSIGGENERAL=50, implicit=False, verbose=False, verbose_wrapper=False):
+
+
+    opt = o_e.optimizer(funcf, jacf, measdata, binit, c)
+    print (opt)
+
+
 
     gknuxlim = o_el.grandCountGN_UltraX1_Limited_wrapper(funcf,jacf,measdata,binit,bstart,bend, c, implicit=True, verbose=False, verbose_wrapper=False )
     gknux = o_e.grandCountGN_UltraX1(funcf, jacf, measdata, binit, c, implicit=True)

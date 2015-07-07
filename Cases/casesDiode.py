@@ -151,5 +151,5 @@ def testDiodeParameterExtraction():
     plt.grid()
     plt.show()
 
-testDiode()
-#testDiodeParameterExtraction()
+#testDiode()
+testDiodeParameterExtraction()
