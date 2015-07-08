@@ -99,7 +99,7 @@ def optimizer (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=Fals
 
     methods = [om(skfunk, binit, method='Nelder-Mead', jac=False),
                om(skfunk, binit, method='Nelder-Mead', jac=False),
-               om(skfunk, binit, method='‘Newton-CG', jac=grad)
+
               ]
 
 
