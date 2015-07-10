@@ -11,6 +11,10 @@ import numpy as np
 FT=0.02586419 #подогнанное по pspice
 
 
+import math as mpm
+
+#mpm.mp.dps=40
+
 
 
 def funcGP (x,b):
@@ -21,11 +25,88 @@ def funcGP (x,b):
     :return:
     """
 
+    global FT
+
+    #pr = lambda  x: mpm.mpf(str(x))
+    pr=float
+
+    b = list(map(pr  ,b))
+    x = list(map(pr ,x))
+
+
+    Vbe = -1*x[0]
+    Vbc = -1*x[1]
+
+
+
+
+    IS = b[0]       # сквозной ток насыщения   1e-16
+    BF = b[1]       # максимальное значение нормального коэфф усиления по току с ОЭ 100
+    VAF = b[2]      # прямое напряжение Эрли    inf
+    VAR = b[3]      # инверсное напряжение Эрли inf
+    IKF =  b[4]     # ток перехода к высококу уровню инжекции inf
+    ISE = b[5]      # генерационно-рекомбинационный ток насыщения  эмиттерного перех 0
+    NE = b[6]       # коэфф. неидеальности ген-рек тока эмиттерного перех   1
+    NR = b[7]       # коэфф неидеальности для диффузного тока в инв режиме  1
+    NF = b[8]       # коэфф неидеальности для диффузионного тока в нормальном режиме        1
+    NC = b[9]       # коэфф неидеальности генерационно-рекомбинацоинного тока коллектора    1
+    BR = b[10]      # инверсный коэфф усиления тока в схеме с ОЭ 1
+    IKR = b[11]     # ток перехода к высокому уровню инжекции в инверсном включении inf
+    ISC = b[12]     # генерационно-рекомбинационный ток насыщения колекторного перех 0
+    RE = b[13]      # всякоразные сопротивления
+    RC = b[14]
+    RB = b[15]
+
+    # главные составляющие
+    Qfrac = .5*(1+Vbc/VAF+Vbe/VAR)+(.25*(1+Vbc/VAF+Vbe/VAR)**2+(IS/IKF)*(mpm.exp(Vbe/(NF*FT))-1)+(IS/IKR)*(mpm.exp(Vbc/(NR*FT))-1 )   )**.5
+
+    Qfrac = 1/Qfrac
+
+    Icc = Qfrac * IS * (mpm.exp(Vbe/(NF*FT))-mpm.exp(Vbc/(NR*FT) ))
+
+
+
+    Ibe = (IS/BF) * (mpm.exp(Vbe/(NF*FT))-1)
+    Ibc = (IS/BR) * (mpm.exp(Vbc/(NR*FT))-1)
+
+    # генерационно-рекомбинационные составляющие
+    Ire = ISE*(mpm.exp(Vbe/(NE*FT))-1)
+
+
+
+    Irc = ISC*(mpm.exp(Vbc/(NC*FT))-1)
+
+    if (x[1]<0):
+        Irc=0
+        Ibc*=2
+
+
+
+    Ie = Icc+Ibe+Ire
+
+    Ic = Ibc+Irc-Icc
+    #print (Ibc,Irc,Icc)
+
+
+    Ib = Ie-Ic
+    y=[Ie, Ic, Ib]
+    return y
+
+
+
+def funcEM (x,b):
+    """
+    Модель Гуммеля-Пуна
+    :param x:
+    :param b:
+    :return:
+    """
+
     b = list(map(float,b))
     x = list(map(float,x))
 
-    Vbe = x[0]
-    Vbc = x[1]
+    Vbe = -1*x[0]
+    Vbc = -1*x[1]
 
 
 
@@ -50,37 +131,24 @@ def funcGP (x,b):
 
 
 
+    Icc = IS * (math.exp(Vbe/(NF*FT))-math.exp(Vbc/(NR*FT) ))
 
-
-    # главные составляющие
-    Qfrac = .5*(1+Vbc/VAF+Vbe/VAR)+(.25*(1+Vbc/VAF+Vbe/VAR)**2+(IS/IKF)*(math.exp(Vbe/(NF*FT))-1)+(IS/IKR)*(math.exp(Vbc/(NR*FT))-1 )   )**.5
-
-    Icc = Qfrac * IS * (math.exp(Vbe/(NF*FT))-math.exp(Vbc/(NR*FT) ))
 
     Ibe = (IS/BF) * (math.exp(Vbe/(NF*FT))-1)
-
     Ibc = (IS/BR) * (math.exp(Vbc/(NR*FT))-1)
-
     # генерационно-рекомбинационные составляющие
 
-    Ire = ISE*(math.exp(Vbe/(NE*FT))-1)
 
-    Irc = ISC*(math.exp(Vbc/(NC*FT))-1)
 
-    Ie = -1*(Icc+Ibe+Ire)
-    Ic = Ibc+Irc-Icc
+    Ie = Icc+Ibe
+
+    Ic = Ibc+Icc
+
+
+
     Ib = Ie-Ic
-
     y=[Ie, Ic, Ib]
-
     return y
-
-
-
-
-
-
-
 
 
 def func (x,b):
@@ -115,7 +183,7 @@ def func (x,b):
     Va=VAF
     Is /= (1+(Vbc/Va))
 
-    Ict = Is * ( math.exp(Vbe/(FT*NE)) - math.exp(Vbc/(FT*NC)))
+    Ict = Is * (math.exp(Vbe/(FT*NE)) - math.exp(Vbc/(FT*NC)))
     Ie = (Is/BF) * (math.exp(Vbe/(FT*NE)) - 1) + Ict
     Ic =  -1*(Is/BR) * (math.exp(Vbc/(FT*NC)) - 1)+ Ict
 
@@ -127,6 +195,10 @@ def func (x,b):
 
 
     return y
+
+
+
+
 
 def test ():
 # .MODEL KT315 NPN (IS=10F BF=584.517 VAF=100 IKF=29.2714M ISE=131.803P
@@ -180,16 +252,20 @@ def test ():
     v1 = -2.0
     v2 = 2.0
 
-    fxed=2.0
+    fxed=.9
+
+
+    funcw = funcGP
+
+    # ВНИМАНИЕ! Модель работает только в нормальном активном режиме и в режиме отсечки
+    # то есть только при положительных напряжениях, поданных на коллектор. При отрицательных кажет бред.
 
 
 
-
-    print (funcGP([fxed,fxed],b))
-    print (funcGP([-fxed,-fxed],b))
-    print (funcGP([fxed,-fxed],b))
-    print (funcGP([-fxed,fxed],b))
-
+    print ([fxed,fxed], funcw([fxed,fxed],b))
+#    print ([-fxed,-fxed], funcw([-fxed,-fxed],b))
+ #   print ([fxed,-fxed], funcw([fxed,-fxed],b))
+    print ([-fxed,fxed], funcw([-fxed,fxed],b))
 
 
 
@@ -197,15 +273,14 @@ def test ():
 
 
     xrange = np.arange (v1, v2, 0.00001)
-    #yrange = [funcGP([Vbe, .1] ,b)[0] for Vbe in xrange ]
-    yrange1 = [funcGP([Vbe, fxed] ,b)[0] for Vbe in xrange ]
+    yrange1 = [funcw([Vbe, fxed] ,b)[0] for Vbe in xrange ]
 
     #plt.plot(xrange, yrange,  'r')
     plt.plot(xrange, yrange1,  'b')
     #plt.plot(xrange, yrange2,  'g')
 
 
-    plt.ylabel('Ic')
+    plt.ylabel('Ie')
     plt.xlabel('Ube')
     plt.grid()
     plt.show()
@@ -228,8 +303,7 @@ def test ():
     # 2 output characteristics, common base, input on emitter
 
 
-    yrange1 = [funcGP([fxed, Vbc] ,b)[1] for Vbc in xrange ]
-    #yrange2 = [func([-.2, Vbc] ,b)[1] for Vbc in xrange ]
+    yrange1 = [funcw([fxed, Vbc] ,b)[1] for Vbc in xrange ]
 
 
     plt.plot(xrange, yrange1,  'b')
