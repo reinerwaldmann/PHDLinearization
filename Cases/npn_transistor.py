@@ -36,6 +36,7 @@ def funcGP (x,b):
 
     Vbe = -1*x[0]
     Vbc = -1*x[1]
+    Vbc = -1*x[1]
 
 
 
@@ -96,7 +97,7 @@ def funcGP (x,b):
 
 def funcEM (x,b):
     """
-    Модель Гуммеля-Пуна
+    Модель Эберса-Молла
     :param x:
     :param b:
     :return:
@@ -128,25 +129,28 @@ def funcEM (x,b):
     RC = b[14]
     RB = b[15]
 
-
-
-
     Icc = IS * (math.exp(Vbe/(NF*FT))-math.exp(Vbc/(NR*FT) ))
-
-
     Ibe = (IS/BF) * (math.exp(Vbe/(NF*FT))-1)
     Ibc = (IS/BR) * (math.exp(Vbc/(NR*FT))-1)
     # генерационно-рекомбинационные составляющие
 
 
-
     Ie = Icc+Ibe
 
-    Ic = Ibc+Icc
-
-
+    Ic = Ibc-Icc
 
     Ib = Ie-Ic
+
+
+    #Ie = IS * (math.exp(Vbe/(NF*FT))-math.exp(Vbc/(NR*FT) )) +  (IS/BF) * (math.exp(Vbe/(NF*FT))-1)
+    #Ic = IS * (math.exp(Vbe/(NF*FT))-math.exp(Vbc/(NR*FT) )) + (IS/BR) * (math.exp(Vbc/(NR*FT))-1)
+    #ток базы нам не требуется, хотя..
+
+
+
+
+
+
     y=[Ie, Ic, Ib]
     return y
 
@@ -252,7 +256,7 @@ def test ():
     v1 = -2.0
     v2 = 2.0
 
-    fxed=.9
+    fxed=.1
 
 
     funcw = funcGP
