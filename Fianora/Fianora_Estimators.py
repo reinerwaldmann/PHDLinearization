@@ -5,6 +5,8 @@ import numpy as np
 import platform
 import copy
 import math
+from prettytable import PrettyTable
+
 
 
 class Options():
@@ -15,23 +17,22 @@ class Options():
     def __getattr__(self, item):
         return None
 
-
-    # NSIG = options['NSIG']
-    #
-    #     NSIGGENERAL = options['NSIGGENERAL']
-    #
-    #     implicit = options['implicit']
-    #
-    #     verbose = options['verbose']
-    #
-    #     verbose_wrapper = options['verbose_wrapper']
-    #
-    #     isBinitGood = options['isBinitGood']
-
-
 class AbstractEstimator():
-    def __init__(self, bstart, bend, binit, xstart, xend, model, measdata, Ve):
-        # вопрос, удастся ли провернуть позднее связывание
+
+    def init_parameters(self, bstart, bend, binit, xstart, xend, model, measdata, Ve):
+        """
+        Эта функция должна вызываться у объекта всегда перед оценкой
+        :param bstart:
+        :param bend:
+        :param binit:
+        :param xstart:
+        :param xend:
+        :param model:
+        :param measdata:
+        :param Ve:
+        :return:
+        """
+
         self.bstart = bstart
         self.bend = bend
         self.binit = binit
@@ -41,26 +42,26 @@ class AbstractEstimator():
         self.measdata = measdata
         self.Ve = Ve
 
-    def estimate (self, options = None):
+    def estimate (self, measdata, options = None):
         """
         Шаблонный метод, идея в том, что сначала выполняется оценка, потом определяются показатели адекватности
         в итоге получается некоторый стандартный словарь
         :return:
         """
-        z = self.estimate_method(options).copy()
-        z.update(self.adequacy(z))
+        z = self.estimate_method(measdata, options).copy()
+        z.update(self.adequacy(z, measdata))
         z['name'] = self.model.name
 
         return z
 
-    def estimate_method(self, options):
+    def estimate_method(self, measdata, options):
         """
         Estimation method, like gknux
         :return:
         """
         raise NotImplementedError ("Pleas implement me")
 
-    def adequacy(self, est):
+    def adequacy(self, est, measdata):
         """
         Adequacy determiner
         Спецификация:
@@ -75,7 +76,6 @@ class AbstractEstimator():
          'Vb'           ковариационная матрица оценённого вектора b
          'VbSigmas'     сигмы из ковариационной матрицы оценённого вектора b (корни квадратные из диагонали)
 
-
          'AvLogTruth'   среднее по точкам эксперимента значение логарифма правдоподобия
          'DispLT'       дисперсия логарифма правдоподобия
          'SigmaLT'      среднеквадратическое отклонение логарифма правдоподобия
@@ -84,29 +84,28 @@ class AbstractEstimator():
          'SigmaDif'     СКВ остатков
          'Diflist'      список остатков
          'name'         название метода
-
-
         """
 
         rs={}
 
-
-        Vb = rs['Vb'] = self.countVbForMeasdata(est['b'])
+        b = est['b']
+        Vb = rs['Vb'] = self.countVbForMeasdata(b, measdata)   # np.linalg.inv(G)
 
         sigmas=list()
         for i in range (Vb.shape[0]):
             sigmas.append(math.sqrt(Vb[i][i]))
         rs['VbSigmas'] = sigmas
 
+        logTruthnessStuff = self.logTruthness(b, measdata) #  Average, Disp, math.sqrt(Disp)
+        diflistStuff =  self.averageDif(b, measdata) # np.average(diflistn), np.var(diflistn), math.sqrt(np.var(diflistn))
         names=['AvLogTruth','DispLT', 'SigmaLT', 'AvDif', 'DispDif', 'SigmaDif', 'Diflist']
-        values = list(logTruthness (measdata, b, Ve,  func, c))+list(averageDif(measdata, b, Ve,  func, c))
-        return dict(zip (names, values))
+        values =  list(logTruthnessStuff) + list(diflistStuff)
+        rs.update(dict(zip (names, values)))
+
 
         return rs
 
-
-
-    def countVbForMeasdata(self, b:list):
+    def countVbForMeasdata(self, b:list, measdata):
         """
         Для неявных функций актуальным является значение y. В некоторых случаях (напр. при последовательном планировании)
         y уже просчитан, и нет нужды его считать снова, задавая функцию.
@@ -119,10 +118,23 @@ class AbstractEstimator():
         :param measdata: данные измерений
         :return: значение определителя для данного плана эксперимента
         """
+
+        bstart = self.bstart
+        bend = self.bend
+        binit = self.binit
+        xstart = self.xstart
+        xend = self.xend
+        model = self.model
+
+        Ve = self.Ve
+        func = self.model.funcf
+        jac = self.model.jacf
+
         G=np.zeros((len(b),len(b))) #матрица G
 
+
         for point in measdata:
-            jj=jac(point['x'], b, c, point['y'])
+            jj=jac(point['x'], b)
             #G+=jj*np.linalg.inv(Ve)*jj.T
 
             #print  (jj.T, np.linalg.inv(Ve), jj)
@@ -139,13 +151,9 @@ class AbstractEstimator():
             print('G=',G)
             exit(0)
 
-
-
-
-
-        def logTruthness (measdata:list, b:list, Ve,  func, c):
+    def logTruthness (self, b, measdata):
         """
-        Считает логарифм функции правдоподобия для известной ковариационной матрицы Ve - ошибок экспериментальных данных
+        Считает значение объектной функции (!) это не логарифм функции правдоподобия!
         :param measdata: список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
         :param b: оценка вектора коэффициентов
         :param Ve: ковариационная матрица ошибок экспериментальных данных
@@ -153,11 +161,22 @@ class AbstractEstimator():
         :param c: словарь дополнительных переменных
         :return: среднее значение логарифма функции правдоподобия, дисперсию по выборке экспериментальных данных, стандартное отклонение
         """
+
+        bstart = self.bstart
+        bend = self.bend
+        binit = self.binit
+        xstart = self.xstart
+        xend = self.xend
+        model = self.model
+
+        Ve = self.Ve
+        func = self.model.funcf
+
         S=list()
 
         for i in range(len(measdata)):
             measpoint = measdata[i]
-            dif=np.array(measpoint['y'])-np.array(func(measpoint['x'],b,c))
+            dif=np.array(measpoint['y'])-np.array(func(measpoint['x'],b))
 
             S.append(np.dot(np.dot(dif.T, np.linalg.inv(Ve)), dif))
 
@@ -166,23 +185,14 @@ class AbstractEstimator():
         N=len(measdata)
         shift=K*N/(K*N-M)
 
-
         Snp=list(map(np.float64, S))
-
-        # for item in S:
-        #     item = np.float96(item)
-        # print (S)
-
-        #print (S)
-        #print (Snp)
-
 
         Average=np.average(Snp)*shift
         Disp = np.var(S)*shift*shift
 
         return Average, Disp, math.sqrt(Disp)
 
-        def averageDif(measdata:list, b:list, Ve,  func, c):
+    def averageDif(self, b, measdata):
         """
         :param measdata: список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
         :param b: вектор коэфф
@@ -192,12 +202,24 @@ class AbstractEstimator():
         :return: среднее, дисперсия, стандартное отклонение
         """
 
+
+        bstart = self.bstart
+        bend = self.bend
+        binit = self.binit
+        xstart = self.xstart
+        xend = self.xend
+        model = self.model
+
+        Ve = self.Ve
+        func = self.model.funcf
+
+
         diflist=list()
         diflistNoAbs=list()
 
 
         for measpoint in measdata:
-            dif=np.array(measpoint['y'])-func(measpoint['x'],b,c)
+            dif=np.array(measpoint['y'])-func(measpoint['x'],b)
 
             diflist.append(np.abs(dif ))
             diflistNoAbs.append(dif)
@@ -209,89 +231,13 @@ class AbstractEstimator():
         return np.average(diflistn), np.var(diflistn), math.sqrt(np.var(diflistn)), diflistna
 
 
-
-
-def logTruthness (measdata:list, b:list, Ve,  func, c):
-    """
-    Считает логарифм функции правдоподобия для известной ковариационной матрицы Ve - ошибок экспериментальных данных
-    :param measdata: список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
-    :param b: оценка вектора коэффициентов
-    :param Ve: ковариационная матрица ошибок экспериментальных данных
-    :param func: callable функция x,b,c, возвращает значение y
-    :param c: словарь дополнительных переменных
-    :return: среднее значение логарифма функции правдоподобия, дисперсию по выборке экспериментальных данных, стандартное отклонение
-    """
-    S=list()
-
-    for i in range(len(measdata)):
-        measpoint = measdata[i]
-        dif=np.array(measpoint['y'])-np.array(func(measpoint['x'],b,c))
-
-        S.append(np.dot(np.dot(dif.T, np.linalg.inv(Ve)), dif))
-
-    K=Ve.shape[0] #число откликов
-    M=len(b) #число коэффициентов
-    N=len(measdata)
-    shift=K*N/(K*N-M)
-
-
-    Snp=list(map(np.float64, S))
-
-    # for item in S:
-    #     item = np.float96(item)
-    # print (S)
-
-    #print (S)
-    #print (Snp)
-
-
-    Average=np.average(Snp)*shift
-    Disp = np.var(S)*shift*shift
-
-    return Average, Disp, math.sqrt(Disp)
-
-def averageDif(measdata:list, b:list, Ve,  func, c):
-    """
-    :param measdata: список словарей экспериментальных данных [{'x': [] 'y':[])},{'x': [] 'y':[])}]
-    :param b: вектор коэфф
-    :param Ve:  Ve ковар. матрица измеренных данных
-    :param funcf callable функция, параметры по формату x,b,c
-    :param c словарь дополнительных постоянных
-    :return: среднее, дисперсия, стандартное отклонение
-    """
-
-    diflist=list()
-    diflistNoAbs=list()
-
-
-    for measpoint in measdata:
-        dif=np.array(measpoint['y'])-func(measpoint['x'],b,c)
-
-        diflist.append(np.abs(dif ))
-        diflistNoAbs.append(dif)
-
-        diflistn=list(map(np.float64, diflist))
-        diflistna=list(map(np.float64, diflistNoAbs))
-
-
-    return np.average(diflistn), np.var(diflistn), math.sqrt(np.var(diflistn)), diflistna
-
-
-
-
-
-
-
-
-
-
-
-
-
 class NGEstimator(AbstractEstimator):
+    """
+    Оценщик, использующий метод Гаусса-Ньютона с ограничениями
+    """
 
-    def makeSkInit (self):
-        measdata = self.measdata
+    def makeSkInit (self, measdata):
+
         funcf = self.model.funcf
         binit = self.binit
         Sk=None
@@ -312,8 +258,7 @@ class NGEstimator(AbstractEstimator):
             return False
         return True
 
-
-    def makeAinit (self,  isBinitGood=True):
+    def makeAinit (self,  measdata, isBinitGood=True):
         """
         расчёт ведётся по правилу "binit есть хорошее предположение в рамках области"
         :param bstart:
@@ -325,7 +270,7 @@ class NGEstimator(AbstractEstimator):
         bstart = self.bstart
         binit = self.binit
         bend = self.bend
-        Skbinit = self.makeSkInit()
+        Skbinit = self.makeSkInit(measdata)
 
         A=np.zeros ( (len(binit), 2 ))  #,  dtype=np.float96 if islinux() else np.float64
 
@@ -359,8 +304,7 @@ class NGEstimator(AbstractEstimator):
             N[j][j]+=parttwo+partone #так как матрица нулевая
         return N
 
-
-    def estimate_method(self, options):
+    def estimate_method(self, measdata, options):
         binit = self.binit
 
         NSIG = options.NSIG if options.NSIG else 50
@@ -395,7 +339,7 @@ class NGEstimator(AbstractEstimator):
         gknux=None
         gknuxlist=list()
 
-        A=self.makeAinit(isBinitGood)
+        A=self.makeAinit(measdata, isBinitGood)
 
         log=''
 
@@ -405,7 +349,7 @@ class NGEstimator(AbstractEstimator):
         for numiter in range (maxiter):
             bpriv=copy.copy(b)
 
-            gknux=self.grandCountGN_UltraX1_Limited (A, NSIG, implicit, verbose) #посчитали b
+            gknux=self.grandCountGN_UltraX1_Limited (A, measdata, NSIG, implicit, verbose) #посчитали b
 
 
             if gknux is None:
@@ -418,7 +362,7 @@ class NGEstimator(AbstractEstimator):
             b=gknux['b']
 
 
-            if not gknux[2]=='':
+            if not gknux['log']=='':
                 #log+="On gknux iteration "+numiter+": "+ gknux[2]+"\n"
                 log+="On gknux iteration {0}: {1}\n".format (numiter, gknux[2])
 
@@ -443,8 +387,7 @@ class NGEstimator(AbstractEstimator):
         gknux['log'] = log
         return gknux
 
-
-    def grandCountGN_UltraX1_Limited (self, A, _NSIG=3, implicit=False, verbose=False):
+    def grandCountGN_UltraX1_Limited (self, A, measdata,  _NSIG=3, implicit=False, verbose=False):
         """
         Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом с ограничениями, заданными диапазоном
         В стандартный поток вывода выводит отладочную информацию по каждой итерации
@@ -457,7 +400,7 @@ class NGEstimator(AbstractEstimator):
         """
         funcf = self.model.funcf
         jacf = self.model.jacf
-        measdata = self.measdata
+
         binit = self.binit
 
         #sign - если  1, то b=b+deltab*mu, иначе b=b-deltab*mu. При неявной функции надо ставить sign=0
@@ -569,14 +512,60 @@ class NGEstimator(AbstractEstimator):
         return {'b':b, 'numiter':numiter, 'log':log, 'Sklist':Sklist, 'Sk':Sk}
 
 
-
-class EstimatorDecorator(AbstractEstimator):
-    def __init__(self, bstart, bend, xstart, xend, model, measdata, Ve, component:AbstractEstimator):
-        AbstractEstimator.__init__(bstart, bend, xstart, xend, model, measdata, Ve)
+class AbstractEstimatorDecorator(AbstractEstimator):
+    def __init__(self, component:AbstractEstimator):
         self.component = component
 
-    def estimate(self):
+    def estimate(self, measdata, options):
         #поведение по умолчанию
-        return self.component.estimate()
+        return self.component.estimate(options)
+
+
+class ConsoleEstimatorDecorator(AbstractEstimatorDecorator):
+    def estimate(self, measdata, options):
+        """
+        Усложнённый декоратор: во-первых, параметры пробрасываются от конца к началу цепочки,
+        во-вторых, результат пробрасываться от начала к концу цепочки
+        :param options:
+        :return:
+        """
+        est = self.component.estimate(measdata, options)
+
+        tg=copy.copy(est) #для вывода в таблицу
+
+        del tg['log']
+        del tg['Sklist']
+        del tg['Diflist']
+        del tg['name']
+        del tg['Vb']
+
+        klist = sorted(list(tg.keys()))
+        vallist = [tg[i] for i in klist]
+
+
+
+        num=2 #здесь некоторая магия. Дефолтно - 4, текущие -2, и, вроде, показывает все значения
+        klists=[klist[i::num] for i in range(num)]
+        vallists=[vallist[i::num] for i in range(num)]
+
+
+        t=PrettyTable (klists[0])
+        t.add_row(vallists[0])
+
+        t2=PrettyTable (klists[1])
+        t2.add_row(vallists[1])
+
+
+        print ("\n Results of method {0} \n".format(est['name']))
+        print (t)
+        print (t2)
+        print ("Vb:\n {0}  ".format (est['Vb']))
+        print ("\nLog messages: {0} \n ".format (est['log']))
+
+
+
+        return est
+
+
 
 

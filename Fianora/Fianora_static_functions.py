@@ -25,6 +25,23 @@ doublesearch (xstart, xend, xinit, function):
     :return: оптимизированное значение x
 """
 
+
+
+
+class EstimationContext():
+    def __init__(self, bstart, bend, btrue, binit, xstart, xend, Ve, N):
+        self.bstart = bstart
+        self.bend = bend
+        self.btrue = btrue
+        self.binit = binit
+        self.xstart = xstart
+        self.xend = xend
+        self.Ve = Ve
+        self.N = N
+
+
+
+
 def replaceInList (list, i, x):
     """
     :param list: список
@@ -101,3 +118,5 @@ def doublesearch (xstart, xend, xinit, function):
                 break
 
     return x
+
+

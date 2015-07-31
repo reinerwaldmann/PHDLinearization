@@ -25,7 +25,7 @@ class ModelMeasurer(AbstractMeasurer):
         self.b = b
 
     def measure(self, x):
-        y=self.model.func(x,self.b)
+        y=self.model.funcf(x,self.b)
         if y is None: #если функция вернула чушь, то в measdata её не записывать!
             return None
         #Внесём возмущения:

@@ -61,7 +61,7 @@ class ImplicitModel(AbstractModel):
         solvinit=[1]
 
         try:
-            solx=optimize.root(self.mf, solvinit, args=(x,b,c), jac=self.dfdy, method='lm').x
+            solx=optimize.root(self.mf, solvinit, args=(x,b), jac=self.dfdy, method='lm').x
             #http://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
             #http://codereview.stackexchange.com/questions/28207/is-this-the-fastest-way-to-find-the-closest-point-to-a-list-of-points-using-nump
         except BaseException as e:
@@ -92,6 +92,7 @@ class SimpleDiodeModel(SemiconductorModel, ImplicitModel): # множестве�
 
     def dfdy(self,y,x,b):
         return np.array ([[ -1 - b[0]*b[2]*math.exp((-b[2]*y[0] + x[0])/(self.FT*b[1]))/(self.FT*b[1])]])
+
 
     def dfdb(self,y,x,b):
         return np.matrix( [ [math.exp((-b[2]*y[0] + x[0])/(self.FT*b[1])) - 1,

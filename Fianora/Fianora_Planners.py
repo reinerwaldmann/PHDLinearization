@@ -10,13 +10,16 @@ import copy
 import Fianora.Fianora_static_functions as o_g #legacy
 
 
+
+
 class AbstractPlanner:
-    def __init__(self, N, xstart, xend, plancachefoldername='plancache', planname='plan'):
+    def __init__(self, ec:o_g.EstimationContext, plancachefoldername='cache', planname='plan'):
         self.plf = plancachefoldername
-        self.xstart = xstart
-        self.xend = xend
+        self.xstart = ec.xstart
+        self.xend = ec.xend
         self.planname = planname
-        self.N = N
+        self.N = ec.N
+
 
 
     def give_us_a_plan(self, nocache=False):
@@ -64,9 +67,13 @@ class AbstractPlanner:
         :return: план (список векторов)
         """
         filename = self.make_file_name()
-        with open (filename, 'rt') as infile:
-            lines = infile.readlines()
-            return list(map(eval, lines))
+
+        try:
+            with open (filename, 'rt') as infile:
+                lines = infile.readlines()
+                return list(map(eval, lines))
+        except FileNotFoundError:
+            return None
 
 
     def make_plan(self):
@@ -85,9 +92,9 @@ class UniformPlanner(AbstractPlanner):
         """
         res=list()
 
-        xstartnp=np.array(self.xstart)
-        xendnp=np.array(self.xend)
-        xstep = list((xendnp-xstartnp)/self.N)
+        xstart=np.array(self.xstart)
+        xend=np.array(self.xend)
+        xstep = list((xend-xstart)/self.N)
 
         evalstr="import numpy\n\n"
         lststr=""
@@ -120,13 +127,14 @@ class RandomPlanner(AbstractPlanner):
 
 
 class DOptimalPlanner (AbstractPlanner):
-    def __init__(self, N, xstart, xend, bstart, bend, model, plancachefoldername='plancache', verbose = False):
-        AbstractPlanner.__init__(self, N, xstart, xend, plancachefoldername, model.name)
-        self.bstart = bstart
-        self.bend = bend
-        self.vebose = verbose
+    def __init__(self, ec, plancachefoldername='cache', verbose = False):
+        AbstractPlanner.__init__(self, ec, plancachefoldername, ec.model.name)
+        self.bstart = ec.bstart
+        self.bend = ec.bend
+        self.verbose = verbose
+        self.model = ec.model
 
-    def __countVbForPlan(self, expplan, b):
+    def countVbForPlan(self, expplan, b):
         """
         :param expplan: план эксперимента
         :param b: b (вектор коэффициентов)
@@ -157,7 +165,7 @@ class DOptimalPlanner (AbstractPlanner):
 
 
 
-    def __countMeanVbForAprior_S4000(self,  expplan:list):
+    def countMeanVbForAprior_S4000(self,  expplan:list):
         """
 
 
@@ -206,7 +214,7 @@ class DOptimalPlanner (AbstractPlanner):
         unifplanner = UniformPlanner(self.N, self.xstart, self.xend)
         rndplanner = RandomPlanner(self.N, self.xstart, self.xend)
 
-        plm = unifplanner
+        pln = unifplanner
 
         for i in range(0,Ntries1):
             try:
