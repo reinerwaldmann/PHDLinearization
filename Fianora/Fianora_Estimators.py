@@ -19,7 +19,7 @@ class Options():
 
 class AbstractEstimator():
 
-    def init_parameters(self, bstart, bend, binit, xstart, xend, model, measdata, Ve):
+    def init_parameters(self, ec, model):
         """
         Эта функция должна вызываться у объекта всегда перед оценкой
         :param bstart:
@@ -33,14 +33,13 @@ class AbstractEstimator():
         :return:
         """
 
-        self.bstart = bstart
-        self.bend = bend
-        self.binit = binit
-        self.xstart = xstart
-        self.xend = xend
+        self.bstart = ec.bstart
+        self.bend = ec.bend
+        self.binit = ec.binit
+        self.xstart = ec.xstart
+        self.xend = ec.xend
         self.model = model
-        self.measdata = measdata
-        self.Ve = Ve
+        self.Ve = ec.Ve
 
     def estimate (self, measdata, options = None):
         """
