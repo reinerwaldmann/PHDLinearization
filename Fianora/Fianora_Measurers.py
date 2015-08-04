@@ -31,8 +31,15 @@ class ModelMeasurer(AbstractMeasurer):
         #Внесём возмущения:
         if self.Ve is not None and np.linalg.det(self.Ve)>10e-15:
             ydisps=np.diag(self.Ve)
+
+
             for k in range(len(y)):
-                y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
+                if (y[k] >=  0):
+                    y[k]=math.exp(random.normalvariate(math.log(y[k]), math.sqrt(ydisps[k])))
+                elif (y[k] < 0):
+                    y[k]=math.exp(random.normalvariate(-1*math.log(math.fabs(y[k])), math.sqrt(ydisps[k])))
+
+
         return y
 
     def getCovMatrix(self):

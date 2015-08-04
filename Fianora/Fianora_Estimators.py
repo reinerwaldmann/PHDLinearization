@@ -317,7 +317,9 @@ class NGEstimator(AbstractEstimator):
         if isinstance(self.model, Fianora.Fianora_Models.ImplicitModel): #если модель - это подкласс неявной модели, то...
             implicit = True
         else:
-         """
+            implicit = False
+
+        """
         Обёртка для grandCountGN_UltraX1_Limited для реализации общего алгоритма
         :param funcf callable функция, параметры по формату x,b,c
         :param jacf callable функция, параметры по формату x,b,c,y

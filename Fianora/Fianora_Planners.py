@@ -19,6 +19,7 @@ class AbstractPlanner:
         self.xend = ec.xend
         self.planname = planname
         self.N = ec.N
+        self.ec = ec
 
 
 
@@ -95,6 +96,10 @@ class UniformPlanner(AbstractPlanner):
         xstart=np.array(self.xstart)
         xend=np.array(self.xend)
         xstep = list((xend-xstart)/self.N)
+
+
+
+
 
         evalstr="import numpy\n\n"
         lststr=""
@@ -211,8 +216,9 @@ class DOptimalPlanner (AbstractPlanner):
             print('Неоптимизированное-оптимизированное значение среднего det(Vb)')
         prevtime=time.time()
 
-        unifplanner = UniformPlanner(self.N, self.xstart, self.xend)
-        rndplanner = RandomPlanner(self.N, self.xstart, self.xend)
+        #ec = o_g.EstimationContext(None,None,None,None,self.xstart, self.xend,None, self.N)
+        unifplanner = UniformPlanner(self.ec)
+        rndplanner = RandomPlanner(self.ec)
 
         pln = unifplanner
 
@@ -232,6 +238,9 @@ class DOptimalPlanner (AbstractPlanner):
                 unopt=self.countMeanVbForAprior_S4000(plan)[0]
                 #оптимизация
                 for j in range(self.N):
+                    if verbose:
+                          print('point:',j)
+
                     xdot=copy.deepcopy(plan[j])
                     function = lambda x: self.countMeanVbForAprior_S4000(o_g.replaceInList(plan,j,x))[0]
 

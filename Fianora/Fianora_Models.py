@@ -1,7 +1,11 @@
+from abc import abstractmethod
+from abc import ABCMeta
+
 __author__ = 'vasilev_is'
 import math
 from scipy import optimize
 import numpy as np
+import sympy
 
 # абстракции из данного раздела можно раскрутить и для автоматизированного нахождения производных символьным методом
 
@@ -187,10 +191,6 @@ class EMTransistorModel(SemiconductorModel):
         FT = self.FT
 
 
-
-
-
-
 class GPTransistorModel(SemiconductorModel, ImplicitModel):
     def funcf(self, x, b):
         """
@@ -268,3 +268,199 @@ class GPTransistorModel(SemiconductorModel, ImplicitModel):
         Ib = Ie-Ic
         y=[Ie, Ic, Ib]
         return y
+
+
+class StringDefinedModel(AbstractModel):
+    def __init__(self, name):
+        #паттерн "Фабричный метод" во все поля!
+
+        AbstractModel.__init__(self, name)
+
+        self.parameter_str_list = self.make_parameter_str_list()
+        self.modelstr = self.make_modelstr()
+        self.components = self.make_components()
+        self.m = len(self.parameter_str_list)
+        self.k = len(self.modelstr)  # число уравнений
+
+    def make_parameter_str_list(self):
+        raise NotImplementedError('pls implement me')
+
+    def make_modelstr(self):
+        raise NotImplementedError('pls implement me')
+
+    def make_components(self):
+        raise NotImplementedError('pls implement me')
+
+    def eval_string(self, _str, x, b, y=None):
+        """
+        *
+        Вычисляет значение строки, пользуясь тем, что знает, какой переменной соответствует
+        тот или иной компонент вектора
+        :param _str: строка
+        :param x: вектор x
+        :param b: вектор b
+        :return:
+        """
+        raise NotImplementedError('pls implement me')
+
+
+    def model_from_components (self, cval):
+        """
+        возвращает список вычисленных значений в условиях всех локальных переменных (т. е. определённых компонентов),
+         и глобальных (в смысле подключеных модулей, главным образом)
+
+        :param cval: словарь компонентов компонент - значение
+        :return:
+        """
+
+        return [eval(st, cval, globals()) for st in self.modelstr]
+
+    def evalfunc(self, dct, evalfn):
+        """
+        Рекурсивное вычисление словаря любой вложенности
+        :param dct: строка или словарь, может быть словарь словарей и так далее
+        :param evalfn: функция, которая принимает на вход строку, возвращает вычисленное значение
+        :return: тот же словарь, но вместо строк нечто вычисленное
+        """
+        # при этом eval_string должна принимать на вход лишь строку
+
+
+        if type(dct) is str:
+            return (evalfn(dct))
+
+        if type(dct) in [float, int]:
+            return dct
+
+        res={}
+        for k,v in dct.items():
+            res[k] = self.evalfunc(v, evalfn)
+
+        return res
+
+    def make_deriv_components (self, complist, parameter_str_list):
+        """
+        Делает производные по компонентам - принимает на вход словарь компонентов и список параметров, возвращает словарь
+        их производных
+        По сути принимает на вход словарь хоть чего и у значений этого чего берёт производные
+        Не обязательно вообще делить модель на компоненты  -  можно и у уравнений сразу брать производные
+
+        :param complist: словарь компонентов - идентификатор компонента - его строковое представление
+        :param parameter_str_list: список параметров, строковый
+        :return: словарь параметр - компонент - производная в строковом виде
+        """
+
+        rs = {}
+        for par in parameter_str_list:
+            # print()
+            # print(par)
+            cd = {}
+            for name, comp in complist.items():
+                # pre-processing of string
+                comp = comp.replace("math.exp", "exp")
+
+                sd = sympy.diff(comp, par)
+                sd = str(sd)
+
+                # post-processing of string
+                sd = sd.replace("exp", "math.exp")
+
+                cd[name] = sd
+            rs[par] = cd
+
+        return rs
+
+    def jacf(self, x, b, y=None):
+        """
+        Типа главный скрипт, который выбрасывает производную в зависимости от x, b, y
+        """
+
+        deriv_comp = self.make_deriv_components (self.components, self.parameter_str_list)   # получили словарь производных по компонентам
+        evfn = lambda str : self.eval_string(str, x, b, y)
+        deriv_comp_estimated = self.evalfunc(deriv_comp, evfn)  # взяли тот словарь и всё повычисляли
+
+
+
+
+        res = np.zeros((self.k, self.m))   # строки столбцы
+
+        i = 0
+        for par in self.parameter_str_list:
+            col = self.model_from_components(deriv_comp_estimated[par])
+            for j in range(len(col)):
+                res[j][i] = col[j]
+            i += 1
+        return res
+
+
+    def funcf(self, x,b):
+        evfn = lambda _str: self.eval_string(_str, x, b)
+
+        components_estimated = self.evalfunc(self.components, evfn)
+        return np.array(self.model_from_components(components_estimated))
+
+
+class StringEMTransistorModel (SemiconductorModel, StringDefinedModel):
+    """
+    Это попытка создать модель на основе строковой записи компонентов
+     и определения, как из этих компонентов должна создаваться модель
+
+     Определяемые подклассом сущности:
+     +список строковых параметров
+     +строковое представление того, как из компонентов строится модель в виде вектора уравнений, в которые входят компоненты
+     +словарь компонентов. Компоненты уже могут определяться через числа, константы и так далее
+     +функция, которая со значениями векторов x,b,y вычисляет значение поданной строки
+
+
+    """
+    #def __init__(self, name):
+        #EMTransistorModel.__init__(name)
+        #StringDefinedModel.__init__(name)
+        #AbstractModel.__init__(name)
+
+
+
+    def make_parameter_str_list(self):
+        return ['IS', 'BF', 'NR', 'NF', 'BR']     # список параметров
+
+    def make_modelstr(self):
+        return  ['Icc+Ibe',
+                         'Ibc-Icc',
+                         'Icc+Ibe-Ibc+Icc']   # строковое представление того, как из компонентов строится модель
+
+    def make_components(self):
+        return {'Icc': 'IS * (math.exp(Vbe/(NF*FT))-math.exp(Vbc/(NR*FT) ))',
+                            'Ibe': '(IS/BF) * (math.exp(Vbe/(NF*FT))-1)',
+                            'Ibc': '(IS/BR) * (math.exp(Vbc/(NR*FT))-1)'}
+
+    def eval_string(self, _str, x, b, y=None):
+        """
+        *
+        Вычисляет значение строки, пользуясь тем, что знает, какой переменной соответствует
+        тот или иной компонент вектора
+
+        :param _str: строка
+        :param x: вектор x
+        :param b: вектор b
+        :return:
+        """
+
+
+        b = list(map(float,b))
+        x = list(map(float,x))
+        Vbe = -1*x[0]
+        Vbc = -1*x[1]
+        IS = b[0]   # сквозной ток насыщения   1e-16
+        BF = b[1]   # максимальное значение нормального коэфф усиления по току с ОЭ 100
+        NR = b[2]       # коэфф неидеальности для диффузного тока в инв режиме  1
+        NF = b[3]       # коэфф неидеальности для диффузионного тока в нормальном режиме        1
+        BR = b[4]      # инверсный коэфф усиления тока в схеме с ОЭ 1
+        FT = self.FT
+
+        ev = eval(_str,  locals(), globals())
+
+
+        return ev     # исполняет полученную строку
+
+
+
+
