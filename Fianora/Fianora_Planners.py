@@ -209,7 +209,7 @@ class DOptimalPlanner (AbstractPlanner):
         verbose = self.verbose
         dopt = 100000000
         planopt = None
-        Ntries1 = 7
+        Ntries1 = 2
 
         if verbose:
             print('\n\nДанные априорного планирования:')
@@ -224,7 +224,8 @@ class DOptimalPlanner (AbstractPlanner):
 
         for i in range(0,Ntries1):
             try:
-                if i>0:
+                #if i>0:
+                if 1:
                     pln = rndplanner # композиция, основанная на полиморфизме - интерфейс один, но объекты подставляются разные
                     # маленькое применение паттерна "стратегия"
 
@@ -266,6 +267,8 @@ class DOptimalPlanner (AbstractPlanner):
                 if dcurr<dopt or planopt==None:
                     dopt=dcurr
                     planopt=plan
+
+
 
 
             except BaseException as e:

@@ -100,7 +100,7 @@ class TransistorMainScript(AbstractMainScript):
 
         xstart = np.array([0.001, 0.001])
         xend = np.array([1, 1])
-        N = 6
+        N = 15
 
         ec = f_sf.EstimationContext(bstart, bend, btrue, binit, xstart, xend, Ve, N) #упаковывание в контекст
 
