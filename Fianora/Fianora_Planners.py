@@ -34,16 +34,20 @@ class AbstractPlanner:
             return self.make_plan()
 
         plan = self.take_plan_from_cache()
+
         if not plan:
             plan = self.make_plan()
             self.write_plan_to_cache(plan)
+        else:
+            print ('Read Plan Successful')
 
         return plan
 
     def make_file_name(self):
         "makes a filename from class parameters"
         #в принципе, planname это практически всегда имя модели. В абстрактном классе, тем не менее, это отдельное поле.
-        return self.plf+'/'+ self.planname+'.txt'
+
+        return self.plf+'/'+ self.planname+"_"+self.__class__.__name__[:3]+'.txt'
 
     def write_plan_to_cache(self, plan):
         """

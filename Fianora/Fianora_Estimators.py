@@ -6,6 +6,7 @@ import platform
 import copy
 import math
 from prettytable import PrettyTable
+import Fianora.Fianora_static_functions as f_sf
 
 
 
@@ -134,11 +135,15 @@ class AbstractEstimator():
 
         for point in measdata:
             jj=jac(point['x'], b)
+            jj = np.absolute(jj)
+
             #G+=jj*np.linalg.inv(Ve)*jj.T
 
             #print  (jj.T, np.linalg.inv(Ve), jj)
 
             G+=np.dot ( np.dot(jj.T, np.linalg.inv(Ve)), jj)
+
+
 
             #G+=np.dot(jj.T, jj)
         try:
@@ -306,8 +311,8 @@ class NGEstimator(AbstractEstimator):
     def estimate_method(self, measdata, options):
         binit = self.binit
 
-        NSIG = options.NSIG if options.NSIG else 50
-        NSIGGENERAL = options.NSIGGENERAL if options.NSIGGENERAL else 50
+        NSIG = options.NSIG if options.NSIG else 10
+        NSIGGENERAL = options.NSIGGENERAL if options.NSIGGENERAL else 10
         verbose = options.verbose if options.verbose else False
         verbose_wrapper = options.verbose_wrapper if options.verbose_wrapper else False
         isBinitGood = options.isBinitGood if options.isBinitGood else False
@@ -350,7 +355,11 @@ class NGEstimator(AbstractEstimator):
         for numiter in range (maxiter):
             bpriv=copy.copy(b)
 
-            gknux=self.grandCountGN_UltraX1_Limited (A, measdata, NSIG, implicit, verbose) #посчитали b
+            if verbose_wrapper:
+                with f_sf.Profiler() as p:
+                   gknux=self.grandCountGN_UltraX1_Limited (A, measdata, NSIG, implicit, verbose) #посчитали b
+            else:
+                gknux=self.grandCountGN_UltraX1_Limited (A, measdata, NSIG, implicit, verbose) #посчитали b
 
 
             if gknux is None:
@@ -365,7 +374,7 @@ class NGEstimator(AbstractEstimator):
 
             if not gknux['log']=='':
                 #log+="On gknux iteration "+numiter+": "+ gknux[2]+"\n"
-                log+="On gknux iteration {0}: {1}\n".format (numiter, gknux[2])
+                log+="On gknux iteration {0}: {1}\n".format (numiter, gknux['log'])
 
 
             for j in range (len(binit)): #уменьшили в два раза
@@ -374,7 +383,7 @@ class NGEstimator(AbstractEstimator):
 
             condition=False
             for i in range (len(b)):
-                if math.fabs ((b[i  ]-bpriv[i])/bpriv[i]) > math.pow(10,-1*NSIGGENERAL):
+                if math.fabs ((b[i]-bpriv[i])/bpriv[i]) > math.pow(10,-1*NSIGGENERAL):
                     condition=True
             if not condition:
                 break
@@ -388,7 +397,7 @@ class NGEstimator(AbstractEstimator):
         gknux['log'] = log
         return gknux
 
-    def grandCountGN_UltraX1_Limited (self, A, measdata,  _NSIG=3, implicit=False, verbose=False):
+    def grandCountGN_UltraX1_Limited (self, A, measdata,  _NSIG=10, implicit=False, verbose=False):
         """
         Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом с ограничениями, заданными диапазоном
         В стандартный поток вывода выводит отладочную информацию по каждой итерации
@@ -498,11 +507,11 @@ class NGEstimator(AbstractEstimator):
 
             condition=False
             for i in range (len(b)):
-                if math.fabs ((b[i]-bpriv[i])/bpriv[i])>math.pow(10,-1*_NSIG):
+                if math.fabs ((b[i]-bpriv[i])/bpriv[i]) > math.pow(10,-1*_NSIG):
                     condition=True
 
 
-            if numiter>3000: #max number of iterations
+            if numiter>500: #max number of iterations
                 log+="GKNUX1: Break due to max number of iteration exceed"
                 break
 

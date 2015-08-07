@@ -28,7 +28,14 @@ class AbstractMainScript():
 
 
             self.measdata = self.plan_measurer.measure_acc_to_plan(plan)
-            self.estimator.estimate(self.measdata, f_e.Options())
+
+            options = f_e.Options()
+            options.verbose = 1
+            options.verbose_wrapper = 1
+
+
+
+            self.estimator.estimate(self.measdata, options)
 
 
 
@@ -86,17 +93,15 @@ class TransistorMainScript(AbstractMainScript):
         RC = 5.48635
         RB = 0
 
-
         parameter_str_list = ['IS', 'BF', 'NR', 'NF', 'BR']     # список параметров
         btrue = [IS, BF, NR, NF, BR]
-        binit = btrue
 
         Ve = np.diag([1.9e-5]*3)
 
-
-
         bstart = np.array(btrue)-np.array(btrue)*0.2
         bend = np.array(btrue)+np.array(btrue)*0.2
+
+        binit = f_sf.uniformVector(bstart, bend)
 
         xstart = np.array([0.001, 0.001])
         xend = np.array([1, 1])
@@ -108,14 +113,11 @@ class TransistorMainScript(AbstractMainScript):
 
         ec.model = self.model
 
-
-
-
         self.measurer = f_me.ModelMeasurer(ec.Ve, self.model, ec.btrue) # сделали измерителя
         self.plan_measurer = f_me.PlanMeasurer(self.measurer) # сделали измеритель по плану
 
 
-        self.planner = f_p.DOptimalPlanner(ec, 'cache', 1)
+        self.planner = f_p.DOptimalPlanner(ec, 'cache', verbose=True)
 
 
         #self.planner = f_p.UniformPlanner(ec)
@@ -131,7 +133,15 @@ class TransistorMainScript(AbstractMainScript):
 
 def test():
     dm = TransistorMainScript()
-    dm.proceed(nocacheplan=True)
+
+
+    #http://habrahabr.ru/post/157537/ - как накрутрутить производительность с помощью ctypes
+
+
+
+
+    with f_sf.Profiler() as p:
+        dm.proceed(nocacheplan=False)
 
 
 test()
