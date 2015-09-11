@@ -26,8 +26,10 @@ class AbstractMainScript():
         self.options.verbose = 1
         self.options.verbose_wrapper = 1
 
-        self.options.NSIG = 4
-        self.options.NSIGGENERAL = 4
+        self.options.NSIG = 5
+        self.options.NSIGGENERAL = 5
+
+        self.ec = None
 
 
 
@@ -45,33 +47,46 @@ class DiodeMainScript(AbstractMainScript):
     def __init__(self):
         AbstractMainScript.__init__(self)
 
-        btrue = [7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
-        binit = btrue
+        _btrue = [7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
         Ve=np.array([[1.9e-5]])
-        bstart=np.array(btrue)-np.array(btrue)*0.4
-        bend=np.array(btrue)+np.array(btrue)*0.4
+        bstart=np.array(_btrue)-np.array(_btrue)*0.4
+        bend=np.array(_btrue)+np.array(_btrue)*0.4
+        binit = _btrue
+        btrue = f_sf.rangomNormalvariateVector(bstart, bend)
+
+
         xstart=[0.001]
         xend=[1]
-        N=100
-        ec =f_sf.EstimationContext(bstart, bend, btrue, binit, xstart, xend, Ve, N)
+        N=20
+        self.ec =f_sf.EstimationContext(bstart, bend, btrue, binit, xstart, xend, Ve, N)
 
 
         self.model = f_m.SimpleDiodeModel ('Diode_1N') # сделали модель
-        self.measurer = f_me.ModelMeasurer(ec.Ve, self.model, ec.btrue) # сделали измерителя
+        self.ec.model = self.model
+
+
+        self.measurer = f_me.ModelMeasurer(self.ec.Ve, self.model, self.ec.btrue) # сделали измерителя
         self.plan_measurer = f_me.PlanMeasurer(self.measurer) # сделали измеритель по плану
-        #self.planner = f_p.DOptimalPlanner(self.N, self.xstart, self.xend, self.bstart, self.bend, self.model, verbose=1)
-        self.planner = f_p.UniformPlanner(ec)
+
+        self.planner = f_p.DOptimalPlanner(self.ec)
+        #self.planner = f_p.UniformPlanner(self.ec)
+
+
+        #self, ec, plancachefoldername='cache', verbose = False)
+
+
 
         self.measdata=None
 
         #формирование цепочки
         estimator = f_e.NGEstimator()
-        estimator.init_parameters(ec, self.model)
+        estimator.init_parameters(self.ec, self.model)
 
         self.estimator  = f_e.ConsoleEstimatorDecorator(estimator)
 
 class TransistorMainScript(AbstractMainScript):
      def __init__(self):
+        AbstractMainScript.__init__(self)
          #     .MODEL KT315 NPN (IS=10F BF=584.517 VAF=100 IKF=29.2714M ISE=131.803P
          # 3:  + NE=2.08337 BR=1.95214 IKR=9.99996M ISC=100.316P RE=0 RC=0 RB=0
          # 4:  + CJE=27.3893P VJE=700.001M MJE=500.287M CJC=27.3893P VJC=700.001M
@@ -109,7 +124,7 @@ class TransistorMainScript(AbstractMainScript):
 
         xstart = np.array([0.001, 0.001])
         xend = np.array([1, 1])
-        N = 20
+        N = 50
 
         ec = f_sf.EstimationContext(bstart, bend, btrue, binit, xstart, xend, Ve, N) #упаковывание в контекст
 
@@ -133,8 +148,8 @@ class TransistorMainScript(AbstractMainScript):
 
 
 def test():
-    # dm = TransistorMainScript()
-    dm = DiodeMainScript()
+    dm = TransistorMainScript()
+    #dm = DiodeMainScript()
 
 
 

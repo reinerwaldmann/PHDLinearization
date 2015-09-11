@@ -28,10 +28,21 @@ class IterationInfoAcceptor ():
     тот список можно получить через переопределённые стандартные операторы
 
     """
-    def __init__(self):
+    def __init__(self, filename=None):
         self.lst_of_data=[]
+        if filename:
+            self.filename = filename
+            with open(self.filename, 'w') as f:
+                pass
+
 
     def accept (self, *args, **kwargs):
+        if self.filename:
+                with open(self.filename, 'a') as f:
+                    f.write(args.__str__()+"\t"+kwargs.__str__()+"\n")
+
+
+
         if args and kwargs:
             self.lst_of_data.append((args,kwargs))
             return
@@ -58,26 +69,50 @@ class DiodeMainScriptMantissaEx2(Fianora_MainScripts.DiodeMainScript):
         перопределяться
 
     """
-    def __init__(self):
-        Fianora_MainScripts.DiodeMainScript.__init__()
-
-        self.iia = IterationInfoAcceptor()
-        self.options.lst_data_abt_iteration = self.iia
-
 
 
     def proceed(self, nocacheplan = False):
-            return Fianora_MainScripts.DiodeMainScript.proceed(self,nocacheplan), self.iia
+        return Fianora_MainScripts.DiodeMainScript.proceed(self,nocacheplan), self.iia
 
     # Контекст (estimator context) пишется на этапе инита, опции оценки берутся в момент просида
 
 
 
 
-
-
 def main():
-    pass
+    dms = Fianora_MainScripts.DiodeMainScript()
+    iia = IterationInfoAcceptor('resfiles/Mantissa2res.txt')
+    dms.options.lst_data_abt_iteration = iia
+    dms.proceed()
+    btrue = dms.ec.btrue
+    print (btrue)
+
+
+    #получает графики убывания погрешностей в зависимости от номера итерации по
+    # теперь получить таблицу погрешностей абсолютных по итерациям
+    list_of_errors = [np.fabs(np.array(btrue)-np.array(m['b'])) for m in iia]
+
+    flatlel = [ [lll[i] for lll in list_of_errors] for i in range(len(btrue))]
+
+    ar = list(range(len(flatlel[0])))
+    print (list_of_errors)
+
+    for i in range (len(btrue)):
+        plt.plot(ar,flatlel[i])
+        plt.savefig ('resfiles/M2/{0}.png'.format(i))
+        plt.show()
+
+
+
+
+
+
+ #   plt.show()
+
+
+
+    # построить три графика, как падает погрешность
+
 
 
 

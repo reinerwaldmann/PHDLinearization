@@ -49,6 +49,7 @@ class AbstractPlanner:
 
         return self.plf+'/'+ self.planname+"_"+self.__class__.__name__[:3]+'.txt'
 
+
     def write_plan_to_cache(self, plan):
         """
          Пишет план в файл. Значения пишутся в формате python (вектор [])
@@ -72,6 +73,9 @@ class AbstractPlanner:
         :return: план (список векторов)
         """
         filename = self.make_file_name()
+
+
+
 
         try:
             with open (filename, 'rt') as infile:

@@ -310,6 +310,9 @@ class NGEstimator(AbstractEstimator):
         return N
 
     def estimate_method(self, measdata, options):
+
+
+
         binit = self.binit
 
         NSIG = options.NSIG if options.NSIG else 8
@@ -416,11 +419,12 @@ class NGEstimator(AbstractEstimator):
         :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
         """
 
+
+
         # маразм! но как сделать лучше: объект-контейнер может быть None, и каждый его член тоже может быть None
         lst_data_abt_iteration = None
         if options is not None:
-            lst_data_abt_iteration = options.list_data_abt_iteration if options.list_data_abt_iteration else None
-
+            lst_data_abt_iteration = options.lst_data_abt_iteration if options.lst_data_abt_iteration else None
 
 
 
@@ -429,6 +433,11 @@ class NGEstimator(AbstractEstimator):
         jacf = self.model.jacf
 
         binit = self.binit
+
+        if lst_data_abt_iteration:
+            lst_data_abt_iteration.accept(numiter=0, b=binit)
+
+
 
         #sign - если  1, то b=b+deltab*mu, иначе b=b-deltab*mu. При неявной функции надо ставить sign=0
         sign=0 if implicit else 1
