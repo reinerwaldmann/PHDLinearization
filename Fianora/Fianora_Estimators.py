@@ -235,6 +235,153 @@ class AbstractEstimator():
 
         return np.average(diflistn), np.var(diflistn), math.sqrt(np.var(diflistn)), diflistna
 
+class NGEEstimatorUnlimited (AbstractEstimator):
+
+    def estimate_method(self, measdata, options):
+        """
+        Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом
+        В стандартный поток вывода выводит отладочную информацию по каждой итерации
+        :param NSIG=3 точность (кол-во знаков после запятой)
+        :param implicit True если функция - неявная, иначе false
+
+        :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
+        """
+        print ('Estimated Unlimited')
+
+        binit = self.binit
+        NSIG = options.NSIG if options.NSIG else 8
+        #NSIG определяется рабочей точностью вычислителя. Матрицы мы считаем с точностью 9 значащих, возьмём один в запас
+        verbose = options.verbose if options.verbose else False
+        if isinstance(self.model, Fianora.Fianora_Models.ImplicitModel): #если модель - это подкласс неявной модели, то...
+            implicit = True
+        else:
+            implicit = False
+
+
+        # маразм! но как сделать лучше: объект-контейнер может быть None, и каждый его член тоже может быть None
+        lst_data_abt_iteration = None
+        if options is not None:
+            lst_data_abt_iteration = options.lst_data_abt_iteration if options.lst_data_abt_iteration else None
+
+
+        funcf = self.model.funcf
+        jacf = self.model.jacf
+        binit = self.binit
+
+        if lst_data_abt_iteration:
+            lst_data_abt_iteration.accept(numiter=0, b=binit)
+
+        #sign - если  1, то b=b+deltab*mu, иначе b=b-deltab*mu. При неявной функции надо ставить sign=0
+        sign=0 if implicit else 1
+
+        Sklist=list()
+        b=binit
+        log=""
+        numiter=0
+        condition=True
+        while (condition):
+            m=len(b) #число коэффициентов
+            G=np.zeros((m,m))
+            B5=None
+            bpriv=copy.copy(b)
+            Sk=0
+            for point in measdata:
+                jac=jacf(point['x'],b)
+
+                if jac is None:
+                    return None
+                G+=np.dot(jac.T,jac)
+
+                try:
+                    dif=np.array(point['y'])-np.array(funcf(point['x'],b))
+                except BaseException as e:
+                    if verbose:
+                        print('grandCountGN_UltraX1_limited: As funcf returned None, method  stops:', e)
+                        print (point, b, sep='\n')
+                    return None
+
+
+                if B5 is None:
+                    B5=np.dot(dif, jac)
+                else:
+                    B5+=np.dot(dif,jac)
+                Sk+=np.dot(dif.T,dif)
+
+
+
+
+
+
+
+            #print(np.linalg.inv(G), B5[:,0])
+            #костыль для диодной задачи
+            if hasattr(B5, 'A1'):
+                B5=B5.A1
+            try:
+                deltab=np.dot(np.linalg.inv(G), B5)
+            except BaseException as e:
+                if verbose:
+                    print('Error in G:', e)
+                    print('G=',G)
+                return None
+
+
+            #mu counting
+            mu=4
+            cond2=True
+            it=0
+            Skmu=0
+            while (cond2):
+                Skmu=0
+                mu/=2
+                for point in measdata:
+                    try:
+                        dif=np.array(point['y'])-np.array(funcf(point['x'],b+deltab*mu)) if sign else np.array(point['y'])-np.array(funcf(point['x'],b-deltab*mu))
+                    except:
+                        continue
+
+                    Skmu+=np.dot(dif.T, dif)
+
+                it+=1
+
+
+                if (it>200):
+                    log+="Mu counting: break due to max number of iteration exceed"
+                    break
+                cond2=Skmu>Sk
+
+            b=b+deltab*mu if sign else b-deltab*mu
+
+            Sk=Skmu
+
+            Sklist.append(Sk)
+            if verbose:
+                print ("Sk:",Sk)
+                print ("Iteration {0} mu={1} delta={2} deltamu={3} resb={4}".format(numiter, mu, deltab, deltab*mu, b))
+
+            numiter+=1
+
+            condition=False
+            for i in range (len(b)):
+                if math.fabs ((b[i]-bpriv[i])/bpriv[i]) > math.pow(10,-1*NSIG):
+                    condition=True
+
+            if lst_data_abt_iteration:
+                lst_data_abt_iteration.accept(numiter=numiter, b=b)
+
+            if numiter>50: #max number of iterations
+                log+="GKNUX1: Break due to max number of iteration exceed"
+                break
+
+        if len(Sklist)>100:
+            ll=[Sklist[i] for i in range(0,len(Sklist),10)]
+            Sklist = ll
+
+        return {'b':b, 'numiter':numiter, 'log':log, 'Sklist':Sklist, 'Sk':Sk}
+
+
+
+
 
 class NGEstimator(AbstractEstimator):
     """
@@ -310,9 +457,6 @@ class NGEstimator(AbstractEstimator):
         return N
 
     def estimate_method(self, measdata, options):
-
-
-
         binit = self.binit
 
         NSIG = options.NSIG if options.NSIG else 8

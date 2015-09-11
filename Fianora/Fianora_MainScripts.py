@@ -22,6 +22,7 @@ class AbstractMainScript():
         :return:
         """
 
+
         self.options = f_e.Options()
         self.options.verbose = 1
         self.options.verbose_wrapper = 1
@@ -45,6 +46,7 @@ class AbstractMainScript():
 
 class DiodeMainScript(AbstractMainScript):
     def __init__(self):
+
         AbstractMainScript.__init__(self)
 
         _btrue = [7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя

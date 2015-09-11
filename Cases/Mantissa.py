@@ -135,7 +135,7 @@ class TransistorMainScriptMantissaEx1(DiodeMainScriptMantissaEx1):
         binit = f_sf.uniformVector(bstart, bend)
         xstart = np.array([0.001, 0.001])
         xend = np.array([1, 1])
-        N = 50
+        N = 30
 
         self.ec = f_sf.EstimationContext(bstart, bend, btrue, binit, xstart, xend, Ve, N) #упаковывание в контекст
         self.model = f_m.StringEMTransistorModel ('Q_NPN_KT513')
@@ -161,8 +161,7 @@ def main ():
     Главная функция, осуществляющая эксперимент
     :return:
     """
-    res = []
-    #bstart = [  6.15200000e-08  , 1.16000000e+00,   3.37600000e-02] # 20%
+     #bstart = [  6.15200000e-08  , 1.16000000e+00,   3.37600000e-02] # 20%
     #bend =   [  9.22800000e-08 ,  1.74000000e+00 ,  5.06400000e-02] # 20%
 
 
@@ -194,34 +193,31 @@ def main ():
     bstart = np.array(btrue)-np.array(btrue)*0.3
     bend = np.array(btrue)+np.array(btrue)*0.3
 
+    from Cases.Mantissa1 import IterationInfoAcceptor
 
-    with  open ('resfiles/MantissaResTransistor.txt', 'w') as rsfile:
+    iia = IterationInfoAcceptor ('resfiles/M1.txt')
 
-        msa = TransistorMainScriptMantissaEx1()
+    msa = TransistorMainScriptMantissaEx1()
 
-        for i in range (50):
+    for i in range (50):
 
-            btrue1 = f_sf.rangomNormalvariateVector(bstart, bend)
+        btrue1 = f_sf.rangomNormalvariateVector(bstart, bend)
 
-            msa.ec.btrue = btrue1
-            msa.ec.bstart = bstart
-            msa.ec.bend = bend
+        msa.ec.btrue = btrue1
+        msa.ec.bstart = bstart
+        msa.ec.bend = bend
 
-            try:
-                print ('entering')
-                rs = msa.proceed()
-                res.append((rs['numiter'], rs['Sk'], rs['AvDif']))
-                print ((rs['numiter'], rs['Sk'], rs['AvDif']))
-
-            except:
-                print ('uno problemo')
-                pass
+        try:
+            print ('entering')
+            rs = msa.proceed()
+            iia.accept(numiter=rs['numiter'], Sk=rs['Sk'], AvDif=rs['AvDif'])
 
 
-        rsfile.write(res.__str__())
-        rsfile.write([x[0] for x in res].__str__())
+        except:
+            print ('uno problemo')
+            pass
 
-        plt.hist ([x[0] for x in res],20)
+        plt.hist ([x[0] for x in iia],20)
         plt.show()
 
         plt.savefig('resfiles/MantissaResTransistor.png')
