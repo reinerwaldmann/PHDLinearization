@@ -75,6 +75,26 @@ def uniformVector(xstart, xend):
     return res
     #Можно сделать map для списка списков сразу (или просто для нескольких списков) на основе этой функции  #
 
+
+
+
+def rangomNormalvariateVector (xstart, xend):
+
+    res = [0 for i in range(len(xstart))]
+    middle = [0 for i in range(len(xstart))]
+    sigma = [0 for i in range(len(xstart))]
+
+    for i in range(0, len(xstart)):
+        middle[i]=xstart[i]+(xend[i]-xstart[i])/2
+        sigma[i]=(xend[i]-middle[i])/3
+        res[i]= random.normalvariate (middle[i], sigma[i])
+
+    return res
+
+
+
+
+
 def doublesearch (xstart, xend, xinit, function):
     """
     Метод двойного поиска с ограничениями

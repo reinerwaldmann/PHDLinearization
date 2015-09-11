@@ -133,9 +133,10 @@ class AbstractEstimator():
         G=np.zeros((len(b),len(b))) #матрица G
 
 
+
         for point in measdata:
-            jj=jac(point['x'], b)
-            jj = np.absolute(jj)
+            jj=jac(point['x'], b, point['y'])
+
 
             #G+=jj*np.linalg.inv(Ve)*jj.T
 
@@ -147,7 +148,7 @@ class AbstractEstimator():
 
             #G+=np.dot(jj.T, jj)
         try:
-            return np.linalg.inv(G)
+            return .5*np.absolute(np.linalg.inv(G))
         except BaseException as e:
             print('Fatal error in countVbForMeasdata: ',e)
             print('b vector=',b)
@@ -311,12 +312,17 @@ class NGEstimator(AbstractEstimator):
     def estimate_method(self, measdata, options):
         binit = self.binit
 
-        NSIG = options.NSIG if options.NSIG else 10
-        NSIGGENERAL = options.NSIGGENERAL if options.NSIGGENERAL else 10
+        NSIG = options.NSIG if options.NSIG else 8
+        NSIGGENERAL = options.NSIGGENERAL if options.NSIGGENERAL else 8
+
+        #NSIG определяется рабочей точностью вычислителя. Матрицы мы считаем с точностью 9 значащих, возьмём один в запас
+
         verbose = options.verbose if options.verbose else False
         verbose_wrapper = options.verbose_wrapper if options.verbose_wrapper else False
         isBinitGood = options.isBinitGood if options.isBinitGood else False
 
+        lst_data_abt_iteration = options.list_data_abt_iteration if options.list_data_abt_iteration else None
+        # объект, имеющий свойство Accept - туда отправляют нечто, он это записывает в список
 
 
         if isinstance(self.model, Fianora.Fianora_Models.ImplicitModel): #если модель - это подкласс неявной модели, то...
@@ -340,7 +346,7 @@ class NGEstimator(AbstractEstimator):
         :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
         """
 
-        maxiter=100
+        maxiter=50
         b,bpriv=binit,binit
         gknux=None
         gknuxlist=list()
@@ -352,14 +358,15 @@ class NGEstimator(AbstractEstimator):
         if verbose_wrapper:
             print ('==grandCountGN_UltraX1_Limited_wrapper is launched==\n\n')
 
+        maxiter = 1
         for numiter in range (maxiter):
             bpriv=copy.copy(b)
 
             if verbose_wrapper:
                 with f_sf.Profiler() as p:
-                   gknux=self.grandCountGN_UltraX1_Limited (A, measdata, NSIG, implicit, verbose) #посчитали b
+                   gknux=self.grandCountGN_UltraX1_Limited (A, measdata, NSIG, implicit, verbose, options) #посчитали b
             else:
-                gknux=self.grandCountGN_UltraX1_Limited (A, measdata, NSIG, implicit, verbose) #посчитали b
+                gknux=self.grandCountGN_UltraX1_Limited (A, measdata, NSIG, implicit, verbose, options) #посчитали b
 
 
             if gknux is None:
@@ -397,7 +404,7 @@ class NGEstimator(AbstractEstimator):
         gknux['log'] = log
         return gknux
 
-    def grandCountGN_UltraX1_Limited (self, A, measdata,  _NSIG=10, implicit=False, verbose=False):
+    def grandCountGN_UltraX1_Limited (self, A, measdata,  _NSIG, implicit=False, verbose=False, options=None):
         """
         Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом с ограничениями, заданными диапазоном
         В стандартный поток вывода выводит отладочную информацию по каждой итерации
@@ -408,6 +415,16 @@ class NGEstimator(AbstractEstimator):
         :param verbose Если True, то подробно принтить результаты итераций
         :returns b, numiter, log - вектор оценки коэффициентов, число итераций, сообщения
         """
+
+        # маразм! но как сделать лучше: объект-контейнер может быть None, и каждый его член тоже может быть None
+        lst_data_abt_iteration = None
+        if options is not None:
+            lst_data_abt_iteration = options.list_data_abt_iteration if options.list_data_abt_iteration else None
+
+
+
+
+
         funcf = self.model.funcf
         jacf = self.model.jacf
 
@@ -510,8 +527,10 @@ class NGEstimator(AbstractEstimator):
                 if math.fabs ((b[i]-bpriv[i])/bpriv[i]) > math.pow(10,-1*_NSIG):
                     condition=True
 
+            if lst_data_abt_iteration:
+                lst_data_abt_iteration.accept(numiter=numiter, b=b)
 
-            if numiter>500: #max number of iterations
+            if numiter>50: #max number of iterations
                 log+="GKNUX1: Break due to max number of iteration exceed"
                 break
 
@@ -526,6 +545,9 @@ class AbstractEstimatorDecorator(AbstractEstimator):
     def __init__(self, component:AbstractEstimator):
         self.component = component
 
+    def init_parameters(self, ec, model):
+        self.component.init_parameters(ec, model)
+
     def estimate(self, measdata, options):
         #поведение по умолчанию
         return self.component.estimate(options)
@@ -536,6 +558,10 @@ class ConsoleEstimatorDecorator(AbstractEstimatorDecorator):
         """
         Усложнённый декоратор: во-первых, параметры пробрасываются от конца к началу цепочки,
         во-вторых, результат пробрасываться от начала к концу цепочки
+
+        Конкретно в этом, консольном декораторе делается так - выкидываются лишние поля и остальное выводится в таблице
+        лишние поля (см ниже, где del) выводятся потом особо
+
         :param options:
         :return:
         """

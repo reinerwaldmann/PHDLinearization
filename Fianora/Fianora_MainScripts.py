@@ -1,4 +1,7 @@
 
+"""
+Describes abstract main script
+"""
 __author__ = 'vasilev_is'
 
 import Fianora.Fianora_Models as f_m
@@ -12,45 +15,44 @@ import numpy as np
 
 
 class AbstractMainScript():
+
     def __init__(self): # потому, что в конструкторе и делается самое интересное
         """
         Должен быть переопределён, ибо в нём конфигурируется вся радость
         :return:
         """
-        pass
+
+        self.options = f_e.Options()
+        self.options.verbose = 1
+        self.options.verbose_wrapper = 1
+
+        self.options.NSIG = 4
+        self.options.NSIGGENERAL = 4
+
+
+
 
     def proceed(self, nocacheplan = False):
         # Вот здесь бы и фабричный метод пользовать, потому что получается, что этот методв
         # требует некоторых атрибутов. Явно видно, какие методы надо переопределить,
         # а вот насчёт атрибутов не всё так прозрачно.
-
             plan = self.planner.give_us_a_plan(nocacheplan)
-
-
             self.measdata = self.plan_measurer.measure_acc_to_plan(plan)
-
-            options = f_e.Options()
-            options.verbose = 1
-            options.verbose_wrapper = 1
-
-
-
-            self.estimator.estimate(self.measdata, options)
-
-
+            return self.estimator.estimate(self.measdata, self.options)
 
 
 class DiodeMainScript(AbstractMainScript):
     def __init__(self):
+        AbstractMainScript.__init__(self)
 
         btrue = [7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
         binit = btrue
         Ve=np.array([[1.9e-5]])
-        bstart=np.array(btrue)-np.array(btrue)*0.2
-        bend=np.array(btrue)+np.array(btrue)*0.2
+        bstart=np.array(btrue)-np.array(btrue)*0.4
+        bend=np.array(btrue)+np.array(btrue)*0.4
         xstart=[0.001]
         xend=[1]
-        N=20
+        N=100
         ec =f_sf.EstimationContext(bstart, bend, btrue, binit, xstart, xend, Ve, N)
 
 
@@ -76,6 +78,8 @@ class TransistorMainScript(AbstractMainScript):
          # 5:  + MJC=500.287M TF=450.287P XTF=499.984M VTF=10 ITF=10.2268M TR=153.383P)
          #
         inf=10e10
+
+
         IS = 10e-15
         BF = 584.517
         VAF = 100
@@ -98,14 +102,14 @@ class TransistorMainScript(AbstractMainScript):
 
         Ve = np.diag([1.9e-5]*3)
 
-        bstart = np.array(btrue)-np.array(btrue)*0.2
-        bend = np.array(btrue)+np.array(btrue)*0.2
+        bstart = np.array(btrue)-np.array(btrue)*0.3
+        bend = np.array(btrue)+np.array(btrue)*0.3
 
         binit = f_sf.uniformVector(bstart, bend)
 
         xstart = np.array([0.001, 0.001])
         xend = np.array([1, 1])
-        N = 15
+        N = 20
 
         ec = f_sf.EstimationContext(bstart, bend, btrue, binit, xstart, xend, Ve, N) #упаковывание в контекст
 
@@ -116,12 +120,9 @@ class TransistorMainScript(AbstractMainScript):
         self.measurer = f_me.ModelMeasurer(ec.Ve, self.model, ec.btrue) # сделали измерителя
         self.plan_measurer = f_me.PlanMeasurer(self.measurer) # сделали измеритель по плану
 
+        #self.planner = f_p.DOptimalPlanner(ec, 'cache', verbose=True)
 
-        self.planner = f_p.DOptimalPlanner(ec, 'cache', verbose=True)
-
-
-        #self.planner = f_p.UniformPlanner(ec)
-
+        self.planner = f_p.UniformPlanner(ec)
 
         #формирование цепочки
         estimator = f_e.NGEstimator()
@@ -132,16 +133,16 @@ class TransistorMainScript(AbstractMainScript):
 
 
 def test():
-    dm = TransistorMainScript()
+    # dm = TransistorMainScript()
+    dm = DiodeMainScript()
+
 
 
     #http://habrahabr.ru/post/157537/ - как накрутрутить производительность с помощью ctypes
 
 
-
-
     with f_sf.Profiler() as p:
-        dm.proceed(nocacheplan=False)
+        print (dm.proceed(nocacheplan=False))
 
-
-test()
+if __name__ == '__main__':
+    test()

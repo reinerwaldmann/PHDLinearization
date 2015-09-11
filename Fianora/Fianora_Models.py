@@ -271,6 +271,22 @@ class GPTransistorModel(SemiconductorModel, ImplicitModel):
 
 
 class StringDefinedModel(AbstractModel):
+    """
+    Это абстрактный класс модели, которая задаётся строками
+    Ключевая идея - модель задаётся как некоторая комбинация из компонентов.
+    Вот методы, которые надо переопределять:
+
+        make_parameter_str_list(self): - должен вернуть список строк - список параметров в том виде, в котором они
+        будут встречаться в модели и в той последовательности, в которой они в векторе
+
+        def make_modelstr(self):
+
+
+
+
+    """
+
+
     def __init__(self, name):
         #паттерн "Фабричный метод" во все поля!
 
@@ -390,7 +406,6 @@ class StringDefinedModel(AbstractModel):
                 res[j][i] = col[j]
             i += 1
         return res
-
 
     def funcf(self, x,b):
         evfn = lambda _str: self.eval_string(_str, x, b)
