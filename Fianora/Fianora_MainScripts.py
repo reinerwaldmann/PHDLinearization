@@ -50,11 +50,16 @@ class DiodeMainScript(AbstractMainScript):
         AbstractMainScript.__init__(self)
 
         _btrue = [7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
-        Ve=np.array([[1.9e-5]])
-        bstart=np.array(_btrue)-np.array(_btrue)*0.4
-        bend=np.array(_btrue)+np.array(_btrue)*0.4
-        binit = _btrue
+        Ve=np.array([[1.9e-20]])
+        bstart=np.array(_btrue)-np.array(_btrue)*0.2
+        bend=np.array(_btrue)+np.array(_btrue)*0.2
+
+        binit=_btrue
+
         btrue = f_sf.rangomNormalvariateVector(bstart, bend)
+        #btrue = _btrue
+
+
 
 
         xstart=[0.001]

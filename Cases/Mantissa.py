@@ -65,7 +65,7 @@ class DiodeMainScriptMantissaEx1(Fianora_MainScripts.AbstractMainScript):
 
         btrue = [7.69e-8, 1.45 ,.0422] #номинальные значения диода D1N4001 с сайта, вроде официальной модели производителя
         binit = btrue
-        Ve=np.array([[1.9e-5]])
+        Ve=np.array([[1.9e-4]])
         bstart=np.array(btrue)-np.array(btrue)*0.4
         bend=np.array(btrue)+np.array(btrue)*0.4
         xstart=[0.001]
@@ -154,9 +154,51 @@ class TransistorMainScriptMantissaEx1(DiodeMainScriptMantissaEx1):
         self.plan = self.planner.give_us_a_plan(nocache = True) # чтоб каждый раз не менять план, как оно делается,
 
 
+from Cases.CasesUtilStuff import IterationInfoAcceptor
+
+def main_diode():
+    """
+    Главная функция, осуществляющая эксперимент
+    :return:
+    """
+    bstart = [  6.15200000e-08  , 1.16000000e+00,   3.37600000e-02] # 20%
+    bend =   [  9.22800000e-08 ,  1.74000000e+00 ,  5.06400000e-02] # 20%
 
 
-def main ():
+#    bstart = [  4.61400000e-08,   8.70000000e-01,   2.53200000e-02]  # 40%
+ #   bend = [  1.07660000e-07,   2.03000000e+00,   5.90800000e-02]  # 40%
+
+
+    iia = IterationInfoAcceptor ('resfiles/M1_Diode.txt', verbose=1)
+
+    msa = DiodeMainScriptMantissaEx1()
+
+    for i in range (50):
+
+        btrue1 = f_sf.rangomNormalvariateVector(bstart, bend)
+
+        #msa.ec.btrue = btrue1
+        msa.ec.bstart = bstart
+        msa.ec.bend = bend
+
+        try:
+            rs = msa.proceed()
+            iia.accept(numiter=rs['numiter'], Sk=rs['Sk'], AvDif=rs['AvDif'])
+
+        except:
+            print ('uno problemo')
+            pass
+
+
+
+
+    plt.hist ([x['numiter'] for x in iia],20)
+    plt.show()
+    plt.savefig('resfiles/MantissaResDiode.png')
+
+
+
+def main_transistor ():
     """
     Главная функция, осуществляющая эксперимент
     :return:
@@ -193,7 +235,7 @@ def main ():
     bstart = np.array(btrue)-np.array(btrue)*0.3
     bend = np.array(btrue)+np.array(btrue)*0.3
 
-    from Cases.Mantissa1 import IterationInfoAcceptor
+    from Cases.Mantissa2 import IterationInfoAcceptor
 
     iia = IterationInfoAcceptor ('resfiles/M1.txt')
 
@@ -217,14 +259,21 @@ def main ():
             print ('uno problemo')
             pass
 
-        plt.hist ([x[0] for x in iia],20)
-        plt.show()
-
-        plt.savefig('resfiles/MantissaResTransistor.png')
+        try:
+            plt.hist ([x[0] for x in iia],20)
+            plt.show()
+            plt.savefig('resfiles/MantissaResTransistor.png')
+        except:
+            pass
 
 
 if __name__=='__main__':
-      main()
+    iia = IterationInfoAcceptor ('resfiles/M1_Diode.txt', verbose=1, read=1)
+    plt.hist ([x['numiter'] for x in iia if x['numiter']<20 ],10)
+    plt.show()
+
+
+    #main_diode()
 
 
 
