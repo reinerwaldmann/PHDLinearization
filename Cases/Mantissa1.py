@@ -33,6 +33,7 @@ class IterationInfoAcceptor ():
     def __init__(self, filename=None, verbose=False):
         self.lst_of_data=[]
         self.verbose = verbose
+        self.lineCounter = 0
         if filename:
             self.filename = filename
             with open(self.filename, 'w') as f:
@@ -42,10 +43,14 @@ class IterationInfoAcceptor ():
     def accept (self, *args, **kwargs):
         if self.filename:
                 with open(self.filename, 'a') as f:
-                    f.write(args.__str__()+"\t"+kwargs.__str__()+"\n")
+                    f.write(self.lineCounter+"\t"+args.__str__()+"\t"+kwargs.__str__()+"\n")
+
 
         if self.verbose:
-            print (args, kwargs)
+            print (self.lineCounter, args, kwargs)
+
+        self.lineCounter+=1
+
 
         if args and kwargs:
             self.lst_of_data.append((args,kwargs))
