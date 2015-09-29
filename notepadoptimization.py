@@ -1,3 +1,61 @@
+import sys
+
+filename = 'temp1.html'
+
+with open(filename, 'w') as f:
+    pass
+#   зачистка
+
+
+
+sys.stdout = open(filename, 'a') # Перенаправить вывод в файл
+
+
+cells_per_row = 5
+
+print ('<html>')
+
+print ("<table style='page-break-after: always'>")
+print ('<tr>')
+for i in range(101):
+
+    if not i%cells_per_row:
+        print ('</tr>')
+        print ('<tr>')
+
+    if not i%(23*cells_per_row):
+        print ("<table style='page-break-after: always'>")
+        print ("<table>")
+
+    print ("<td style='border-style:solid; border-width:1px; padding:10px; font-weight: bold'>")
+    #print ('23-{0}'.format(str(i).zfill(5)))
+    print ('23-ОКР-{0}'.format(str(i)))
+
+
+
+    print ('</td>')
+
+
+
+
+print ('</tr>')
+print ('</table>')
+print ('</html>')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+exit(0)
 print(((780/2)**2+100**2)**.5)
 
 

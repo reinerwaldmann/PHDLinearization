@@ -1,3 +1,24 @@
+"""
+Описание выходной структуры данных любого оценщика или его декоратора
+         'b'            оцененный вектор коэффициентов
+         'numiter'      число итераций
+         'log'          лог
+         'Sklist'       список значений объектной функции
+         'Sk'           последнее значение объектной функции
+
+         'Vb'           ковариационная матрица оценённого вектора b
+         'VbSigmas'     сигмы из ковариационной матрицы оценённого вектора b (корни квадратные из диагонали)
+
+         'AvLogTruth'   среднее по точкам эксперимента значение логарифма правдоподобия
+         'DispLT'       дисперсия логарифма правдоподобия
+         'SigmaLT'      среднеквадратическое отклонение логарифма правдоподобия
+         'AvDif'        средний остатков
+         'DispDif'      дисперсия остатков
+         'SigmaDif'     СКВ остатков
+         'Diflist'      список остатков
+         'name'         название метода
+
+"""
 __author__ = 'vasilev_is'
 
 import  Fianora.Fianora_Models
@@ -7,6 +28,7 @@ import copy
 import math
 from prettytable import PrettyTable
 import Fianora.Fianora_static_functions as f_sf
+
 
 
 
@@ -132,21 +154,11 @@ class AbstractEstimator():
 
         G=np.zeros((len(b),len(b))) #матрица G
 
-
-
         for point in measdata:
             jj=jac(point['x'], b, point['y'])
-
-
-            #G+=jj*np.linalg.inv(Ve)*jj.T
-
-            #print  (jj.T, np.linalg.inv(Ve), jj)
-
             G+=np.dot ( np.dot(jj.T, np.linalg.inv(Ve)), jj)
 
 
-
-            #G+=np.dot(jj.T, jj)
         try:
             return .5*np.absolute(np.linalg.inv(G))
         except BaseException as e:
@@ -219,21 +231,18 @@ class AbstractEstimator():
         func = self.model.funcf
 
 
-        diflist=list()
-        diflistNoAbs=list()
+        diflist = [np.array(measpoint['y'])-func(measpoint['x'],b) for measpoint in measdata]
+        if len(diflist[0])>0:
+            #  если риальни этот список являет собой список векторов, то есть модель многооткликовая
+            Tina_LaFee_list = [np.average([x[i] for x in diflist if x[i] < 1e10]) for i in range (len(diflist[0]))] #  average diflist
+            varlist = [np.var([x[i] for x in diflist if x[i] < 1e10]) for i in range (len(diflist[0]))] #  var diflist
+            sigmaa = list( map (math.sqrt, varlist))
+        else:
+            Tina_LaFee_list = np.average(diflist)
+            varlist = np.var(diflist)
+            sigmaa = math.sqrt(varlist)
 
-
-        for measpoint in measdata:
-            dif=np.array(measpoint['y'])-func(measpoint['x'],b)
-
-            diflist.append(np.abs(dif ))
-            diflistNoAbs.append(dif)
-
-            diflistn=list(map(np.float64, diflist))
-            diflistna=list(map(np.float64, diflistNoAbs))
-
-
-        return np.average(diflistn), np.var(diflistn), math.sqrt(np.var(diflistn)), diflistna
+        return Tina_LaFee_list, varlist, sigmaa, diflist
 
 class NGEEstimatorUnlimited (AbstractEstimator):
 
@@ -751,9 +760,109 @@ class ConsoleEstimatorDecorator(AbstractEstimatorDecorator):
         print ("Vb:\n {0}  ".format (est['Vb']))
         print ("\nLog messages: {0} \n ".format (est['log']))
 
+        #[print (f) for f in est['Diflist']]
+        #[print (f) for f in measdata]
+
+
 
 
         return est
+
+
+class GraphPackEstimatorDecorator (AbstractEstimatorDecorator):
+    """
+    Декоратор, который либо сохраняет рисунки, либо выдаёт последовательно на экран
+    рисунки такие:
+        два графика (риальни, моделированни)
+		диаграмма остатков
+		график падения объектной функции
+    """
+
+    def __init__(self, component, foldername, appendix):
+        """
+
+        :param component:
+        :param foldername: папка, куда сохранять, если None, то показывать
+        :param appendix: добавлять к именам файлов
+        :return:
+        """
+        AbstractEstimatorDecorator.__init__(self, component)
+        self.foldername = foldername
+        self.appendix = appendix
+
+    def estimate(self, measdata, options):
+        """
+        Описание выходной структуры данных любого оценщика или его декоратора
+         'b'            оцененный вектор коэффициентов
+         'numiter'      число итераций
+         'log'          лог
+         'Sklist'       список значений объектной функции
+         'Sk'           последнее значение объектной функции
+
+         'Vb'           ковариационная матрица оценённого вектора b
+         'VbSigmas'     сигмы из ковариационной матрицы оценённого вектора b (корни квадратные из диагонали)
+
+         'AvLogTruth'   среднее по точкам эксперимента значение логарифма правдоподобия
+         'DispLT'       дисперсия логарифма правдоподобия
+         'SigmaLT'      среднеквадратическое отклонение логарифма правдоподобия
+         'AvDif'        средний остатков
+         'DispDif'      дисперсия остатков
+         'SigmaDif'     СКВ остатков
+         'Diflist'      список остатков
+         'name'         название метода
+
+        """
+        import matplotlib.pyplot as plt
+
+        est = self.component.estimate(measdata, options)
+
+        try:
+            for i in range (len( est['Diflist'][0])):
+
+                part_diflist = [f[i] for f in est['Diflist']]
+
+                part_diflist = [x for x in part_diflist if x<1e10]
+
+                fig, ax = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
+                ax.hist(part_diflist,20)
+                fig.savefig (self.foldername+'/diflist_hist_20_var_{0}{1}.png'.format(i,self.appendix))
+                plt.close(fig)
+
+
+
+
+        except: #если диод, там плоский список
+            part_diflist = est['Diflist']
+            fig, ax = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
+            ax.hist(part_diflist,20)
+            fig.savefig (self.foldername+'/diflist_hist_20_{0}.png'.format(self.appendix))
+            plt.close(fig)
+
+
+
+
+
+
+
+        fig, ax = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
+        ax.plot (est['Sklist'])
+        fig.savefig (self.foldername+'/diflist_Skdrop_{0}.png'.format(self.appendix))
+        plt.close(fig)
+
+        return est
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -273,7 +273,7 @@ def test ():
 
 
 
-    exit(0)
+
 
 
     xrange = np.arange (v1, v2, 0.00001)

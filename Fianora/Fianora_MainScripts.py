@@ -120,17 +120,23 @@ class TransistorMainScript(AbstractMainScript):
         RB = 0
 
         parameter_str_list = ['IS', 'BF', 'NR', 'NF', 'BR']     # список параметров
-        btrue = [IS, BF, NR, NF, BR]
 
-        Ve = np.diag([1.9e-5]*3)
+        b_nominal = [IS, BF, NR, NF, BR]
+        bstart = np.array(b_nominal)-np.array(b_nominal)*0.3
+        bend = np.array(b_nominal)+np.array(b_nominal)*0.3
+        #btrue = f_sf.rangomNormalvariateVector(bstart, bend)
+        btrue  = b_nominal
 
-        bstart = np.array(btrue)-np.array(btrue)*0.3
-        bend = np.array(btrue)+np.array(btrue)*0.3
+        binit = b_nominal
 
-        binit = f_sf.uniformVector(bstart, bend)
+
+        Ve = np.diag([1.9e-3]*3)
+
+
+
 
         xstart = np.array([0.001, 0.001])
-        xend = np.array([1, 1])
+        xend = np.array([.6, .6])
         N = 50
 
         ec = f_sf.EstimationContext(bstart, bend, btrue, binit, xstart, xend, Ve, N) #упаковывание в контекст
@@ -150,7 +156,11 @@ class TransistorMainScript(AbstractMainScript):
         estimator = f_e.NGEstimator()
         estimator.init_parameters(ec, self.model)
 
-        self.estimator  = f_e.ConsoleEstimatorDecorator(estimator)
+        ce  = f_e.ConsoleEstimatorDecorator(estimator)
+
+        self.estimator = f_e.GraphPackEstimatorDecorator(ce,'../Cases/resfiles', 'NPN_KT315')
+
+
 
 
 
@@ -159,8 +169,7 @@ def test():
     #dm = DiodeMainScript()
 
 
-
-    #http://habrahabr.ru/post/157537/ - как накрутрутить производительность с помощью ctypes
+    #http://habrahabr.ru/post/157537/ - как накрутить производительность с помощью ctypes
 
 
     with f_sf.Profiler() as p:
