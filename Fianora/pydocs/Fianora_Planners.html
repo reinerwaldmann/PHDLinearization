@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module Fianora_Planners</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>Fianora_Planners</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:d%3A%5Cprojects%5Cphdlinearization%5Cfianora%5Cfianora_planners.py">d:\projects\phdlinearization\fianora\fianora_planners.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="copy.html">copy</a><br>
+<a href="datetime.html">datetime</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+<a href="Fianora.Fianora_static_functions.html">Fianora.Fianora_static_functions</a><br>
+</td><td width="25%" valign=top><a href="time.html">time</a><br>
+<a href="traceback.html">traceback</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="Fianora_Planners.html#DOptimalPlanner">DOptimalPlanner</a>
+</font></dt><dt><font face="helvetica, arial"><a href="Fianora_Planners.html#RandomPlanner">RandomPlanner</a>
+</font></dt><dt><font face="helvetica, arial"><a href="Fianora_Planners.html#UniformPlanner">UniformPlanner</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AbstractPlanner">class <strong>AbstractPlanner</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="AbstractPlanner-__init__"><strong>__init__</strong></a>(self, ec:Fianora.Fianora_static_functions.EstimationContext, plancachefoldername='cache', planname='plan')</dt></dl>
+
+<dl><dt><a name="AbstractPlanner-give_us_a_plan"><strong>give_us_a_plan</strong></a>(self, nocache=False)</dt><dd><tt>In&nbsp;normal&nbsp;conditions,&nbsp;first&nbsp;trying&nbsp;to&nbsp;unpack&nbsp;a&nbsp;cached&nbsp;plan,&nbsp;then&nbsp;trying&nbsp;to&nbsp;make&nbsp;plan,&nbsp;cache&nbsp;it&nbsp;and&nbsp;return<br>
+if&nbsp;nocache,&nbsp;then&nbsp;just&nbsp;making&nbsp;plan&nbsp;without&nbsp;caching<br>
+:param&nbsp;nocache:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="AbstractPlanner-make_file_name"><strong>make_file_name</strong></a>(self)</dt><dd><tt>makes&nbsp;a&nbsp;filename&nbsp;from&nbsp;class&nbsp;parameters</tt></dd></dl>
+
+<dl><dt><a name="AbstractPlanner-make_plan"><strong>make_plan</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="AbstractPlanner-take_plan_from_cache"><strong>take_plan_from_cache</strong></a>(self)</dt><dd><tt>Читает&nbsp;план&nbsp;из&nbsp;файла&nbsp;-&nbsp;запись&nbsp;в&nbsp;виде&nbsp;столбца&nbsp;векторов&nbsp;[]<br>
+:param&nbsp;filename:&nbsp;имя&nbsp;файла<br>
+:return:&nbsp;план&nbsp;(список&nbsp;векторов)</tt></dd></dl>
+
+<dl><dt><a name="AbstractPlanner-write_plan_to_cache"><strong>write_plan_to_cache</strong></a>(self, plan)</dt><dd><tt>&nbsp;Пишет&nbsp;план&nbsp;в&nbsp;файл.&nbsp;Значения&nbsp;пишутся&nbsp;в&nbsp;формате&nbsp;python&nbsp;(вектор&nbsp;[])<br>
+:param&nbsp;plan:&nbsp;план&nbsp;(список)<br>
+:return:&nbsp;ничего</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DOptimalPlanner">class <strong>DOptimalPlanner</strong></a>(<a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Fianora_Planners.html#DOptimalPlanner">DOptimalPlanner</a></dd>
+<dd><a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="DOptimalPlanner-__init__"><strong>__init__</strong></a>(self, ec, plancachefoldername='cache', verbose=False)</dt></dl>
+
+<dl><dt><a name="DOptimalPlanner-countMeanVbForAprior_S4000"><strong>countMeanVbForAprior_S4000</strong></a>(self, expplan:list)</dt><dd><tt>:return:&nbsp;среднее&nbsp;значение&nbsp;определителя&nbsp;[0]&nbsp;и&nbsp;его&nbsp;дисперсию&nbsp;[1]</tt></dd></dl>
+
+<dl><dt><a name="DOptimalPlanner-countVbForPlan"><strong>countVbForPlan</strong></a>(self, expplan, b)</dt><dd><tt>:param&nbsp;expplan:&nbsp;план&nbsp;эксперимента<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;доп.&nbsp;параметров<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментов&nbsp;np.array<br>
+:param&nbsp;jac:&nbsp;функция&nbsp;якобиана&nbsp;(на&nbsp;входе&nbsp;x,b,c=None,&nbsp;y=None),&nbsp;возвращать&nbsp;должно&nbsp;np.array<br>
+:return:&nbsp;значение&nbsp;определителя&nbsp;для&nbsp;данного&nbsp;плана&nbsp;эксперимента</tt></dd></dl>
+
+<dl><dt><a name="DOptimalPlanner-make_plan"><strong>make_plan</strong></a>(self)</dt><dd><tt>Реализует&nbsp;априорное&nbsp;планирование&nbsp;эксперимента<br>
+:param&nbsp;xstart:&nbsp;начало&nbsp;диапазона&nbsp;x&nbsp;(вектор)<br>
+:param&nbsp;xend:&nbsp;конец&nbsp;диапазона&nbsp;x&nbsp;&nbsp;(вектор)<br>
+:param&nbsp;N:&nbsp;размер&nbsp;плана&nbsp;(количество&nbsp;контрольных&nbsp;точек)<br>
+:param&nbsp;bstart:&nbsp;начало&nbsp;диапазона&nbsp;b&nbsp;(вектор)<br>
+:param&nbsp;bend:&nbsp;конец&nbsp;диапазона&nbsp;b&nbsp;(вектор)<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;дополнительных&nbsp;переменных<br>
+:param&nbsp;Ve:&nbsp;Ковариационная&nbsp;матрица&nbsp;y,&nbsp;реально&nbsp;её&nbsp;диагональ&nbsp;(вектор)<br>
+:param&nbsp;jac:&nbsp;Якобиан&nbsp;функции,&nbsp;принимает&nbsp;на&nbsp;вход&nbsp;x,b,c,y<br>
+:param&nbsp;verbosePlan:&nbsp;если&nbsp;true,&nbsp;пишет&nbsp;все&nbsp;планы&nbsp;в&nbsp;файлы,&nbsp;иначе&nbsp;только&nbsp;оптимальный<br>
+:param&nbsp;initplan:&nbsp;начальный&nbsp;план.&nbsp;По&nbsp;умолчанию&nbsp;случаен,&nbsp;но&nbsp;может&nbsp;быть&nbsp;задан&nbsp;(в&nbsp;этом&nbsp;случае&nbsp;делается&nbsp;одна&nbsp;попытка)<br>
+:param&nbsp;verbose:&nbsp;выдавать&nbsp;ли&nbsp;в&nbsp;консоль&nbsp;информацию&nbsp;optimized-original<br>
+:return:&nbsp;кортеж:&nbsp;0:&nbsp;оптимизированное&nbsp;значение&nbsp;определителя&nbsp;Vb,&nbsp;1:&nbsp;оптимальный&nbsp;план&nbsp;эксперимента</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a>:<br>
+<dl><dt><a name="DOptimalPlanner-give_us_a_plan"><strong>give_us_a_plan</strong></a>(self, nocache=False)</dt><dd><tt>In&nbsp;normal&nbsp;conditions,&nbsp;first&nbsp;trying&nbsp;to&nbsp;unpack&nbsp;a&nbsp;cached&nbsp;plan,&nbsp;then&nbsp;trying&nbsp;to&nbsp;make&nbsp;plan,&nbsp;cache&nbsp;it&nbsp;and&nbsp;return<br>
+if&nbsp;nocache,&nbsp;then&nbsp;just&nbsp;making&nbsp;plan&nbsp;without&nbsp;caching<br>
+:param&nbsp;nocache:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="DOptimalPlanner-make_file_name"><strong>make_file_name</strong></a>(self)</dt><dd><tt>makes&nbsp;a&nbsp;filename&nbsp;from&nbsp;class&nbsp;parameters</tt></dd></dl>
+
+<dl><dt><a name="DOptimalPlanner-take_plan_from_cache"><strong>take_plan_from_cache</strong></a>(self)</dt><dd><tt>Читает&nbsp;план&nbsp;из&nbsp;файла&nbsp;-&nbsp;запись&nbsp;в&nbsp;виде&nbsp;столбца&nbsp;векторов&nbsp;[]<br>
+:param&nbsp;filename:&nbsp;имя&nbsp;файла<br>
+:return:&nbsp;план&nbsp;(список&nbsp;векторов)</tt></dd></dl>
+
+<dl><dt><a name="DOptimalPlanner-write_plan_to_cache"><strong>write_plan_to_cache</strong></a>(self, plan)</dt><dd><tt>&nbsp;Пишет&nbsp;план&nbsp;в&nbsp;файл.&nbsp;Значения&nbsp;пишутся&nbsp;в&nbsp;формате&nbsp;python&nbsp;(вектор&nbsp;[])<br>
+:param&nbsp;plan:&nbsp;план&nbsp;(список)<br>
+:return:&nbsp;ничего</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RandomPlanner">class <strong>RandomPlanner</strong></a>(<a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Fianora_Planners.html#RandomPlanner">RandomPlanner</a></dd>
+<dd><a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="RandomPlanner-make_plan"><strong>make_plan</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a>:<br>
+<dl><dt><a name="RandomPlanner-__init__"><strong>__init__</strong></a>(self, ec:Fianora.Fianora_static_functions.EstimationContext, plancachefoldername='cache', planname='plan')</dt></dl>
+
+<dl><dt><a name="RandomPlanner-give_us_a_plan"><strong>give_us_a_plan</strong></a>(self, nocache=False)</dt><dd><tt>In&nbsp;normal&nbsp;conditions,&nbsp;first&nbsp;trying&nbsp;to&nbsp;unpack&nbsp;a&nbsp;cached&nbsp;plan,&nbsp;then&nbsp;trying&nbsp;to&nbsp;make&nbsp;plan,&nbsp;cache&nbsp;it&nbsp;and&nbsp;return<br>
+if&nbsp;nocache,&nbsp;then&nbsp;just&nbsp;making&nbsp;plan&nbsp;without&nbsp;caching<br>
+:param&nbsp;nocache:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="RandomPlanner-make_file_name"><strong>make_file_name</strong></a>(self)</dt><dd><tt>makes&nbsp;a&nbsp;filename&nbsp;from&nbsp;class&nbsp;parameters</tt></dd></dl>
+
+<dl><dt><a name="RandomPlanner-take_plan_from_cache"><strong>take_plan_from_cache</strong></a>(self)</dt><dd><tt>Читает&nbsp;план&nbsp;из&nbsp;файла&nbsp;-&nbsp;запись&nbsp;в&nbsp;виде&nbsp;столбца&nbsp;векторов&nbsp;[]<br>
+:param&nbsp;filename:&nbsp;имя&nbsp;файла<br>
+:return:&nbsp;план&nbsp;(список&nbsp;векторов)</tt></dd></dl>
+
+<dl><dt><a name="RandomPlanner-write_plan_to_cache"><strong>write_plan_to_cache</strong></a>(self, plan)</dt><dd><tt>&nbsp;Пишет&nbsp;план&nbsp;в&nbsp;файл.&nbsp;Значения&nbsp;пишутся&nbsp;в&nbsp;формате&nbsp;python&nbsp;(вектор&nbsp;[])<br>
+:param&nbsp;plan:&nbsp;план&nbsp;(список)<br>
+:return:&nbsp;ничего</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="UniformPlanner">class <strong>UniformPlanner</strong></a>(<a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Fianora_Planners.html#UniformPlanner">UniformPlanner</a></dd>
+<dd><a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="UniformPlanner-make_plan"><strong>make_plan</strong></a>(self)</dt><dd><tt>Создаёт&nbsp;равномерный&nbsp;план&nbsp;эксперимента<br>
+:param&nbsp;xstart:&nbsp;начало&nbsp;диапазона&nbsp;x<br>
+:param&nbsp;xend:&nbsp;конец&nbsp;диапазона&nbsp;x<br>
+:param&nbsp;N:&nbsp;Количество&nbsp;точек&nbsp;в&nbsp;плане&nbsp;(внимание!&nbsp;это&nbsp;количество&nbsp;измерений&nbsp;каждого&nbsp;вектора,&nbsp;то&nbsp;есть,&nbsp;реальное&nbsp;кол-во&nbsp;будет&nbsp;N^len(xstart))<br>
+:return:&nbsp;равномерный&nbsp;план&nbsp;эксперимента</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a>:<br>
+<dl><dt><a name="UniformPlanner-__init__"><strong>__init__</strong></a>(self, ec:Fianora.Fianora_static_functions.EstimationContext, plancachefoldername='cache', planname='plan')</dt></dl>
+
+<dl><dt><a name="UniformPlanner-give_us_a_plan"><strong>give_us_a_plan</strong></a>(self, nocache=False)</dt><dd><tt>In&nbsp;normal&nbsp;conditions,&nbsp;first&nbsp;trying&nbsp;to&nbsp;unpack&nbsp;a&nbsp;cached&nbsp;plan,&nbsp;then&nbsp;trying&nbsp;to&nbsp;make&nbsp;plan,&nbsp;cache&nbsp;it&nbsp;and&nbsp;return<br>
+if&nbsp;nocache,&nbsp;then&nbsp;just&nbsp;making&nbsp;plan&nbsp;without&nbsp;caching<br>
+:param&nbsp;nocache:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="UniformPlanner-make_file_name"><strong>make_file_name</strong></a>(self)</dt><dd><tt>makes&nbsp;a&nbsp;filename&nbsp;from&nbsp;class&nbsp;parameters</tt></dd></dl>
+
+<dl><dt><a name="UniformPlanner-take_plan_from_cache"><strong>take_plan_from_cache</strong></a>(self)</dt><dd><tt>Читает&nbsp;план&nbsp;из&nbsp;файла&nbsp;-&nbsp;запись&nbsp;в&nbsp;виде&nbsp;столбца&nbsp;векторов&nbsp;[]<br>
+:param&nbsp;filename:&nbsp;имя&nbsp;файла<br>
+:return:&nbsp;план&nbsp;(список&nbsp;векторов)</tt></dd></dl>
+
+<dl><dt><a name="UniformPlanner-write_plan_to_cache"><strong>write_plan_to_cache</strong></a>(self, plan)</dt><dd><tt>&nbsp;Пишет&nbsp;план&nbsp;в&nbsp;файл.&nbsp;Значения&nbsp;пишутся&nbsp;в&nbsp;формате&nbsp;python&nbsp;(вектор&nbsp;[])<br>
+:param&nbsp;plan:&nbsp;план&nbsp;(список)<br>
+:return:&nbsp;ничего</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="Fianora_Planners.html#AbstractPlanner">AbstractPlanner</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">vasilev_is</td></tr></table>
+</body></html>

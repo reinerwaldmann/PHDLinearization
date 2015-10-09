@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module Fianora_static_functions</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>Fianora_static_functions</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:d%3A%5Cprojects%5Cphdlinearization%5Cfianora%5Cfianora_static_functions.py">d:\projects\phdlinearization\fianora\fianora_static_functions.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="copy.html">copy</a><br>
+</td><td width="25%" valign=top><a href="random.html">random</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top><a href="time.html">time</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="Fianora_static_functions.html#EstimationContext">EstimationContext</a>
+</font></dt><dt><font face="helvetica, arial"><a href="Fianora_static_functions.html#Profiler">Profiler</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="EstimationContext">class <strong>EstimationContext</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="EstimationContext-__init__"><strong>__init__</strong></a>(self, bstart, bend, btrue, binit, xstart, xend, Ve, N)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Profiler">class <strong>Profiler</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Profiler-__enter__"><strong>__enter__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Profiler-__exit__"><strong>__exit__</strong></a>(self, type, value, traceback)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-appendToList"><strong>appendToList</strong></a>(list, x)</dt><dd><tt>:param&nbsp;list:&nbsp;список<br>
+:param&nbsp;x:&nbsp;переменная,&nbsp;которую&nbsp;добавляем<br>
+:return:&nbsp;Возвращает&nbsp;список&nbsp;list,&nbsp;в&nbsp;который&nbsp;добавляется&nbsp;x</tt></dd></dl>
+ <dl><dt><a name="-doublesearch"><strong>doublesearch</strong></a>(xstart, xend, xinit, function)</dt><dd><tt>Метод&nbsp;двойного&nbsp;поиска&nbsp;с&nbsp;ограничениями<br>
+:param&nbsp;xstart:&nbsp;начало&nbsp;диапазона&nbsp;x&nbsp;(вектор)<br>
+:param&nbsp;xend:&nbsp;конец&nbsp;диапазона&nbsp;x&nbsp;(вектор)<br>
+:param&nbsp;xinit:начальное&nbsp;значение&nbsp;x&nbsp;(вектор)<br>
+:param&nbsp;function:&nbsp;объектная&nbsp;функция,&nbsp;принимает&nbsp;на&nbsp;вход&nbsp;x<br>
+:return:&nbsp;оптимизированное&nbsp;значение&nbsp;x</tt></dd></dl>
+ <dl><dt><a name="-rangomNormalvariateVector"><strong>rangomNormalvariateVector</strong></a>(xstart, xend)</dt></dl>
+ <dl><dt><a name="-replaceInList"><strong>replaceInList</strong></a>(list, i, x)</dt><dd><tt>:param&nbsp;list:&nbsp;список<br>
+:param&nbsp;i:&nbsp;индекс&nbsp;элемента<br>
+:param&nbsp;x:&nbsp;переменная,&nbsp;на&nbsp;которую&nbsp;заменяем&nbsp;элемент<br>
+:return:&nbsp;Возвращает&nbsp;список&nbsp;list,&nbsp;в&nbsp;котором&nbsp;i-й&nbsp;элемент&nbsp;заменяется&nbsp;на&nbsp;x</tt></dd></dl>
+ <dl><dt><a name="-uniformVector"><strong>uniformVector</strong></a>(xstart, xend)</dt><dd><tt>:param&nbsp;xstart:&nbsp;вектор&nbsp;начала&nbsp;диапазона<br>
+:param&nbsp;xend:&nbsp;вектор&nbsp;конца&nbsp;диапазона<br>
+:return:&nbsp;вектор,&nbsp;являющийся&nbsp;частью&nbsp;равномерного&nbsp;распределения&nbsp;между&nbsp;xstart&nbsp;и&nbsp;xend</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">vasilev_is</td></tr></table>
+</body></html>

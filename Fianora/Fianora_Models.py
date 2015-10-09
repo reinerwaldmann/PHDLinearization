@@ -435,17 +435,34 @@ class StringEMTransistorModel (SemiconductorModel, StringDefinedModel):
 
 
     def make_parameter_str_list(self):
+        """
+        Список параметров
+        :return:
+        """
         return ['IS', 'BF', 'NR', 'NF', 'BR']     # список параметров
 
     def make_modelstr(self):
+        """
+        Определяет, как из компонентов строится модель
+        :return:
+        """
         return  ['Icc+Ibe',
                          'Ibc-Icc',
                          'Icc+Ibe-Ibc+Icc']   # строковое представление того, как из компонентов строится модель
 
     def make_components(self):
-        return {'Icc': 'IS * (math.exp(Vbe/(NF*FT))-math.exp(Vbc/(NR*FT) ))',
-                            'Ibe': '(IS/BF) * (math.exp(Vbe/(NF*FT))-1)',
-                            'Ibc': '(IS/BR) * (math.exp(Vbc/(NR*FT))-1)'}
+        """
+        Определяет компоненты модели
+        :return:
+        """
+        # return {'Icc': 'IS * (math.exp(Vbe/(NF*FT))-math.exp(Vbc/(NR*FT) ))',
+        #                     'Ibe': '(IS/BF) * (math.exp(Vbe/(NF*FT))-1)',
+        #                     'Ibc': '(IS/BR) * (math.exp(Vbc/(NR*FT))-1)'}
+
+        return {'Icc': '10e-15*IS * (math.exp(Vbe/(NF*FT))-math.exp(Vbc/(NR*FT) ))',
+                            'Ibe': '(10e-15*IS/BF) * (math.exp(Vbe/(NF*FT))-1)',
+                            'Ibc': '(10e-15*IS/BR) * (math.exp(Vbc/(NR*FT))-1)'}
+
 
     def eval_string(self, _str, x, b, y=None):
         """

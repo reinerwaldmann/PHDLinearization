@@ -17,6 +17,7 @@
          'SigmaDif'     СКВ остатков
          'Diflist'      список остатков
          'name'         название метода
+         'GammaDelta'   радиус эллипса в точке оптимума
 
 """
 __author__ = 'vasilev_is'
@@ -70,6 +71,10 @@ class AbstractEstimator():
         в итоге получается некоторый стандартный словарь
         :return:
         """
+        #  функция adequacy здесь - какбы функция - декоратор, внутренняя
+        #  есть структура данных,est, которая передаётся функции(ям), которые дополняют её на основе своих
+        #  сведений и сведений, определённых в ней, некоторыми данными
+
         z = self.estimate_method(measdata, options).copy()
         z.update(self.adequacy(z, measdata))
         z['name'] = self.model.name
@@ -106,6 +111,7 @@ class AbstractEstimator():
          'SigmaDif'     СКВ остатков
          'Diflist'      список остатков
          'name'         название метода
+         'GammaDelta'   полширины эллипсоида рассеяния по измерению данного элемента вектора b
         """
 
         rs={}
@@ -123,9 +129,47 @@ class AbstractEstimator():
         names=['AvLogTruth','DispLT', 'SigmaLT', 'AvDif', 'DispDif', 'SigmaDif', 'Diflist']
         values =  list(logTruthnessStuff) + list(diflistStuff)
         rs.update(dict(zip (names, values)))
+        rs['GammaDelta'] = self.countGammaDelta(b, measdata, est['Sk'])
 
 
         return rs
+
+    def countGammaDelta (self, b:list, measdata, Sk):
+        """
+        P174 Bard.
+
+        b_i*-GammaDelta<=b_i<=b_i*+GammaDelta
+
+        GammaDelta = (2e/A[i][i])^.5
+        where
+        A = H*
+        H* - Гессиан функции правдоподобия
+        Считаем, что H* = sum(jj(measdata(i,b*).T*jj(measdata(i,b*))
+        то есть сумма по точкам
+        :param b:
+        :param measdata:
+        :return: вектор гамма-дельта значений,
+        равных полширине эллипсоида рассеяния
+        """
+        jac = self.model.jacf
+
+        H=np.zeros((len(b),len(b))) #матрица G
+
+        for point in measdata:
+            jj=jac(point['x'], b, point['y'])
+            H+=np.dot(jj.T, jj)
+
+
+
+        H*=2
+        e=Sk
+        return [math.sqrt(2*e/H[i][i]) for i in range (len(b)) ]
+
+
+
+
+
+
 
     def countVbForMeasdata(self, b:list, measdata):
         """
@@ -152,15 +196,20 @@ class AbstractEstimator():
         func = self.model.funcf
         jac = self.model.jacf
 
+
+
         G=np.zeros((len(b),len(b))) #матрица G
 
         for point in measdata:
             jj=jac(point['x'], b, point['y'])
             G+=np.dot ( np.dot(jj.T, np.linalg.inv(Ve)), jj)
+            #G+=np.dot ( jj.T, jj)
+
 
 
         try:
-            return .5*np.absolute(np.linalg.inv(G))
+            return np.absolute(np.linalg.inv(G))
+            #return np.absolute(G)
         except BaseException as e:
             print('Fatal error in countVbForMeasdata: ',e)
             print('b vector=',b)
@@ -315,9 +364,6 @@ class NGEEstimatorUnlimited (AbstractEstimator):
                 else:
                     B5+=np.dot(dif,jac)
                 Sk+=np.dot(dif.T,dif)
-
-
-
 
 
 

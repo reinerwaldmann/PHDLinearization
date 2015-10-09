@@ -102,7 +102,8 @@ class TransistorMainScript(AbstractMainScript):
         inf=10e10
 
 
-        IS = 10e-15
+        #IS = 10e-15
+        IS = 1
         BF = 584.517
         VAF = 100
         VAR = inf
@@ -124,20 +125,23 @@ class TransistorMainScript(AbstractMainScript):
         b_nominal = [IS, BF, NR, NF, BR]
         bstart = np.array(b_nominal)-np.array(b_nominal)*0.3
         bend = np.array(b_nominal)+np.array(b_nominal)*0.3
-        #btrue = f_sf.rangomNormalvariateVector(bstart, bend)
-        btrue  = b_nominal
 
+        #btrue = f_sf.rangomNormalvariateVector(bstart, bend)
+        btrue =  [1.1204058410408533, 587.71110706589764, 1.0110737035569517, 0.97217262436055318, 1.7709083403162802]
+
+
+        #btrue  = b_nominal
         binit = b_nominal
 
+        print ('Btrue set to:', btrue)
 
-        Ve = np.diag([1.9e-3]*3)
 
-
+        Ve = np.diag([1.9e-5]*3)
 
 
         xstart = np.array([0.001, 0.001])
         xend = np.array([.6, .6])
-        N = 50
+        N = 60
 
         ec = f_sf.EstimationContext(bstart, bend, btrue, binit, xstart, xend, Ve, N) #упаковывание в контекст
 
@@ -160,20 +164,35 @@ class TransistorMainScript(AbstractMainScript):
 
         self.estimator = f_e.GraphPackEstimatorDecorator(ce,'../Cases/resfiles', 'NPN_KT315')
 
+     # def proceed(self, nocacheplan = False):
+     #    # Вот здесь бы и фабричный метод пользовать, потому что получается, что этот методв
+     #    # требует некоторых атрибутов. Явно видно, какие методы надо переопределить,
+     #    # а вот насчёт атрибутов не всё так прозрачно.
+     #        plan = self.planner.give_us_a_plan(nocacheplan)
+     #        self.measdata = self.plan_measurer.measure_acc_to_plan(plan)
+     #
+     #
+     #        [print (m['x'], m['y']) for m in self.measdata]
+     #
+     #        exit(0)
+     #
+     #        return self.estimator.estimate(self.measdata, self.options)
 
 
 
 
 def test():
-    dm = TransistorMainScript()
-    #dm = DiodeMainScript()
+    #dm = TransistorMainScript()
+    dm = DiodeMainScript()
 
 
     #http://habrahabr.ru/post/157537/ - как накрутить производительность с помощью ctypes
 
 
     with f_sf.Profiler() as p:
-        print (dm.proceed(nocacheplan=False))
+        #print (dm.proceed(nocacheplan=False))
+        dm.proceed(nocacheplan=False)
+
 
 if __name__ == '__main__':
     test()

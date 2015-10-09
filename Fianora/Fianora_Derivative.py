@@ -13,7 +13,7 @@ import sympy
 import Fianora.Fianora_Models
 
 
-class StringEMTransistorModel (EMTransistorModel):
+class StringEMTransistorModel (Fianora.Fianora_Models.EMTransistorModel):
     def evalfunc(self,dct, evalfn):
         """
         Рекурсивное вычисление словаря любой вложенности

@@ -1,0 +1,770 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module Fianora_Estimators</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>Fianora_Estimators</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:d%3A%5Cprojects%5Cphdlinearization%5Cfianora%5Cfianora_estimators.py">d:\projects\phdlinearization\fianora\fianora_estimators.py</a></font></td></tr></table>
+    <p><tt>Описание&nbsp;выходной&nbsp;структуры&nbsp;данных&nbsp;любого&nbsp;оценщика&nbsp;или&nbsp;его&nbsp;декоратора<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'b'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;оцененный&nbsp;вектор&nbsp;коэффициентов<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'numiter'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;число&nbsp;итераций<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'log'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;лог<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Sklist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;значений&nbsp;объектной&nbsp;функции<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Sk'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;последнее&nbsp;значение&nbsp;объектной&nbsp;функции<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Vb'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ковариационная&nbsp;матрица&nbsp;оценённого&nbsp;вектора&nbsp;b<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'VbSigmas'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;сигмы&nbsp;из&nbsp;ковариационной&nbsp;матрицы&nbsp;оценённого&nbsp;вектора&nbsp;b&nbsp;(корни&nbsp;квадратные&nbsp;из&nbsp;диагонали)<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'AvLogTruth'&nbsp;&nbsp;&nbsp;среднее&nbsp;по&nbsp;точкам&nbsp;эксперимента&nbsp;значение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'DispLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SigmaLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;среднеквадратическое&nbsp;отклонение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'AvDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;средний&nbsp;остатков<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'DispDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;остатков<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'SigmaDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;СКВ&nbsp;остатков<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Diflist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;остатков<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'name'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;название&nbsp;метода<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'GammaDelta'&nbsp;&nbsp;&nbsp;радиус&nbsp;эллипса&nbsp;в&nbsp;точке&nbsp;оптимума</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="Fianora.html">Fianora</a><br>
+<a href="copy.html">copy</a><br>
+</td><td width="25%" valign=top><a href="Fianora.Fianora_static_functions.html">Fianora.Fianora_static_functions</a><br>
+<a href="math.html">math</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+<a href="platform.html">platform</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="Fianora_Estimators.html#AbstractEstimatorDecorator">AbstractEstimatorDecorator</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="Fianora_Estimators.html#ConsoleEstimatorDecorator">ConsoleEstimatorDecorator</a>
+</font></dt><dt><font face="helvetica, arial"><a href="Fianora_Estimators.html#GraphPackEstimatorDecorator">GraphPackEstimatorDecorator</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="Fianora_Estimators.html#NGEEstimatorUnlimited">NGEEstimatorUnlimited</a>
+</font></dt><dt><font face="helvetica, arial"><a href="Fianora_Estimators.html#NGEstimator">NGEstimator</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="Fianora_Estimators.html#Options">Options</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AbstractEstimator">class <strong>AbstractEstimator</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="AbstractEstimator-adequacy"><strong>adequacy</strong></a>(self, est, measdata)</dt><dd><tt>Adequacy&nbsp;determiner<br>
+Спецификация:<br>
+Тип&nbsp;данных&nbsp;-&nbsp;словарь<br>
+Поля&nbsp;и&nbsp;описание&nbsp;-<br>
+&nbsp;'b'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;оцененный&nbsp;вектор&nbsp;коэффициентов<br>
+&nbsp;'numiter'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;число&nbsp;итераций<br>
+&nbsp;'log'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;лог<br>
+&nbsp;'Sklist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;значений&nbsp;объектной&nbsp;функции<br>
+&nbsp;'Sk'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;последнее&nbsp;значение&nbsp;объектной&nbsp;функции<br>
+&nbsp;<br>
+&nbsp;'Vb'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ковариационная&nbsp;матрица&nbsp;оценённого&nbsp;вектора&nbsp;b<br>
+&nbsp;'VbSigmas'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;сигмы&nbsp;из&nbsp;ковариационной&nbsp;матрицы&nbsp;оценённого&nbsp;вектора&nbsp;b&nbsp;(корни&nbsp;квадратные&nbsp;из&nbsp;диагонали)<br>
+&nbsp;<br>
+&nbsp;'AvLogTruth'&nbsp;&nbsp;&nbsp;среднее&nbsp;по&nbsp;точкам&nbsp;эксперимента&nbsp;значение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'DispLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'SigmaLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;среднеквадратическое&nbsp;отклонение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'AvDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;средний&nbsp;остатков<br>
+&nbsp;'DispDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;остатков<br>
+&nbsp;'SigmaDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;СКВ&nbsp;остатков<br>
+&nbsp;'Diflist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;остатков<br>
+&nbsp;'name'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;название&nbsp;метода<br>
+&nbsp;'GammaDelta'&nbsp;&nbsp;&nbsp;полширины&nbsp;эллипсоида&nbsp;рассеяния&nbsp;по&nbsp;измерению&nbsp;данного&nbsp;элемента&nbsp;вектора&nbsp;b</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimator-averageDif"><strong>averageDif</strong></a>(self, b, measdata)</dt><dd><tt>:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;вектор&nbsp;коэфф<br>
+:param&nbsp;Ve:&nbsp;&nbsp;Ve&nbsp;ковар.&nbsp;матрица&nbsp;измеренных&nbsp;данных<br>
+:param&nbsp;funcf&nbsp;callable&nbsp;функция,&nbsp;параметры&nbsp;по&nbsp;формату&nbsp;x,b,c<br>
+:param&nbsp;c&nbsp;словарь&nbsp;дополнительных&nbsp;постоянных<br>
+:return:&nbsp;среднее,&nbsp;дисперсия,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimator-countGammaDelta"><strong>countGammaDelta</strong></a>(self, b:list, measdata, Sk)</dt><dd><tt>P174&nbsp;Bard.<br>
+&nbsp;<br>
+b_i*-GammaDelta&lt;=b_i&lt;=b_i*+GammaDelta<br>
+&nbsp;<br>
+GammaDelta&nbsp;=&nbsp;(2e/A[i][i])^.5<br>
+where<br>
+A&nbsp;=&nbsp;H*<br>
+H*&nbsp;-&nbsp;Гессиан&nbsp;функции&nbsp;правдоподобия<br>
+Считаем,&nbsp;что&nbsp;H*&nbsp;=&nbsp;sum(jj(measdata(i,b*).T*jj(measdata(i,b*))<br>
+то&nbsp;есть&nbsp;сумма&nbsp;по&nbsp;точкам<br>
+:param&nbsp;b:<br>
+:param&nbsp;measdata:<br>
+:return:&nbsp;вектор&nbsp;гамма-дельта&nbsp;значений,<br>
+равных&nbsp;полширине&nbsp;эллипсоида&nbsp;рассеяния</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimator-countVbForMeasdata"><strong>countVbForMeasdata</strong></a>(self, b:list, measdata)</dt><dd><tt>Для&nbsp;неявных&nbsp;функций&nbsp;актуальным&nbsp;является&nbsp;значение&nbsp;y.&nbsp;В&nbsp;некоторых&nbsp;случаях&nbsp;(напр.&nbsp;при&nbsp;последовательном&nbsp;планировании)<br>
+y&nbsp;уже&nbsp;просчитан,&nbsp;и&nbsp;нет&nbsp;нужды&nbsp;его&nbsp;считать&nbsp;снова,&nbsp;задавая&nbsp;функцию.<br>
+:param&nbsp;expplan:&nbsp;план&nbsp;эксперимента<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;доп.&nbsp;параметров<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментов&nbsp;np.array<br>
+:param&nbsp;jac:&nbsp;функция&nbsp;якобиана&nbsp;(на&nbsp;входе&nbsp;x,b,c=None,&nbsp;y=None),&nbsp;возвращать&nbsp;должно&nbsp;np.array<br>
+:param&nbsp;measdata:&nbsp;данные&nbsp;измерений<br>
+:return:&nbsp;значение&nbsp;определителя&nbsp;для&nbsp;данного&nbsp;плана&nbsp;эксперимента</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimator-estimate"><strong>estimate</strong></a>(self, measdata, options=None)</dt><dd><tt>Шаблонный&nbsp;метод,&nbsp;идея&nbsp;в&nbsp;том,&nbsp;что&nbsp;сначала&nbsp;выполняется&nbsp;оценка,&nbsp;потом&nbsp;определяются&nbsp;показатели&nbsp;адекватности<br>
+в&nbsp;итоге&nbsp;получается&nbsp;некоторый&nbsp;стандартный&nbsp;словарь<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimator-estimate_method"><strong>estimate_method</strong></a>(self, measdata, options)</dt><dd><tt>Estimation&nbsp;method,&nbsp;like&nbsp;gknux<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimator-init_parameters"><strong>init_parameters</strong></a>(self, ec, model)</dt><dd><tt>Эта&nbsp;функция&nbsp;должна&nbsp;вызываться&nbsp;у&nbsp;объекта&nbsp;всегда&nbsp;перед&nbsp;оценкой<br>
+:param&nbsp;bstart:<br>
+:param&nbsp;bend:<br>
+:param&nbsp;binit:<br>
+:param&nbsp;xstart:<br>
+:param&nbsp;xend:<br>
+:param&nbsp;model:<br>
+:param&nbsp;measdata:<br>
+:param&nbsp;Ve:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimator-logTruthness"><strong>logTruthness</strong></a>(self, b, measdata)</dt><dd><tt>Считает&nbsp;значение&nbsp;объектной&nbsp;функции&nbsp;(!)&nbsp;это&nbsp;не&nbsp;логарифм&nbsp;функции&nbsp;правдоподобия!<br>
+:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;оценка&nbsp;вектора&nbsp;коэффициентов<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментальных&nbsp;данных<br>
+:param&nbsp;func:&nbsp;callable&nbsp;функция&nbsp;x,b,c,&nbsp;возвращает&nbsp;значение&nbsp;y<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;дополнительных&nbsp;переменных<br>
+:return:&nbsp;среднее&nbsp;значение&nbsp;логарифма&nbsp;функции&nbsp;правдоподобия,&nbsp;дисперсию&nbsp;по&nbsp;выборке&nbsp;экспериментальных&nbsp;данных,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AbstractEstimatorDecorator">class <strong>AbstractEstimatorDecorator</strong></a>(<a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Fianora_Estimators.html#AbstractEstimatorDecorator">AbstractEstimatorDecorator</a></dd>
+<dd><a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="AbstractEstimatorDecorator-__init__"><strong>__init__</strong></a>(self, component:Fianora_Estimators.AbstractEstimator)</dt></dl>
+
+<dl><dt><a name="AbstractEstimatorDecorator-estimate"><strong>estimate</strong></a>(self, measdata, options)</dt></dl>
+
+<dl><dt><a name="AbstractEstimatorDecorator-init_parameters"><strong>init_parameters</strong></a>(self, ec, model)</dt></dl>
+
+<hr>
+Methods inherited from <a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>:<br>
+<dl><dt><a name="AbstractEstimatorDecorator-adequacy"><strong>adequacy</strong></a>(self, est, measdata)</dt><dd><tt>Adequacy&nbsp;determiner<br>
+Спецификация:<br>
+Тип&nbsp;данных&nbsp;-&nbsp;словарь<br>
+Поля&nbsp;и&nbsp;описание&nbsp;-<br>
+&nbsp;'b'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;оцененный&nbsp;вектор&nbsp;коэффициентов<br>
+&nbsp;'numiter'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;число&nbsp;итераций<br>
+&nbsp;'log'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;лог<br>
+&nbsp;'Sklist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;значений&nbsp;объектной&nbsp;функции<br>
+&nbsp;'Sk'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;последнее&nbsp;значение&nbsp;объектной&nbsp;функции<br>
+&nbsp;<br>
+&nbsp;'Vb'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ковариационная&nbsp;матрица&nbsp;оценённого&nbsp;вектора&nbsp;b<br>
+&nbsp;'VbSigmas'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;сигмы&nbsp;из&nbsp;ковариационной&nbsp;матрицы&nbsp;оценённого&nbsp;вектора&nbsp;b&nbsp;(корни&nbsp;квадратные&nbsp;из&nbsp;диагонали)<br>
+&nbsp;<br>
+&nbsp;'AvLogTruth'&nbsp;&nbsp;&nbsp;среднее&nbsp;по&nbsp;точкам&nbsp;эксперимента&nbsp;значение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'DispLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'SigmaLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;среднеквадратическое&nbsp;отклонение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'AvDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;средний&nbsp;остатков<br>
+&nbsp;'DispDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;остатков<br>
+&nbsp;'SigmaDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;СКВ&nbsp;остатков<br>
+&nbsp;'Diflist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;остатков<br>
+&nbsp;'name'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;название&nbsp;метода<br>
+&nbsp;'GammaDelta'&nbsp;&nbsp;&nbsp;полширины&nbsp;эллипсоида&nbsp;рассеяния&nbsp;по&nbsp;измерению&nbsp;данного&nbsp;элемента&nbsp;вектора&nbsp;b</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimatorDecorator-averageDif"><strong>averageDif</strong></a>(self, b, measdata)</dt><dd><tt>:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;вектор&nbsp;коэфф<br>
+:param&nbsp;Ve:&nbsp;&nbsp;Ve&nbsp;ковар.&nbsp;матрица&nbsp;измеренных&nbsp;данных<br>
+:param&nbsp;funcf&nbsp;callable&nbsp;функция,&nbsp;параметры&nbsp;по&nbsp;формату&nbsp;x,b,c<br>
+:param&nbsp;c&nbsp;словарь&nbsp;дополнительных&nbsp;постоянных<br>
+:return:&nbsp;среднее,&nbsp;дисперсия,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimatorDecorator-countGammaDelta"><strong>countGammaDelta</strong></a>(self, b:list, measdata, Sk)</dt><dd><tt>P174&nbsp;Bard.<br>
+&nbsp;<br>
+b_i*-GammaDelta&lt;=b_i&lt;=b_i*+GammaDelta<br>
+&nbsp;<br>
+GammaDelta&nbsp;=&nbsp;(2e/A[i][i])^.5<br>
+where<br>
+A&nbsp;=&nbsp;H*<br>
+H*&nbsp;-&nbsp;Гессиан&nbsp;функции&nbsp;правдоподобия<br>
+Считаем,&nbsp;что&nbsp;H*&nbsp;=&nbsp;sum(jj(measdata(i,b*).T*jj(measdata(i,b*))<br>
+то&nbsp;есть&nbsp;сумма&nbsp;по&nbsp;точкам<br>
+:param&nbsp;b:<br>
+:param&nbsp;measdata:<br>
+:return:&nbsp;вектор&nbsp;гамма-дельта&nbsp;значений,<br>
+равных&nbsp;полширине&nbsp;эллипсоида&nbsp;рассеяния</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimatorDecorator-countVbForMeasdata"><strong>countVbForMeasdata</strong></a>(self, b:list, measdata)</dt><dd><tt>Для&nbsp;неявных&nbsp;функций&nbsp;актуальным&nbsp;является&nbsp;значение&nbsp;y.&nbsp;В&nbsp;некоторых&nbsp;случаях&nbsp;(напр.&nbsp;при&nbsp;последовательном&nbsp;планировании)<br>
+y&nbsp;уже&nbsp;просчитан,&nbsp;и&nbsp;нет&nbsp;нужды&nbsp;его&nbsp;считать&nbsp;снова,&nbsp;задавая&nbsp;функцию.<br>
+:param&nbsp;expplan:&nbsp;план&nbsp;эксперимента<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;доп.&nbsp;параметров<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментов&nbsp;np.array<br>
+:param&nbsp;jac:&nbsp;функция&nbsp;якобиана&nbsp;(на&nbsp;входе&nbsp;x,b,c=None,&nbsp;y=None),&nbsp;возвращать&nbsp;должно&nbsp;np.array<br>
+:param&nbsp;measdata:&nbsp;данные&nbsp;измерений<br>
+:return:&nbsp;значение&nbsp;определителя&nbsp;для&nbsp;данного&nbsp;плана&nbsp;эксперимента</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimatorDecorator-estimate_method"><strong>estimate_method</strong></a>(self, measdata, options)</dt><dd><tt>Estimation&nbsp;method,&nbsp;like&nbsp;gknux<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="AbstractEstimatorDecorator-logTruthness"><strong>logTruthness</strong></a>(self, b, measdata)</dt><dd><tt>Считает&nbsp;значение&nbsp;объектной&nbsp;функции&nbsp;(!)&nbsp;это&nbsp;не&nbsp;логарифм&nbsp;функции&nbsp;правдоподобия!<br>
+:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;оценка&nbsp;вектора&nbsp;коэффициентов<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментальных&nbsp;данных<br>
+:param&nbsp;func:&nbsp;callable&nbsp;функция&nbsp;x,b,c,&nbsp;возвращает&nbsp;значение&nbsp;y<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;дополнительных&nbsp;переменных<br>
+:return:&nbsp;среднее&nbsp;значение&nbsp;логарифма&nbsp;функции&nbsp;правдоподобия,&nbsp;дисперсию&nbsp;по&nbsp;выборке&nbsp;экспериментальных&nbsp;данных,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ConsoleEstimatorDecorator">class <strong>ConsoleEstimatorDecorator</strong></a>(<a href="Fianora_Estimators.html#AbstractEstimatorDecorator">AbstractEstimatorDecorator</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Fianora_Estimators.html#ConsoleEstimatorDecorator">ConsoleEstimatorDecorator</a></dd>
+<dd><a href="Fianora_Estimators.html#AbstractEstimatorDecorator">AbstractEstimatorDecorator</a></dd>
+<dd><a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="ConsoleEstimatorDecorator-estimate"><strong>estimate</strong></a>(self, measdata, options)</dt><dd><tt>Усложнённый&nbsp;декоратор:&nbsp;во-первых,&nbsp;параметры&nbsp;пробрасываются&nbsp;от&nbsp;конца&nbsp;к&nbsp;началу&nbsp;цепочки,<br>
+во-вторых,&nbsp;результат&nbsp;пробрасываться&nbsp;от&nbsp;начала&nbsp;к&nbsp;концу&nbsp;цепочки<br>
+&nbsp;<br>
+Конкретно&nbsp;в&nbsp;этом,&nbsp;консольном&nbsp;декораторе&nbsp;делается&nbsp;так&nbsp;-&nbsp;выкидываются&nbsp;лишние&nbsp;поля&nbsp;и&nbsp;остальное&nbsp;выводится&nbsp;в&nbsp;таблице<br>
+лишние&nbsp;поля&nbsp;(см&nbsp;ниже,&nbsp;где&nbsp;del)&nbsp;выводятся&nbsp;потом&nbsp;особо<br>
+&nbsp;<br>
+:param&nbsp;options:<br>
+:return:</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="Fianora_Estimators.html#AbstractEstimatorDecorator">AbstractEstimatorDecorator</a>:<br>
+<dl><dt><a name="ConsoleEstimatorDecorator-__init__"><strong>__init__</strong></a>(self, component:Fianora_Estimators.AbstractEstimator)</dt></dl>
+
+<dl><dt><a name="ConsoleEstimatorDecorator-init_parameters"><strong>init_parameters</strong></a>(self, ec, model)</dt></dl>
+
+<hr>
+Methods inherited from <a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>:<br>
+<dl><dt><a name="ConsoleEstimatorDecorator-adequacy"><strong>adequacy</strong></a>(self, est, measdata)</dt><dd><tt>Adequacy&nbsp;determiner<br>
+Спецификация:<br>
+Тип&nbsp;данных&nbsp;-&nbsp;словарь<br>
+Поля&nbsp;и&nbsp;описание&nbsp;-<br>
+&nbsp;'b'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;оцененный&nbsp;вектор&nbsp;коэффициентов<br>
+&nbsp;'numiter'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;число&nbsp;итераций<br>
+&nbsp;'log'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;лог<br>
+&nbsp;'Sklist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;значений&nbsp;объектной&nbsp;функции<br>
+&nbsp;'Sk'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;последнее&nbsp;значение&nbsp;объектной&nbsp;функции<br>
+&nbsp;<br>
+&nbsp;'Vb'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ковариационная&nbsp;матрица&nbsp;оценённого&nbsp;вектора&nbsp;b<br>
+&nbsp;'VbSigmas'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;сигмы&nbsp;из&nbsp;ковариационной&nbsp;матрицы&nbsp;оценённого&nbsp;вектора&nbsp;b&nbsp;(корни&nbsp;квадратные&nbsp;из&nbsp;диагонали)<br>
+&nbsp;<br>
+&nbsp;'AvLogTruth'&nbsp;&nbsp;&nbsp;среднее&nbsp;по&nbsp;точкам&nbsp;эксперимента&nbsp;значение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'DispLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'SigmaLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;среднеквадратическое&nbsp;отклонение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'AvDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;средний&nbsp;остатков<br>
+&nbsp;'DispDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;остатков<br>
+&nbsp;'SigmaDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;СКВ&nbsp;остатков<br>
+&nbsp;'Diflist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;остатков<br>
+&nbsp;'name'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;название&nbsp;метода<br>
+&nbsp;'GammaDelta'&nbsp;&nbsp;&nbsp;полширины&nbsp;эллипсоида&nbsp;рассеяния&nbsp;по&nbsp;измерению&nbsp;данного&nbsp;элемента&nbsp;вектора&nbsp;b</tt></dd></dl>
+
+<dl><dt><a name="ConsoleEstimatorDecorator-averageDif"><strong>averageDif</strong></a>(self, b, measdata)</dt><dd><tt>:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;вектор&nbsp;коэфф<br>
+:param&nbsp;Ve:&nbsp;&nbsp;Ve&nbsp;ковар.&nbsp;матрица&nbsp;измеренных&nbsp;данных<br>
+:param&nbsp;funcf&nbsp;callable&nbsp;функция,&nbsp;параметры&nbsp;по&nbsp;формату&nbsp;x,b,c<br>
+:param&nbsp;c&nbsp;словарь&nbsp;дополнительных&nbsp;постоянных<br>
+:return:&nbsp;среднее,&nbsp;дисперсия,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<dl><dt><a name="ConsoleEstimatorDecorator-countGammaDelta"><strong>countGammaDelta</strong></a>(self, b:list, measdata, Sk)</dt><dd><tt>P174&nbsp;Bard.<br>
+&nbsp;<br>
+b_i*-GammaDelta&lt;=b_i&lt;=b_i*+GammaDelta<br>
+&nbsp;<br>
+GammaDelta&nbsp;=&nbsp;(2e/A[i][i])^.5<br>
+where<br>
+A&nbsp;=&nbsp;H*<br>
+H*&nbsp;-&nbsp;Гессиан&nbsp;функции&nbsp;правдоподобия<br>
+Считаем,&nbsp;что&nbsp;H*&nbsp;=&nbsp;sum(jj(measdata(i,b*).T*jj(measdata(i,b*))<br>
+то&nbsp;есть&nbsp;сумма&nbsp;по&nbsp;точкам<br>
+:param&nbsp;b:<br>
+:param&nbsp;measdata:<br>
+:return:&nbsp;вектор&nbsp;гамма-дельта&nbsp;значений,<br>
+равных&nbsp;полширине&nbsp;эллипсоида&nbsp;рассеяния</tt></dd></dl>
+
+<dl><dt><a name="ConsoleEstimatorDecorator-countVbForMeasdata"><strong>countVbForMeasdata</strong></a>(self, b:list, measdata)</dt><dd><tt>Для&nbsp;неявных&nbsp;функций&nbsp;актуальным&nbsp;является&nbsp;значение&nbsp;y.&nbsp;В&nbsp;некоторых&nbsp;случаях&nbsp;(напр.&nbsp;при&nbsp;последовательном&nbsp;планировании)<br>
+y&nbsp;уже&nbsp;просчитан,&nbsp;и&nbsp;нет&nbsp;нужды&nbsp;его&nbsp;считать&nbsp;снова,&nbsp;задавая&nbsp;функцию.<br>
+:param&nbsp;expplan:&nbsp;план&nbsp;эксперимента<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;доп.&nbsp;параметров<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментов&nbsp;np.array<br>
+:param&nbsp;jac:&nbsp;функция&nbsp;якобиана&nbsp;(на&nbsp;входе&nbsp;x,b,c=None,&nbsp;y=None),&nbsp;возвращать&nbsp;должно&nbsp;np.array<br>
+:param&nbsp;measdata:&nbsp;данные&nbsp;измерений<br>
+:return:&nbsp;значение&nbsp;определителя&nbsp;для&nbsp;данного&nbsp;плана&nbsp;эксперимента</tt></dd></dl>
+
+<dl><dt><a name="ConsoleEstimatorDecorator-estimate_method"><strong>estimate_method</strong></a>(self, measdata, options)</dt><dd><tt>Estimation&nbsp;method,&nbsp;like&nbsp;gknux<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="ConsoleEstimatorDecorator-logTruthness"><strong>logTruthness</strong></a>(self, b, measdata)</dt><dd><tt>Считает&nbsp;значение&nbsp;объектной&nbsp;функции&nbsp;(!)&nbsp;это&nbsp;не&nbsp;логарифм&nbsp;функции&nbsp;правдоподобия!<br>
+:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;оценка&nbsp;вектора&nbsp;коэффициентов<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментальных&nbsp;данных<br>
+:param&nbsp;func:&nbsp;callable&nbsp;функция&nbsp;x,b,c,&nbsp;возвращает&nbsp;значение&nbsp;y<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;дополнительных&nbsp;переменных<br>
+:return:&nbsp;среднее&nbsp;значение&nbsp;логарифма&nbsp;функции&nbsp;правдоподобия,&nbsp;дисперсию&nbsp;по&nbsp;выборке&nbsp;экспериментальных&nbsp;данных,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="GraphPackEstimatorDecorator">class <strong>GraphPackEstimatorDecorator</strong></a>(<a href="Fianora_Estimators.html#AbstractEstimatorDecorator">AbstractEstimatorDecorator</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Декоратор,&nbsp;который&nbsp;либо&nbsp;сохраняет&nbsp;рисунки,&nbsp;либо&nbsp;выдаёт&nbsp;последовательно&nbsp;на&nbsp;экран<br>
+рисунки&nbsp;такие:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;два&nbsp;графика&nbsp;(риальни,&nbsp;моделированни)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;диаграмма&nbsp;остатков<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;график&nbsp;падения&nbsp;объектной&nbsp;функции<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Fianora_Estimators.html#GraphPackEstimatorDecorator">GraphPackEstimatorDecorator</a></dd>
+<dd><a href="Fianora_Estimators.html#AbstractEstimatorDecorator">AbstractEstimatorDecorator</a></dd>
+<dd><a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="GraphPackEstimatorDecorator-__init__"><strong>__init__</strong></a>(self, component, foldername, appendix)</dt><dd><tt>:param&nbsp;component:<br>
+:param&nbsp;foldername:&nbsp;папка,&nbsp;куда&nbsp;сохранять,&nbsp;если&nbsp;None,&nbsp;то&nbsp;показывать<br>
+:param&nbsp;appendix:&nbsp;добавлять&nbsp;к&nbsp;именам&nbsp;файлов<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="GraphPackEstimatorDecorator-estimate"><strong>estimate</strong></a>(self, measdata, options)</dt><dd><tt>Описание&nbsp;выходной&nbsp;структуры&nbsp;данных&nbsp;любого&nbsp;оценщика&nbsp;или&nbsp;его&nbsp;декоратора<br>
+&nbsp;'b'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;оцененный&nbsp;вектор&nbsp;коэффициентов<br>
+&nbsp;'numiter'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;число&nbsp;итераций<br>
+&nbsp;'log'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;лог<br>
+&nbsp;'Sklist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;значений&nbsp;объектной&nbsp;функции<br>
+&nbsp;'Sk'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;последнее&nbsp;значение&nbsp;объектной&nbsp;функции<br>
+&nbsp;<br>
+&nbsp;'Vb'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ковариационная&nbsp;матрица&nbsp;оценённого&nbsp;вектора&nbsp;b<br>
+&nbsp;'VbSigmas'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;сигмы&nbsp;из&nbsp;ковариационной&nbsp;матрицы&nbsp;оценённого&nbsp;вектора&nbsp;b&nbsp;(корни&nbsp;квадратные&nbsp;из&nbsp;диагонали)<br>
+&nbsp;<br>
+&nbsp;'AvLogTruth'&nbsp;&nbsp;&nbsp;среднее&nbsp;по&nbsp;точкам&nbsp;эксперимента&nbsp;значение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'DispLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'SigmaLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;среднеквадратическое&nbsp;отклонение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'AvDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;средний&nbsp;остатков<br>
+&nbsp;'DispDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;остатков<br>
+&nbsp;'SigmaDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;СКВ&nbsp;остатков<br>
+&nbsp;'Diflist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;остатков<br>
+&nbsp;'name'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;название&nbsp;метода</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="Fianora_Estimators.html#AbstractEstimatorDecorator">AbstractEstimatorDecorator</a>:<br>
+<dl><dt><a name="GraphPackEstimatorDecorator-init_parameters"><strong>init_parameters</strong></a>(self, ec, model)</dt></dl>
+
+<hr>
+Methods inherited from <a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>:<br>
+<dl><dt><a name="GraphPackEstimatorDecorator-adequacy"><strong>adequacy</strong></a>(self, est, measdata)</dt><dd><tt>Adequacy&nbsp;determiner<br>
+Спецификация:<br>
+Тип&nbsp;данных&nbsp;-&nbsp;словарь<br>
+Поля&nbsp;и&nbsp;описание&nbsp;-<br>
+&nbsp;'b'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;оцененный&nbsp;вектор&nbsp;коэффициентов<br>
+&nbsp;'numiter'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;число&nbsp;итераций<br>
+&nbsp;'log'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;лог<br>
+&nbsp;'Sklist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;значений&nbsp;объектной&nbsp;функции<br>
+&nbsp;'Sk'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;последнее&nbsp;значение&nbsp;объектной&nbsp;функции<br>
+&nbsp;<br>
+&nbsp;'Vb'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ковариационная&nbsp;матрица&nbsp;оценённого&nbsp;вектора&nbsp;b<br>
+&nbsp;'VbSigmas'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;сигмы&nbsp;из&nbsp;ковариационной&nbsp;матрицы&nbsp;оценённого&nbsp;вектора&nbsp;b&nbsp;(корни&nbsp;квадратные&nbsp;из&nbsp;диагонали)<br>
+&nbsp;<br>
+&nbsp;'AvLogTruth'&nbsp;&nbsp;&nbsp;среднее&nbsp;по&nbsp;точкам&nbsp;эксперимента&nbsp;значение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'DispLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'SigmaLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;среднеквадратическое&nbsp;отклонение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'AvDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;средний&nbsp;остатков<br>
+&nbsp;'DispDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;остатков<br>
+&nbsp;'SigmaDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;СКВ&nbsp;остатков<br>
+&nbsp;'Diflist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;остатков<br>
+&nbsp;'name'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;название&nbsp;метода<br>
+&nbsp;'GammaDelta'&nbsp;&nbsp;&nbsp;полширины&nbsp;эллипсоида&nbsp;рассеяния&nbsp;по&nbsp;измерению&nbsp;данного&nbsp;элемента&nbsp;вектора&nbsp;b</tt></dd></dl>
+
+<dl><dt><a name="GraphPackEstimatorDecorator-averageDif"><strong>averageDif</strong></a>(self, b, measdata)</dt><dd><tt>:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;вектор&nbsp;коэфф<br>
+:param&nbsp;Ve:&nbsp;&nbsp;Ve&nbsp;ковар.&nbsp;матрица&nbsp;измеренных&nbsp;данных<br>
+:param&nbsp;funcf&nbsp;callable&nbsp;функция,&nbsp;параметры&nbsp;по&nbsp;формату&nbsp;x,b,c<br>
+:param&nbsp;c&nbsp;словарь&nbsp;дополнительных&nbsp;постоянных<br>
+:return:&nbsp;среднее,&nbsp;дисперсия,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<dl><dt><a name="GraphPackEstimatorDecorator-countGammaDelta"><strong>countGammaDelta</strong></a>(self, b:list, measdata, Sk)</dt><dd><tt>P174&nbsp;Bard.<br>
+&nbsp;<br>
+b_i*-GammaDelta&lt;=b_i&lt;=b_i*+GammaDelta<br>
+&nbsp;<br>
+GammaDelta&nbsp;=&nbsp;(2e/A[i][i])^.5<br>
+where<br>
+A&nbsp;=&nbsp;H*<br>
+H*&nbsp;-&nbsp;Гессиан&nbsp;функции&nbsp;правдоподобия<br>
+Считаем,&nbsp;что&nbsp;H*&nbsp;=&nbsp;sum(jj(measdata(i,b*).T*jj(measdata(i,b*))<br>
+то&nbsp;есть&nbsp;сумма&nbsp;по&nbsp;точкам<br>
+:param&nbsp;b:<br>
+:param&nbsp;measdata:<br>
+:return:&nbsp;вектор&nbsp;гамма-дельта&nbsp;значений,<br>
+равных&nbsp;полширине&nbsp;эллипсоида&nbsp;рассеяния</tt></dd></dl>
+
+<dl><dt><a name="GraphPackEstimatorDecorator-countVbForMeasdata"><strong>countVbForMeasdata</strong></a>(self, b:list, measdata)</dt><dd><tt>Для&nbsp;неявных&nbsp;функций&nbsp;актуальным&nbsp;является&nbsp;значение&nbsp;y.&nbsp;В&nbsp;некоторых&nbsp;случаях&nbsp;(напр.&nbsp;при&nbsp;последовательном&nbsp;планировании)<br>
+y&nbsp;уже&nbsp;просчитан,&nbsp;и&nbsp;нет&nbsp;нужды&nbsp;его&nbsp;считать&nbsp;снова,&nbsp;задавая&nbsp;функцию.<br>
+:param&nbsp;expplan:&nbsp;план&nbsp;эксперимента<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;доп.&nbsp;параметров<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментов&nbsp;np.array<br>
+:param&nbsp;jac:&nbsp;функция&nbsp;якобиана&nbsp;(на&nbsp;входе&nbsp;x,b,c=None,&nbsp;y=None),&nbsp;возвращать&nbsp;должно&nbsp;np.array<br>
+:param&nbsp;measdata:&nbsp;данные&nbsp;измерений<br>
+:return:&nbsp;значение&nbsp;определителя&nbsp;для&nbsp;данного&nbsp;плана&nbsp;эксперимента</tt></dd></dl>
+
+<dl><dt><a name="GraphPackEstimatorDecorator-estimate_method"><strong>estimate_method</strong></a>(self, measdata, options)</dt><dd><tt>Estimation&nbsp;method,&nbsp;like&nbsp;gknux<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="GraphPackEstimatorDecorator-logTruthness"><strong>logTruthness</strong></a>(self, b, measdata)</dt><dd><tt>Считает&nbsp;значение&nbsp;объектной&nbsp;функции&nbsp;(!)&nbsp;это&nbsp;не&nbsp;логарифм&nbsp;функции&nbsp;правдоподобия!<br>
+:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;оценка&nbsp;вектора&nbsp;коэффициентов<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментальных&nbsp;данных<br>
+:param&nbsp;func:&nbsp;callable&nbsp;функция&nbsp;x,b,c,&nbsp;возвращает&nbsp;значение&nbsp;y<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;дополнительных&nbsp;переменных<br>
+:return:&nbsp;среднее&nbsp;значение&nbsp;логарифма&nbsp;функции&nbsp;правдоподобия,&nbsp;дисперсию&nbsp;по&nbsp;выборке&nbsp;экспериментальных&nbsp;данных,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="NGEEstimatorUnlimited">class <strong>NGEEstimatorUnlimited</strong></a>(<a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Fianora_Estimators.html#NGEEstimatorUnlimited">NGEEstimatorUnlimited</a></dd>
+<dd><a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="NGEEstimatorUnlimited-estimate_method"><strong>estimate_method</strong></a>(self, measdata, options)</dt><dd><tt>Производит&nbsp;оценку&nbsp;коэффициентов&nbsp;по&nbsp;методу&nbsp;Гаусса-Ньютона&nbsp;с&nbsp;переменным&nbsp;шагом<br>
+В&nbsp;стандартный&nbsp;поток&nbsp;вывода&nbsp;выводит&nbsp;отладочную&nbsp;информацию&nbsp;по&nbsp;каждой&nbsp;итерации<br>
+:param&nbsp;NSIG=3&nbsp;точность&nbsp;(кол-во&nbsp;знаков&nbsp;после&nbsp;запятой)<br>
+:param&nbsp;implicit&nbsp;True&nbsp;если&nbsp;функция&nbsp;-&nbsp;неявная,&nbsp;иначе&nbsp;false<br>
+&nbsp;<br>
+:returns&nbsp;b,&nbsp;numiter,&nbsp;log&nbsp;-&nbsp;вектор&nbsp;оценки&nbsp;коэффициентов,&nbsp;число&nbsp;итераций,&nbsp;сообщения</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>:<br>
+<dl><dt><a name="NGEEstimatorUnlimited-adequacy"><strong>adequacy</strong></a>(self, est, measdata)</dt><dd><tt>Adequacy&nbsp;determiner<br>
+Спецификация:<br>
+Тип&nbsp;данных&nbsp;-&nbsp;словарь<br>
+Поля&nbsp;и&nbsp;описание&nbsp;-<br>
+&nbsp;'b'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;оцененный&nbsp;вектор&nbsp;коэффициентов<br>
+&nbsp;'numiter'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;число&nbsp;итераций<br>
+&nbsp;'log'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;лог<br>
+&nbsp;'Sklist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;значений&nbsp;объектной&nbsp;функции<br>
+&nbsp;'Sk'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;последнее&nbsp;значение&nbsp;объектной&nbsp;функции<br>
+&nbsp;<br>
+&nbsp;'Vb'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ковариационная&nbsp;матрица&nbsp;оценённого&nbsp;вектора&nbsp;b<br>
+&nbsp;'VbSigmas'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;сигмы&nbsp;из&nbsp;ковариационной&nbsp;матрицы&nbsp;оценённого&nbsp;вектора&nbsp;b&nbsp;(корни&nbsp;квадратные&nbsp;из&nbsp;диагонали)<br>
+&nbsp;<br>
+&nbsp;'AvLogTruth'&nbsp;&nbsp;&nbsp;среднее&nbsp;по&nbsp;точкам&nbsp;эксперимента&nbsp;значение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'DispLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'SigmaLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;среднеквадратическое&nbsp;отклонение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'AvDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;средний&nbsp;остатков<br>
+&nbsp;'DispDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;остатков<br>
+&nbsp;'SigmaDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;СКВ&nbsp;остатков<br>
+&nbsp;'Diflist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;остатков<br>
+&nbsp;'name'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;название&nbsp;метода<br>
+&nbsp;'GammaDelta'&nbsp;&nbsp;&nbsp;полширины&nbsp;эллипсоида&nbsp;рассеяния&nbsp;по&nbsp;измерению&nbsp;данного&nbsp;элемента&nbsp;вектора&nbsp;b</tt></dd></dl>
+
+<dl><dt><a name="NGEEstimatorUnlimited-averageDif"><strong>averageDif</strong></a>(self, b, measdata)</dt><dd><tt>:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;вектор&nbsp;коэфф<br>
+:param&nbsp;Ve:&nbsp;&nbsp;Ve&nbsp;ковар.&nbsp;матрица&nbsp;измеренных&nbsp;данных<br>
+:param&nbsp;funcf&nbsp;callable&nbsp;функция,&nbsp;параметры&nbsp;по&nbsp;формату&nbsp;x,b,c<br>
+:param&nbsp;c&nbsp;словарь&nbsp;дополнительных&nbsp;постоянных<br>
+:return:&nbsp;среднее,&nbsp;дисперсия,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<dl><dt><a name="NGEEstimatorUnlimited-countGammaDelta"><strong>countGammaDelta</strong></a>(self, b:list, measdata, Sk)</dt><dd><tt>P174&nbsp;Bard.<br>
+&nbsp;<br>
+b_i*-GammaDelta&lt;=b_i&lt;=b_i*+GammaDelta<br>
+&nbsp;<br>
+GammaDelta&nbsp;=&nbsp;(2e/A[i][i])^.5<br>
+where<br>
+A&nbsp;=&nbsp;H*<br>
+H*&nbsp;-&nbsp;Гессиан&nbsp;функции&nbsp;правдоподобия<br>
+Считаем,&nbsp;что&nbsp;H*&nbsp;=&nbsp;sum(jj(measdata(i,b*).T*jj(measdata(i,b*))<br>
+то&nbsp;есть&nbsp;сумма&nbsp;по&nbsp;точкам<br>
+:param&nbsp;b:<br>
+:param&nbsp;measdata:<br>
+:return:&nbsp;вектор&nbsp;гамма-дельта&nbsp;значений,<br>
+равных&nbsp;полширине&nbsp;эллипсоида&nbsp;рассеяния</tt></dd></dl>
+
+<dl><dt><a name="NGEEstimatorUnlimited-countVbForMeasdata"><strong>countVbForMeasdata</strong></a>(self, b:list, measdata)</dt><dd><tt>Для&nbsp;неявных&nbsp;функций&nbsp;актуальным&nbsp;является&nbsp;значение&nbsp;y.&nbsp;В&nbsp;некоторых&nbsp;случаях&nbsp;(напр.&nbsp;при&nbsp;последовательном&nbsp;планировании)<br>
+y&nbsp;уже&nbsp;просчитан,&nbsp;и&nbsp;нет&nbsp;нужды&nbsp;его&nbsp;считать&nbsp;снова,&nbsp;задавая&nbsp;функцию.<br>
+:param&nbsp;expplan:&nbsp;план&nbsp;эксперимента<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;доп.&nbsp;параметров<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментов&nbsp;np.array<br>
+:param&nbsp;jac:&nbsp;функция&nbsp;якобиана&nbsp;(на&nbsp;входе&nbsp;x,b,c=None,&nbsp;y=None),&nbsp;возвращать&nbsp;должно&nbsp;np.array<br>
+:param&nbsp;measdata:&nbsp;данные&nbsp;измерений<br>
+:return:&nbsp;значение&nbsp;определителя&nbsp;для&nbsp;данного&nbsp;плана&nbsp;эксперимента</tt></dd></dl>
+
+<dl><dt><a name="NGEEstimatorUnlimited-estimate"><strong>estimate</strong></a>(self, measdata, options=None)</dt><dd><tt>Шаблонный&nbsp;метод,&nbsp;идея&nbsp;в&nbsp;том,&nbsp;что&nbsp;сначала&nbsp;выполняется&nbsp;оценка,&nbsp;потом&nbsp;определяются&nbsp;показатели&nbsp;адекватности<br>
+в&nbsp;итоге&nbsp;получается&nbsp;некоторый&nbsp;стандартный&nbsp;словарь<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="NGEEstimatorUnlimited-init_parameters"><strong>init_parameters</strong></a>(self, ec, model)</dt><dd><tt>Эта&nbsp;функция&nbsp;должна&nbsp;вызываться&nbsp;у&nbsp;объекта&nbsp;всегда&nbsp;перед&nbsp;оценкой<br>
+:param&nbsp;bstart:<br>
+:param&nbsp;bend:<br>
+:param&nbsp;binit:<br>
+:param&nbsp;xstart:<br>
+:param&nbsp;xend:<br>
+:param&nbsp;model:<br>
+:param&nbsp;measdata:<br>
+:param&nbsp;Ve:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="NGEEstimatorUnlimited-logTruthness"><strong>logTruthness</strong></a>(self, b, measdata)</dt><dd><tt>Считает&nbsp;значение&nbsp;объектной&nbsp;функции&nbsp;(!)&nbsp;это&nbsp;не&nbsp;логарифм&nbsp;функции&nbsp;правдоподобия!<br>
+:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;оценка&nbsp;вектора&nbsp;коэффициентов<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментальных&nbsp;данных<br>
+:param&nbsp;func:&nbsp;callable&nbsp;функция&nbsp;x,b,c,&nbsp;возвращает&nbsp;значение&nbsp;y<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;дополнительных&nbsp;переменных<br>
+:return:&nbsp;среднее&nbsp;значение&nbsp;логарифма&nbsp;функции&nbsp;правдоподобия,&nbsp;дисперсию&nbsp;по&nbsp;выборке&nbsp;экспериментальных&nbsp;данных,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="NGEstimator">class <strong>NGEstimator</strong></a>(<a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Оценщик,&nbsp;использующий&nbsp;метод&nbsp;Гаусса-Ньютона&nbsp;с&nbsp;ограничениями<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="Fianora_Estimators.html#NGEstimator">NGEstimator</a></dd>
+<dd><a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="NGEstimator-countN"><strong>countN</strong></a>(self, A, b)</dt></dl>
+
+<dl><dt><a name="NGEstimator-countSklims"><strong>countSklims</strong></a>(self, A, b)</dt></dl>
+
+<dl><dt><a name="NGEstimator-estimate_method"><strong>estimate_method</strong></a>(self, measdata, options)</dt></dl>
+
+<dl><dt><a name="NGEstimator-grandCountGN_UltraX1_Limited"><strong>grandCountGN_UltraX1_Limited</strong></a>(self, A, measdata, _NSIG, implicit=False, verbose=False, options=None)</dt><dd><tt>Производит&nbsp;оценку&nbsp;коэффициентов&nbsp;по&nbsp;методу&nbsp;Гаусса-Ньютона&nbsp;с&nbsp;переменным&nbsp;шагом&nbsp;с&nbsp;ограничениями,&nbsp;заданными&nbsp;диапазоном<br>
+В&nbsp;стандартный&nbsp;поток&nbsp;вывода&nbsp;выводит&nbsp;отладочную&nbsp;информацию&nbsp;по&nbsp;каждой&nbsp;итерации<br>
+&nbsp;<br>
+&nbsp;<br>
+:param&nbsp;NSIG=3&nbsp;точность&nbsp;(кол-во&nbsp;знаков&nbsp;после&nbsp;запятой)<br>
+:param&nbsp;implicit&nbsp;True&nbsp;если&nbsp;функция&nbsp;-&nbsp;неявная,&nbsp;иначе&nbsp;false<br>
+:param&nbsp;verbose&nbsp;Если&nbsp;True,&nbsp;то&nbsp;подробно&nbsp;принтить&nbsp;результаты&nbsp;итераций<br>
+:returns&nbsp;b,&nbsp;numiter,&nbsp;log&nbsp;-&nbsp;вектор&nbsp;оценки&nbsp;коэффициентов,&nbsp;число&nbsp;итераций,&nbsp;сообщения</tt></dd></dl>
+
+<dl><dt><a name="NGEstimator-islinux"><strong>islinux</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="NGEstimator-makeAinit"><strong>makeAinit</strong></a>(self, measdata, isBinitGood=True)</dt><dd><tt>расчёт&nbsp;ведётся&nbsp;по&nbsp;правилу&nbsp;"binit&nbsp;есть&nbsp;хорошее&nbsp;предположение&nbsp;в&nbsp;рамках&nbsp;области"<br>
+:param&nbsp;bstart:<br>
+:param&nbsp;bend:<br>
+:param&nbsp;Skbinit:<br>
+:param&nbsp;binit:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="NGEstimator-makeSkInit"><strong>makeSkInit</strong></a>(self, measdata)</dt></dl>
+
+<hr>
+Methods inherited from <a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>:<br>
+<dl><dt><a name="NGEstimator-adequacy"><strong>adequacy</strong></a>(self, est, measdata)</dt><dd><tt>Adequacy&nbsp;determiner<br>
+Спецификация:<br>
+Тип&nbsp;данных&nbsp;-&nbsp;словарь<br>
+Поля&nbsp;и&nbsp;описание&nbsp;-<br>
+&nbsp;'b'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;оцененный&nbsp;вектор&nbsp;коэффициентов<br>
+&nbsp;'numiter'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;число&nbsp;итераций<br>
+&nbsp;'log'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;лог<br>
+&nbsp;'Sklist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;значений&nbsp;объектной&nbsp;функции<br>
+&nbsp;'Sk'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;последнее&nbsp;значение&nbsp;объектной&nbsp;функции<br>
+&nbsp;<br>
+&nbsp;'Vb'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ковариационная&nbsp;матрица&nbsp;оценённого&nbsp;вектора&nbsp;b<br>
+&nbsp;'VbSigmas'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;сигмы&nbsp;из&nbsp;ковариационной&nbsp;матрицы&nbsp;оценённого&nbsp;вектора&nbsp;b&nbsp;(корни&nbsp;квадратные&nbsp;из&nbsp;диагонали)<br>
+&nbsp;<br>
+&nbsp;'AvLogTruth'&nbsp;&nbsp;&nbsp;среднее&nbsp;по&nbsp;точкам&nbsp;эксперимента&nbsp;значение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'DispLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'SigmaLT'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;среднеквадратическое&nbsp;отклонение&nbsp;логарифма&nbsp;правдоподобия<br>
+&nbsp;'AvDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;средний&nbsp;остатков<br>
+&nbsp;'DispDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дисперсия&nbsp;остатков<br>
+&nbsp;'SigmaDif'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;СКВ&nbsp;остатков<br>
+&nbsp;'Diflist'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;список&nbsp;остатков<br>
+&nbsp;'name'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;название&nbsp;метода<br>
+&nbsp;'GammaDelta'&nbsp;&nbsp;&nbsp;полширины&nbsp;эллипсоида&nbsp;рассеяния&nbsp;по&nbsp;измерению&nbsp;данного&nbsp;элемента&nbsp;вектора&nbsp;b</tt></dd></dl>
+
+<dl><dt><a name="NGEstimator-averageDif"><strong>averageDif</strong></a>(self, b, measdata)</dt><dd><tt>:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;вектор&nbsp;коэфф<br>
+:param&nbsp;Ve:&nbsp;&nbsp;Ve&nbsp;ковар.&nbsp;матрица&nbsp;измеренных&nbsp;данных<br>
+:param&nbsp;funcf&nbsp;callable&nbsp;функция,&nbsp;параметры&nbsp;по&nbsp;формату&nbsp;x,b,c<br>
+:param&nbsp;c&nbsp;словарь&nbsp;дополнительных&nbsp;постоянных<br>
+:return:&nbsp;среднее,&nbsp;дисперсия,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<dl><dt><a name="NGEstimator-countGammaDelta"><strong>countGammaDelta</strong></a>(self, b:list, measdata, Sk)</dt><dd><tt>P174&nbsp;Bard.<br>
+&nbsp;<br>
+b_i*-GammaDelta&lt;=b_i&lt;=b_i*+GammaDelta<br>
+&nbsp;<br>
+GammaDelta&nbsp;=&nbsp;(2e/A[i][i])^.5<br>
+where<br>
+A&nbsp;=&nbsp;H*<br>
+H*&nbsp;-&nbsp;Гессиан&nbsp;функции&nbsp;правдоподобия<br>
+Считаем,&nbsp;что&nbsp;H*&nbsp;=&nbsp;sum(jj(measdata(i,b*).T*jj(measdata(i,b*))<br>
+то&nbsp;есть&nbsp;сумма&nbsp;по&nbsp;точкам<br>
+:param&nbsp;b:<br>
+:param&nbsp;measdata:<br>
+:return:&nbsp;вектор&nbsp;гамма-дельта&nbsp;значений,<br>
+равных&nbsp;полширине&nbsp;эллипсоида&nbsp;рассеяния</tt></dd></dl>
+
+<dl><dt><a name="NGEstimator-countVbForMeasdata"><strong>countVbForMeasdata</strong></a>(self, b:list, measdata)</dt><dd><tt>Для&nbsp;неявных&nbsp;функций&nbsp;актуальным&nbsp;является&nbsp;значение&nbsp;y.&nbsp;В&nbsp;некоторых&nbsp;случаях&nbsp;(напр.&nbsp;при&nbsp;последовательном&nbsp;планировании)<br>
+y&nbsp;уже&nbsp;просчитан,&nbsp;и&nbsp;нет&nbsp;нужды&nbsp;его&nbsp;считать&nbsp;снова,&nbsp;задавая&nbsp;функцию.<br>
+:param&nbsp;expplan:&nbsp;план&nbsp;эксперимента<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;b:&nbsp;b&nbsp;(вектор&nbsp;коэффициентов)<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;доп.&nbsp;параметров<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментов&nbsp;np.array<br>
+:param&nbsp;jac:&nbsp;функция&nbsp;якобиана&nbsp;(на&nbsp;входе&nbsp;x,b,c=None,&nbsp;y=None),&nbsp;возвращать&nbsp;должно&nbsp;np.array<br>
+:param&nbsp;measdata:&nbsp;данные&nbsp;измерений<br>
+:return:&nbsp;значение&nbsp;определителя&nbsp;для&nbsp;данного&nbsp;плана&nbsp;эксперимента</tt></dd></dl>
+
+<dl><dt><a name="NGEstimator-estimate"><strong>estimate</strong></a>(self, measdata, options=None)</dt><dd><tt>Шаблонный&nbsp;метод,&nbsp;идея&nbsp;в&nbsp;том,&nbsp;что&nbsp;сначала&nbsp;выполняется&nbsp;оценка,&nbsp;потом&nbsp;определяются&nbsp;показатели&nbsp;адекватности<br>
+в&nbsp;итоге&nbsp;получается&nbsp;некоторый&nbsp;стандартный&nbsp;словарь<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="NGEstimator-init_parameters"><strong>init_parameters</strong></a>(self, ec, model)</dt><dd><tt>Эта&nbsp;функция&nbsp;должна&nbsp;вызываться&nbsp;у&nbsp;объекта&nbsp;всегда&nbsp;перед&nbsp;оценкой<br>
+:param&nbsp;bstart:<br>
+:param&nbsp;bend:<br>
+:param&nbsp;binit:<br>
+:param&nbsp;xstart:<br>
+:param&nbsp;xend:<br>
+:param&nbsp;model:<br>
+:param&nbsp;measdata:<br>
+:param&nbsp;Ve:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="NGEstimator-logTruthness"><strong>logTruthness</strong></a>(self, b, measdata)</dt><dd><tt>Считает&nbsp;значение&nbsp;объектной&nbsp;функции&nbsp;(!)&nbsp;это&nbsp;не&nbsp;логарифм&nbsp;функции&nbsp;правдоподобия!<br>
+:param&nbsp;measdata:&nbsp;список&nbsp;словарей&nbsp;экспериментальных&nbsp;данных&nbsp;[{'x':&nbsp;[]&nbsp;'y':[])},{'x':&nbsp;[]&nbsp;'y':[])}]<br>
+:param&nbsp;b:&nbsp;оценка&nbsp;вектора&nbsp;коэффициентов<br>
+:param&nbsp;Ve:&nbsp;ковариационная&nbsp;матрица&nbsp;ошибок&nbsp;экспериментальных&nbsp;данных<br>
+:param&nbsp;func:&nbsp;callable&nbsp;функция&nbsp;x,b,c,&nbsp;возвращает&nbsp;значение&nbsp;y<br>
+:param&nbsp;c:&nbsp;словарь&nbsp;дополнительных&nbsp;переменных<br>
+:return:&nbsp;среднее&nbsp;значение&nbsp;логарифма&nbsp;функции&nbsp;правдоподобия,&nbsp;дисперсию&nbsp;по&nbsp;выборке&nbsp;экспериментальных&nbsp;данных,&nbsp;стандартное&nbsp;отклонение</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="Fianora_Estimators.html#AbstractEstimator">AbstractEstimator</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Options">class <strong>Options</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Estimation&nbsp;process&nbsp;options<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Options-__getattr__"><strong>__getattr__</strong></a>(self, item)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">vasilev_is</td></tr></table>
+</body></html>
