@@ -80,3 +80,9 @@ class IterationInfoAcceptor ():
 
     def __iter__(self):
         return self.lst_of_data.__iter__()
+
+    def ll (self):
+        return len(self.lst_of_data)
+
+    # def __len__(self):
+    #     return self.lst_of_data.__len__()

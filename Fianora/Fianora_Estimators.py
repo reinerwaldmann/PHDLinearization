@@ -435,9 +435,6 @@ class NGEEstimatorUnlimited (AbstractEstimator):
         return {'b':b, 'numiter':numiter, 'log':log, 'Sklist':Sklist, 'Sk':Sk}
 
 
-
-
-
 class NGEstimator(AbstractEstimator):
     """
     Оценщик, использующий метод Гаусса-Ньютона с ограничениями

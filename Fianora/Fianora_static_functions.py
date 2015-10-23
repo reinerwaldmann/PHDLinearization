@@ -76,8 +76,6 @@ def uniformVector(xstart, xend):
     #Можно сделать map для списка списков сразу (или просто для нескольких списков) на основе этой функции  #
 
 
-
-
 def rangomNormalvariateVector (xstart, xend):
 
     res = [0 for i in range(len(xstart))]
@@ -90,9 +88,6 @@ def rangomNormalvariateVector (xstart, xend):
         res[i]= random.normalvariate (middle[i], sigma[i])
 
     return res
-
-
-
 
 
 def doublesearch (xstart, xend, xinit, function):
@@ -138,7 +133,6 @@ def doublesearch (xstart, xend, xinit, function):
                 break
 
     return x
-
 
 
 import time

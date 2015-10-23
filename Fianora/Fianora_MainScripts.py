@@ -57,6 +57,7 @@ class DiodeMainScript(AbstractMainScript):
         binit=_btrue
 
         btrue = f_sf.rangomNormalvariateVector(bstart, bend)
+        print (btrue)
         #btrue = _btrue
 
 
@@ -64,7 +65,7 @@ class DiodeMainScript(AbstractMainScript):
 
         xstart=[0.001]
         xend=[1]
-        N=20
+        N=100
         self.ec =f_sf.EstimationContext(bstart, bend, btrue, binit, xstart, xend, Ve, N)
 
 
@@ -75,8 +76,8 @@ class DiodeMainScript(AbstractMainScript):
         self.measurer = f_me.ModelMeasurer(self.ec.Ve, self.model, self.ec.btrue) # сделали измерителя
         self.plan_measurer = f_me.PlanMeasurer(self.measurer) # сделали измеритель по плану
 
-        self.planner = f_p.DOptimalPlanner(self.ec)
-        #self.planner = f_p.UniformPlanner(self.ec)
+        #self.planner = f_p.DOptimalPlanner(self.ec)
+        self.planner = f_p.UniformPlanner(self.ec)
 
 
         #self, ec, plancachefoldername='cache', verbose = False)
@@ -196,3 +197,4 @@ def test():
 
 if __name__ == '__main__':
     test()
+
