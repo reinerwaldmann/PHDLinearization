@@ -62,7 +62,7 @@ def main():
 
 
     rs=[]
-    nirc=50
+    nirc=205
 
     iiadumplist=[]
 
@@ -124,10 +124,10 @@ def main():
 
     # # проще всего вытянуть из пикуля
     import pickle
-    with open('resfiles/resdump.dat', 'wb') as f:
+    with open('resfiles/resdump205_DISP.dat', 'wb') as f:
         pickle.dump(iiadumplist, f)
 
-
+    exit(0)
 
 
 
