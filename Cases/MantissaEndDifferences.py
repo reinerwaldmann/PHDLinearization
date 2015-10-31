@@ -97,18 +97,118 @@ def makeEndDifferencesOnMatrix(mat, squeeze=False):
     return mat
 
 
+# Надлежит получить все данные о распределении каждой ячейки матрицы. SO:
+# самое простое - получить набор гистограмм для каждого столбца, на столбец по папке.
+# далее, критерий нормальности распределения для половины распределения
+# (лол, самое простое - к тестируемому распределению добавить его вторую половинку, взятую с отрицательным знаком)
+
+def makeListOfListPerIteration(listoflistoflistofdiffs):
+    """
+    takes a list of cases
+    each case is a list of lists of end differences beginning from the first
+
+    we make a list of list, like a end-difference matrix, where
+     each item is a list.
+    """
+    #print ("number of types of differences", len(listoflistoflistofdiffs[0]))
+    res= []
+    for difflistnum in range (len(listoflistoflistofdiffs[0])): # number of enddiffs, actually fixed and is 4
+        sq=[]
+        for diffnum in range (len(listoflistoflistofdiffs[0][difflistnum])): #  diffnum - number of enddiff
+            #print ("number of difference",len(listoflistoflistofdiffs[0][difflistnum]))
+            listOfDiffsSameIterationPerCases = []
+            for case in range (len(listoflistoflistofdiffs)):
+                try:
+
+                    listOfDiffsSameIterationPerCases.append(listoflistoflistofdiffs[case][difflistnum][diffnum])
+                except:
+                    #print ('shit happens', case, difflistnum,diffnum)
+                    pass
+
+
+            sq.append(listOfDiffsSameIterationPerCases)
+        res.append(sq)
+
+
+ #   print (res)
+    return res
+
+def printListOfListPerIteration(olololist):
+    """
+    just prints it
+    """
+    # cycle per diff
+    j=1
+    for diff in olololist:
+        print ('Number of difference level: {0}'.format(j))
+        i=0
+        for iteration in diff:
+            print ('Difference {0} - {1}'.format(i, iteration))
+            i+=1
+        print (" ")
+        j+=1
+
+    description = "See table of end differences, actually: number of difference level: \n" \
+                "is a number of difference level (from 1 to 4, may be more, but probably not needed) \n" \
+                "then, number of difference: if there'd be difference number 0, then it'l be number of \n" \
+                "iteration, now it's the number of rows occupied by difference. \n" \
+                "The list appearing next to each difference - each value per case. \n" \
+                "As one can see, some cases finished in less number of iterations, so some lists are shorter \n" \
+                "then others."
+
+
+
+    print (description)
+
+
+def makeAllEndDiffs (datafile):
+    with open(datafile, 'rb') as f:
+        rrlist = pickle.load(f)
+        rrlist_filtered = [case for case in rrlist if case.ll()<30]
+        return [transform_iia_to_matrix(lst, 0) for lst in rrlist_filtered ]
+
+
+
+def makeAverageListOutOfEndDifferencesList(listdiffs):
+    """
+    """
+    import copy
+    import statistics
+    lst = copy.copy(listdiffs)
+
+
+    for j in lst:
+        for m in j:
+            for t in m:
+                t = statistics.mean(t)
+    return lst
+
+def makeDispOutOfEndDifferences(listdiffs):
+    """
+    """
+    pass
+
+def makeHistsOutOfEndDifferences(listdiffs):
+    """
+
+    """
+
+    pass
+
+
 
 def test():
 
-    datafile = "resfiles/resdump205_DISP.dat"
+    datafile = "resfiles/resdump.dat"
+    a = makeAllEndDiffs(datafile)
 
-    with open(datafile, 'rb') as f:
-        rrlist = pickle.load(f)
-    rrlist_filtered = [case for case in rrlist if case.ll()<30]
+#    [print (r) for r in a]
+
+    b = makeListOfListPerIteration(a)
+    printListOfListPerIteration(b)
 
 
 
-    print (transform_iia_to_matrix(rrlist_filtered[0], 0))
 
 if __name__ == '__main__':
     test()
