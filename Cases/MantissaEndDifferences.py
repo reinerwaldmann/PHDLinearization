@@ -2,6 +2,7 @@ __author__ = 'vasilev_is'
 
 import pickle
 
+import statistics
 import matplotlib.pyplot as plt
 from Cases.CasesUtilStuff import IterationInfoAcceptor
 import numpy as np
@@ -223,16 +224,36 @@ def makeHistsOutOfEndDifferences(listdiffs, mainfolder, limy=200):
         os.makedirs(fldpath)
 
         for m in range(len(listdiffs[j])):
-            fig, ax = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
+            fig, ax = plt.subplots( nrows=2, ncols=1 )  # create figure & 1 axis
             # x1,x2,y1,y2 = plt.axis()
             # plt.axis((x1,x2,y1,limy))
-
             #   axes = plt.gca()
             #axes.set_ylim([0,200])
-
-
             #ax.hist( [x for x in listdiffs[j][m] if x<.003] ,30)
-            ax.hist( [x for x in listdiffs[j][m] ] ,30)
+
+            ax[0].hist( listdiffs[j][m], 30)
+            mean = statistics.mean(listdiffs[j][m])
+            median = statistics.median(listdiffs[j][m])
+
+            rnd=10
+
+            ax[0].set_title('Raw, mean={0}, median={1}'.format(round(mean, rnd), round(median, rnd)))
+
+
+            cleaned = clean_MAD(listdiffs[j][m])
+            ax[1].hist(cleaned ,30)
+            mean = statistics.mean(cleaned)
+            median = statistics.median(cleaned)
+
+            number_of_deleted = abs(len(cleaned) - len(listdiffs[j][m]))
+            percent_of_deleted = round(100*number_of_deleted/len(listdiffs[j][m]), 3)
+
+            ax[1].set_title('Cleaned 3, mean={0}, medn={1}, del={2}%'.
+                            format(round(mean,rnd), round(median,rnd), percent_of_deleted))
+
+
+
+
 
 
 
@@ -243,19 +264,80 @@ def makeHistsOutOfEndDifferences(listdiffs, mainfolder, limy=200):
 
 
 
+def clean_MAD(inlist):
+        median =  statistics.median(inlist)
+        MAD = statistics.median([ abs(x-median)for x in inlist ])
+        threshold = 3 # see pic on wiki from references above, this means like 3*sigma.
+        # I suppose we can limit it even harder
+        return [x for x in inlist if 0.6745*(abs(x-median)/MAD) < threshold ]
+
+def cleanData(listdiffs):
+    """
+    returns cleaned data.
+    There are two strategies of cleaning:
+        + clean data using Smirnoff criteria http://www.arhiuch.ru/lab4.html
+        + clean data using simple method: reject 5-10%. Works this way: arrange values in a row sorted
+            by their difference with mean value, then reject 5-10$ of the furthest.
+
+    Information on the web:
+    http://stackoverflow.com/questions/22354094/pythonic-way-of-detecting-outliers-in-one-dimensional-observation-data
+    "The problem with using percentile is that the points identified as outliers is a function of your sample size.
+    There are a huge number of ways to test for outliers, and you should give some thought to how you classify them.
+    Ideally, you should use a-priori information (e.g. "anything above/below this value is unrealistic because...")
+    However, a common, not-too-unreasonable outlier test is to remove points based on their "median absolute deviation"."
+
+     References:
+    ----------
+        Boris Iglewicz and David Hoaglin (1993), "Volume 16: How to Detect and
+        Handle Outliers", The ASQC Basic References in Quality Control:
+        Statistical Techniques, Edward F. Mykytka, Ph.D., Editor.
+
+        https://en.wikipedia.org/wiki/Standard_score#/media/File:Normal_distribution_and_scales.gif
+
+        http://blog.caseystella.com/pyspark-openpayments-analysis-part-4.html
+
+        http://stackoverflow.com/questions/22354094/pythonic-way-of-detecting-outliers-in-one-dimensional-observation-data
+
+
+    :param listdiffs: input list
+    :return: cleaned data list
+    """
+    import copy
+    import statistics
+    import scipy.stats as scps
+
+
+    lst = copy.deepcopy(listdiffs)
+
+    def clean_Smirnoff(inlist):
+        """
+
+        :param inlist: flat list
+        :return: cleaned via Smirnoff criteria list
+        """
+        pass
+
+
+
+
+    #func={0:clean_Smirnoff, 1:clean_percentile}
+    func = clean_MAD
+
+
+    for j in range (len(lst)):
+        for k in range (len(lst[j])):
+            lst[j][k] = func(lst[j][k])
+    return lst
 
 
 
 from PyQt5.QtWidgets import QApplication, QWidget,  QMainWindow
 from PyQt5 import uic
-
-
 from uifiles.Mantissa2UI.m2mainwindow import Ui_MainWindow
 
-
-
-
 class MainWindow(QMainWindow, Ui_MainWindow):
+
+
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -298,7 +380,10 @@ def test():
     #         printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_SIGMA), f)
 
     #makeHistsOutOfEndDifferences(a, folder, limy=200)
-    #makeHistsOutOfEndDifferences(a, folder)
+    makeHistsOutOfEndDifferences(a, folder)
+
+    return (0)
+
 
 # NOW WE TEST FOR NORMALITY
 
@@ -316,8 +401,6 @@ def test():
 
 
 
-
-    exit(0)
 
 
 
