@@ -177,6 +177,7 @@ def makeAllEndDiffs (datafile, index):
         rrlist_filtered = [case for case in rrlist if case.ll()<30]
         return [transform_iia_to_matrix(lst, index) for lst in rrlist_filtered ]
 
+STAT_MEDIAN=-1
 STAT_MEAN=0
 STAT_VAR=1
 STAT_SIGMA=2
@@ -198,7 +199,7 @@ def makeCharactOutOfEndDifferencesList(listdiffs, type=STAT_MEAN):
 
     lst = copy.deepcopy(listdiffs)
 
-    func={0:statistics.mean, 1:statistics.variance, 2:lambda x: math.sqrt(statistics.variance(x)), 3:scps.skewtest, 4:scps.kurtosistest  }
+    func={-1:  statistics.median, 0:statistics.mean, 1:statistics.variance, 2:lambda x: math.sqrt(statistics.variance(x)), 3:scps.skewtest, 4:scps.kurtosistest  }
 
     for j in range (len(lst)):
         for k in range (len(lst[j])):
@@ -225,11 +226,10 @@ def makeHistsOutOfEndDifferences(listdiffs, mainfolder, limy=200):
 
         for m in range(len(listdiffs[j])):
             fig, ax = plt.subplots( nrows=2, ncols=1 )  # create figure & 1 axis
-            # x1,x2,y1,y2 = plt.axis()
-            # plt.axis((x1,x2,y1,limy))
-            #   axes = plt.gca()
-            #axes.set_ylim([0,200])
-            #ax.hist( [x for x in listdiffs[j][m] if x<.003] ,30)
+
+
+            #ax[0].set_ylim([0,100])
+            #ax[1].set_ylim([0,100])
 
             ax[0].hist( listdiffs[j][m], 30)
             mean = statistics.mean(listdiffs[j][m])
@@ -250,11 +250,6 @@ def makeHistsOutOfEndDifferences(listdiffs, mainfolder, limy=200):
 
             ax[1].set_title('Cleaned 3, mean={0}, medn={1}, del={2}%'.
                             format(round(mean,rnd), round(median,rnd), percent_of_deleted))
-
-
-
-
-
 
 
             #это у нас графики значений компонента вектора по итерациям.
@@ -369,6 +364,25 @@ def test():
 
 
 
+
+    with open(os.path.join(folder,'median.txt'), 'wt') as f:
+        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_MEDIAN), f) #  critical 0.34  http://mvpprograms.com/help/mvpstats/distributions/SkewnessCriticalValues
+
+    with open(os.path.join(folder,'mean.txt'), 'wt') as f:
+        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_MEAN), f) #critical low -0.54	high 0.79  http://mvpprograms.com/help/mvpstats/distributions/KurtosisCriticalValues
+
+
+
+
+    with open(os.path.join(folder,'skew.txt'), 'wt') as f:
+        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_SKEW), f) #  critical 0.34  http://mvpprograms.com/help/mvpstats/distributions/SkewnessCriticalValues
+
+    with open(os.path.join(folder,'kurtosis.txt'), 'wt') as f:
+        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_KURTOSIS), f) #critical low -0.54	high 0.79  http://mvpprograms.com/help/mvpstats/distributions/KurtosisCriticalValues
+
+
+
+
     #
     # with open(os.path.join(folder,'average.txt'), 'wt') as f:
     #     printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_MEAN), f)
@@ -380,7 +394,7 @@ def test():
     #         printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_SIGMA), f)
 
     #makeHistsOutOfEndDifferences(a, folder, limy=200)
-    makeHistsOutOfEndDifferences(a, folder)
+    #makeHistsOutOfEndDifferences(a, folder)
 
     return (0)
 
