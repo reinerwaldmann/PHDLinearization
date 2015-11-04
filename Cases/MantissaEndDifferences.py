@@ -1,14 +1,14 @@
+
+
 __author__ = 'vasilev_is'
 
 import pickle
-
 import statistics
-import matplotlib.pyplot as plt
-from Cases.CasesUtilStuff import IterationInfoAcceptor
-import numpy as np
 import math
+import os
 
-import os, sys
+import matplotlib.pyplot as plt
+import numpy as np
 
 np.set_printoptions(precision=5, threshold=None, edgeitems=None, linewidth=300, suppress=None, nanstr=None, infstr=None, formatter=None)
 
@@ -298,8 +298,6 @@ def cleanData(listdiffs):
     :return: cleaned data list
     """
     import copy
-    import statistics
-    import scipy.stats as scps
 
 
     lst = copy.deepcopy(listdiffs)
@@ -326,8 +324,7 @@ def cleanData(listdiffs):
 
 
 
-from PyQt5.QtWidgets import QApplication, QWidget,  QMainWindow
-from PyQt5 import uic
+from PyQt5.QtWidgets import QMainWindow
 from uifiles.Mantissa2UI.m2mainwindow import Ui_MainWindow
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -465,11 +462,58 @@ def test():
 
 
 
+def frexp_10(decimal):
+   import math
+   logdecimal = math.log10(decimal)
+   return 10 ** (logdecimal - int(logdecimal)), int(logdecimal)
+
+
+a=100.0000001
+b=1.000001235465
+
+
+import unittest
+
+def compare (a,b):
+    """
+    returns
+    1 (True), if a>b
+    else 0 (False)
+    Looking only at the exponent
+    """
+    def get_normalized_exp(x):
+        """
+        Получает экспоненту у нормализованного представления числа
+        2 этапа: если оно имеет порядок 1 и выше, то срабатывает первая часть,
+        до первого return (она уменьшает число последовательно)
+
+        Иначе к делу подключается вторая
+
+        """
+        i=0
+
+        while (int(x)):
+            x/=10
+            i+=1
+        if i:
+             return i
+        while not (round(x,i)):
+            i+=1
+        return -1*i
+    return get_normalized_exp(a)>get_normalized_exp(b)
 
 
 
+
+
+
+
+
+#
 if __name__ == '__main__':
-    test()
+    unittest.main()
+
+#     test()
 
 
 

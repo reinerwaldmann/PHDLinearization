@@ -6,23 +6,13 @@
 """
 
 __author__ = 'vasilev_is'
-import matplotlib.pyplot as plt
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 from Fianora import Fianora_MainScripts
 from Cases.CasesUtilStuff import IterationInfoAcceptor
-
-
-import Fianora.Fianora_Models as f_m
 import Fianora.Fianora_Estimators as f_e
-import Fianora.Fianora_Measurers as f_me
-import Fianora.Fianora_Planners as f_p
-import Fianora.Fianora_static_functions as f_sf
-
-
-
 
 
 class DiodeMainScriptMantissaEx2(Fianora_MainScripts.DiodeMainScript):
@@ -87,17 +77,16 @@ def main():
             normfunc = norm1
             #list_of_errors = [normfunc(btrue, m['b']) for m in iia]
 
-            for k in iia:
-                print (k, '\n')
+            # for k in iia:
+            #     print (k, '\n')
 
 
-            print ('true', btrue)
 
             #plt.plot([z['b'][0] for z in iia])
             #plt.plot([z['b'][1] for z in iia])
 
             #plt.plot([z['b'][2] for z in iia])
-            print (iia)
+            #print (iia)
 
             iiadumplist.append(iia)
 
@@ -117,17 +106,19 @@ def main():
 
             #всадили его в результат
         except:
+
             pass
 
 
     # # складываем все результаты в пикулёвую БД в файл. Так-то б в мускул сложить, но то надо табличечку делать
 
     # # проще всего вытянуть из пикуля
+
+
     import pickle
-    with open('resfiles/resdump205_DISP.dat', 'wb') as f:
+    with open('resfiles/resdump205_DISP_.dat', 'wb') as f:
         pickle.dump(iiadumplist, f)
 
-    exit(0)
 
 
 

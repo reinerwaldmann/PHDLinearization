@@ -1,6 +1,3 @@
-
-import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
 
 def main():
@@ -86,9 +83,47 @@ def plot(x):
 
 main()
 
+<<<<<<< Updated upstream
 
 exit(0)
-import sys
+=======
+>>>>>>> Stashed changes
+
+a=.1
+b=1000
+
+import time
+import os
+#ОСТЕОХОНДРОЗНОЕ
+
+
+def clear():
+    os.system('clear')
+
+for k in range (10):
+
+    for i in range (10):
+        time.sleep(1)
+        i += 1
+        os.system('beep -f 1000')
+
+    for i in range (10):
+        time.sleep(1)
+        i += 1
+        os.system('beep -f 200')
+
+
+    print ('Numpers of approaches:',k)
+print ('FINISHED')
+
+
+
+
+
+
+
+
+exit(0)
 
 filename = 'temp1.html'
 

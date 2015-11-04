@@ -1,6 +1,11 @@
+"""
+Real Data Helper
+"""
+
 __author__ = 'vasilev_is'
 import os
 #функция, которая считывает имя файла в measdata
+
 
 def readMeasdata (infilename):
     rs=list()

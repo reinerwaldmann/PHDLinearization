@@ -228,7 +228,7 @@ def grandCountGN_UltraX1_Limited (funcf, jacf,  measdata:list, binit, bstart, be
         Sklims=countSklims(A,b,bstart, bend)
        #G=G-N if implicit else G+N #добавляем градиент от штрафных функций
         G=G+N
-        Sk+=Sklims #добавиляем объектную функцию от штрафных функций
+        Sk+=Sklims #добавляем объектную функцию от штрафных функций
 
         #print(np.linalg.inv(G), B5[:,0])
         #костыль для диодной задачи
