@@ -1,4 +1,19 @@
+
+import mpmath as mpm
+
+mpm.dps = 50
+mpm.pretty = True
+
+a = mpm.mpf("1.123456789123456789123456789123456789")
+b = mpm.mpf("1.123456789123456789123456789123456789")
+
+
+
+print (a)
+
+exit(0)
 import seaborn as sns
+
 
 def main():
     #for num in [10, 50, 100, 1000]:
@@ -83,11 +98,8 @@ def plot(x):
 
 main()
 
-<<<<<<< Updated upstream
 
 exit(0)
-=======
->>>>>>> Stashed changes
 
 a=.1
 b=1000

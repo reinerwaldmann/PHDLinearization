@@ -60,9 +60,6 @@ class DiodeMainScript(AbstractMainScript):
         print (btrue)
         #btrue = _btrue
 
-
-
-
         xstart=[0.001]
         xend=[1]
         N=100

@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 
 __author__ = 'vasilev_is'
 
@@ -7,8 +7,17 @@ import statistics
 import math
 import os
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+
+
+# устанавливаем стиль fantasy по умолчанию
+mpl.rcParams['font.family'] = 'fantasy'
+
+# устанавливаем в стиль fantasy шрифт, который отображает кириллицу, например, Arial
+mpl.rcParams['font.fantasy'] = 'Arial'
+
 
 np.set_printoptions(precision=5, threshold=None, edgeitems=None, linewidth=300, suppress=None, nanstr=None, infstr=None, formatter=None)
 
@@ -153,7 +162,7 @@ def printListOfListPerIteration(olololist, file=None):
         print ('Number of difference level: {0}'.format(j), file=file)
         i=0
         for iteration in diff:
-            print ('Difference {0} - {1}'.format(i, iteration), file=file)
+            print ('Difference {0} {1} values - {2}'.format(i,len(iteration) if hasattr(iteration,'__len__') else 0, iteration), file=file)
             i+=1
         print (" ", file)
         j+=1
@@ -174,8 +183,8 @@ def printListOfListPerIteration(olololist, file=None):
 def makeAllEndDiffs (datafile, index):
     with open(datafile, 'rb') as f:
         rrlist = pickle.load(f)
-        rrlist_filtered = [case for case in rrlist if case.ll()<30]
-        return [transform_iia_to_matrix(lst, index) for lst in rrlist_filtered ]
+        #rrlist_filtered = [case for case in rrlist if case.ll()<30]
+        return [transform_iia_to_matrix(lst, index) for lst in rrlist]
 
 STAT_MEDIAN=-1
 STAT_MEAN=0
@@ -240,7 +249,9 @@ def makeHistsOutOfEndDifferences(listdiffs, mainfolder, limy=200):
             ax[0].set_title('Raw, mean={0}, median={1}'.format(round(mean, rnd), round(median, rnd)))
 
 
-            cleaned = clean_MAD(listdiffs[j][m])
+            cleaned = clean_exponent(listdiffs[j][m])
+
+
             ax[1].hist(cleaned ,30)
             mean = statistics.mean(cleaned)
             median = statistics.median(cleaned)
@@ -248,8 +259,9 @@ def makeHistsOutOfEndDifferences(listdiffs, mainfolder, limy=200):
             number_of_deleted = abs(len(cleaned) - len(listdiffs[j][m]))
             percent_of_deleted = round(100*number_of_deleted/len(listdiffs[j][m]), 3)
 
-            ax[1].set_title('Cleaned 3, mean={0}, medn={1}, del={2}%'.
-                            format(round(mean,rnd), round(median,rnd), percent_of_deleted))
+
+            ax[1].set_title('Cleaned 3, mean={0}, medn={1}, del={2}/{3}%'.
+                            format(round(mean,rnd), round(median,rnd), number_of_deleted, percent_of_deleted))
 
 
             #это у нас графики значений компонента вектора по итерациям.
@@ -259,12 +271,115 @@ def makeHistsOutOfEndDifferences(listdiffs, mainfolder, limy=200):
 
 
 
+def makeHistsOutOfEndDifferences_simple(listdiffs, mainfolder, limy=200):
+    """
+    limy - end value oy
+    """
+    import os, os.path
+
+    import matplotlib.pyplot as plt
+    # os.makedirs(path[, mode])¶
+
+    for j in range (len(listdiffs)):  #для каждого уровня разности
+        fldpath = os.path.join(os.path.dirname(mainfolder), "diflevel_{0}".format(j)) #  получили путь к папке
+        os.makedirs(fldpath)
+
+        for m in range(len(listdiffs[j])):
+            fig, ax = plt.subplots( nrows=1, ncols=1 )  # create figure & 1 axis
+
+
+            #ax[0].set_ylim([0,100])
+            #ax[1].set_ylim([0,100])
+
+            ax.hist( listdiffs[j][m], 30)
+            mean = statistics.mean(listdiffs[j][m])
+            median = statistics.median(listdiffs[j][m])
+
+            rnd=10
+
+            ax.set_title('Raw, mean={0}, median={1}'.format(round(mean, rnd), round(median, rnd)))
+
+            #это у нас графики значений компонента вектора по итерациям.
+            imgpath = os.path.join(fldpath, "img_{0}.png".format(m))
+            fig.savefig(imgpath)
+            plt.close(fig)
+
+
+
+
+def get_normalized_exp(x):
+        """
+        Получает экспоненту у нормализованного представления числа
+        2 этапа: если оно имеет порядок 1 и выше, то срабатывает первая часть,
+        до первого return (она уменьшает число последовательно)
+
+        Иначе к делу подключается вторая
+
+        """
+        if x==0:
+            return 0
+            # or return False
+
+        i=0
+        while (int(x)):
+            x/=10
+            i+=1
+
+        if i:
+             return i
+
+
+        while not (int(x)):
+            x*=10
+            i+=1
+
+        return -1*i
+
+def compare_exp (a,b, threshold=0):
+    """
+    returns
+    1 (True), if a==b
+    else 0 (False)
+    Looking only at the exponent
+    """
+
+    return abs(get_normalized_exp(a)-get_normalized_exp(b))<=threshold
+
+
+def list_to_exponents(listdiffs):
+    """
+    all values  in our diflist now will be exponents
+    :param inlist:
+    :return:
+    """
+    import copy
+
+    lst = copy.deepcopy(listdiffs)
+    #func={0:clean_Smirnoff, 1:clean_percentile}
+
+    for j in range (len(lst)):
+        for k in range (len(lst[j])):
+            lst[j][k] = [get_normalized_exp(x) for x in lst[j][k]]
+
+    return lst
+
+
+
 def clean_MAD(inlist):
         median =  statistics.median(inlist)
         MAD = statistics.median([ abs(x-median)for x in inlist ])
         threshold = 3 # see pic on wiki from references above, this means like 3*sigma.
         # I suppose we can limit it even harder
         return [x for x in inlist if 0.6745*(abs(x-median)/MAD) < threshold ]
+
+def clean_exponent(inlist):
+    """
+    cleans data thresh 2
+    :param inlist:
+    :return:
+    """
+    median = statistics.median(inlist)
+    return [x for x in inlist if compare_exp(x,median, 0)]
 
 def cleanData(listdiffs):
     """
@@ -302,26 +417,14 @@ def cleanData(listdiffs):
 
     lst = copy.deepcopy(listdiffs)
 
-    def clean_Smirnoff(inlist):
-        """
-
-        :param inlist: flat list
-        :return: cleaned via Smirnoff criteria list
-        """
-        pass
-
-
-
 
     #func={0:clean_Smirnoff, 1:clean_percentile}
-    func = clean_MAD
-
+    func = clean_exponent
 
     for j in range (len(lst)):
         for k in range (len(lst[j])):
             lst[j][k] = func(lst[j][k])
     return lst
-
 
 
 from PyQt5.QtWidgets import QMainWindow
@@ -340,96 +443,207 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.textConsole.append("Button1 pressed")
 
 
+def cleanFolder (folder):
+      # cleaning res directory
+    for subj in os.listdir(folder):
+        if os.path.isdir(os.path.join(folder,subj)):
+            cleanFolder(os.path.join(folder,subj))
+            os.removedirs(os.path.join(folder,subj))
+        else:
+            os.remove(os.path.join(folder,subj))
+
+
+
+
+def write_stat_characteristics(a, folder):
+    with open(os.path.join(folder, 'median.txt'), 'wt') as f:
+        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a, STAT_MEDIAN),
+                                    f)  # critical 0.34  http://mvpprograms.com/help/mvpstats/distributions/SkewnessCriticalValues
+    with open(os.path.join(folder, 'mean.txt'), 'wt') as f:
+        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a, STAT_MEAN),
+                                    f)  # critical low -0.54	high 0.79  http://mvpprograms.com/help/mvpstats/distributions/KurtosisCriticalValues
+    with open(os.path.join(folder, 'skew.txt'), 'wt') as f:
+        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a, STAT_SKEW),
+                                    f)  # critical 0.34  http://mvpprograms.com/help/mvpstats/distributions/SkewnessCriticalValues
+    with open(os.path.join(folder, 'kurtosis.txt'), 'wt') as f:
+        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a, STAT_KURTOSIS),
+                                    f)  # critical low -0.54	high 0.79  http://mvpprograms.com/help/mvpstats/distributions/KurtosisCriticalValues
+
+
+    # make a row list
+    with open(os.path.join(folder, 'raw.txt'), 'wt') as f:
+        printListOfListPerIteration(a,
+                                    f)  # critical low -0.54	high 0.79  http://mvpprograms.com/help/mvpstats/distributions/KurtosisCriticalValues
+    with open(os.path.join(folder, 'average.txt'), 'wt') as f:
+        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a, STAT_MEAN), f)
+    with open(os.path.join(folder, 'variance.txt'), 'wt') as f:
+        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a, STAT_VAR), f)
+    with open(os.path.join(folder, 'sigma.txt'), 'wt') as f:
+        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a, STAT_SIGMA), f)
+
+
+def makeBoxPlot(listdiff, mainfolder, index=0):
+    """
+    idea is to make boxplot for every iteration,
+     so the trend will be seen.
+    :param listdiff:
+    :return:
+    """
+    # Create a figure instance
+    fig = plt.figure(1, figsize=(9, 6))
+
+    # Create an axes instance
+    ax = fig.add_subplot(111)
+
+    ax.set_title(u"Диаграмма разброса экспонент изменений по итерациям")
+
+    # Create the boxplot
+    #bp = ax.boxplot(listdiff[0])
+
+    ## add patch_artist=True option to ax.boxplot()
+    ## to get fill color
+    bp = ax.boxplot(listdiff[0], patch_artist=True)
+
+    ## change outline color, fill color and linewidth of the boxes
+    for box in bp['boxes']:
+        # change outline color
+        box.set( color='#7570b3', linewidth=2)
+        # change fill color
+        box.set( facecolor = '#82D5FF' )
+
+    ## change color and linewidth of the whiskers
+    for whisker in bp['whiskers']:
+        whisker.set(color='#7570b3', linewidth=2)
+
+    ## change color and linewidth of the caps
+    for cap in bp['caps']:
+        cap.set(color='#7570b3', linewidth=2)
+
+    ## change color and linewidth of the medians
+    # for median in bp['medians']:
+    #     median.set(color='#b2df8a', linewidth=2)
+
+    ## change the style of fliers and their fill
+    for flier in bp['fliers']:
+        flier.set(marker='o', color='#e7298a', alpha=0.5)
+
+
+
+    # Save the figure
+    fig.savefig(os.path.join(mainfolder, "boxplot_1stdiff.png"), bbox_inches='tight')
+
+
+
+def lstPerPercentil(lst, perc):
+    import itertools
+    lst.sort()
+    keys = []
+    groups=[]
+    for k, g in itertools.groupby(lst):
+        keys.append(k)
+        groups.append(g)
+        #print (k,g)
+
+    #print ('Порог', 'Число элементов > порога','Закрываемый процент', sep=',')
+    superdict={}
+    for k in keys:
+        ll=len([x for x in lst if x>=k])
+        #print ([x for x in lst if x>=k])
+     #   print (k, ll , int(100*ll/len(lst)),sep=','  )
+        superdict[int(100*ll/len(lst))]=k
+
+
+    #print ()
+    return superdict
+
+
 
 def test():
 
     import os.path
 
-    datafile = "resfiles/resdump205_DISP.dat"
+    datafile = "resfiles/resdump205.dat"
     #datafile = "resfiles/resdump205.dat"
-
     #folder = "resfiles/hist_all_end_diffs_limhists/"
 
-    folder = "resfiles/hists_all_end_diffs/"
+    folder = "resfiles/exponents/"
+
+
+    #folder = "resfiles/hists_all_end_diffs/"
 
 
     b = makeAllEndDiffs(datafile,2) # 0 - index of a variable, this case b0
-
-
     a = makeListOfListPerIteration(b)
+    a = list_to_exponents(a)
+
+    i=0
+    ddd={}
+    for d in a[0]:
+        i+=1
+        print ('Iteration',i)
+        ddd[i]=lstPerPercentil(d,90)
+
+    optperc=80
+
+    for k in range (1,i):
+        srtk = sorted(list(ddd[k].keys()))
+        for f in srtk:
+            if (f>=optperc):
+                print(ddd[k][f])
+                break
 
 
 
 
 
-    with open(os.path.join(folder,'median.txt'), 'wt') as f:
-        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_MEDIAN), f) #  critical 0.34  http://mvpprograms.com/help/mvpstats/distributions/SkewnessCriticalValues
-
-    with open(os.path.join(folder,'mean.txt'), 'wt') as f:
-        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_MEAN), f) #critical low -0.54	high 0.79  http://mvpprograms.com/help/mvpstats/distributions/KurtosisCriticalValues
 
 
 
 
-    with open(os.path.join(folder,'skew.txt'), 'wt') as f:
-        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_SKEW), f) #  critical 0.34  http://mvpprograms.com/help/mvpstats/distributions/SkewnessCriticalValues
-
-    with open(os.path.join(folder,'kurtosis.txt'), 'wt') as f:
-        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_KURTOSIS), f) #critical low -0.54	high 0.79  http://mvpprograms.com/help/mvpstats/distributions/KurtosisCriticalValues
-
-
-
-
+    # if (os.path.exists(folder)):
+    #     cleanFolder(folder)
+    # else:
+    #     os.mkdir(folder)
     #
-    # with open(os.path.join(folder,'average.txt'), 'wt') as f:
-    #     printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_MEAN), f)
-    #
-    # with open(os.path.join(folder,'variance.txt'), 'wt') as f:
-    #         printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_VAR), f)
-    #
-    # with open(os.path.join(folder,'sigma.txt'), 'wt') as f:
-    #         printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_SIGMA), f)
+    # makeBoxPlot(a, folder)
 
-    #makeHistsOutOfEndDifferences(a, folder, limy=200)
-    #makeHistsOutOfEndDifferences(a, folder)
+#    write_stat_characteristics(a, folder)
+
+ #   makeHistsOutOfEndDifferences_simple(a, folder)
 
     return (0)
 
 
 # NOW WE TEST FOR NORMALITY
-
-    import scipy.stats as scps
-
-
-    import random
-    random.seed()
-
-    normlist = [random.normalvariate(10, 2) for x in range(200)]
-
-    print (scps.skewtest(normlist))
-    print (scps.kurtosistest(normlist))
-    print (scps.normaltest(normlist))
-
-
-
-
-
-
-    with open(os.path.join(folder,'skew.txt'), 'wt') as f:
-        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_SKEW), f) #  critical 0.34  http://mvpprograms.com/help/mvpstats/distributions/SkewnessCriticalValues
-
-    with open(os.path.join(folder,'kurtosis.txt'), 'wt') as f:
-        printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_KURTOSIS), f) #critical low -0.54	high 0.79  http://mvpprograms.com/help/mvpstats/distributions/KurtosisCriticalValues
-
+#
+#     import scipy.stats as scps
+#
+#
+#     import random
+#     random.seed()
+#
+#     normlist = [random.normalvariate(10, 2) for x in range(200)]
+#
+#     print (scps.skewtest(normlist))
+#     print (scps.kurtosistest(normlist))
+#     print (scps.normaltest(normlist))
+#     #kurtosis=эксцесс
+#     #skew = ассиметричность
+#
+#
+#
+#
+#
+#     with open(os.path.join(folder,'skew.txt'), 'wt') as f:
+#         printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_SKEW), f) #  critical 0.34  http://mvpprograms.com/help/mvpstats/distributions/SkewnessCriticalValues
+#
+#     with open(os.path.join(folder,'kurtosis.txt'), 'wt') as f:
+#         printListOfListPerIteration(makeCharactOutOfEndDifferencesList(a,STAT_KURTOSIS), f) #critical low -0.54	high 0.79  http://mvpprograms.com/help/mvpstats/distributions/KurtosisCriticalValues
+#
 
 # http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3591587/
 
     #https://onlinecourses.science.psu.edu/statprogram/node/138
-
-
-
-
-
 
 
 # we must test got distribution for normality
@@ -440,68 +654,14 @@ def test():
 #http://mvpprograms.com/help/mvpstats/distributions/SkewnessCriticalValues
 
 
-
-
-
-
-
-
     # app = QApplication(sys.argv)
     # w = MainWindow()
     # w.show()
     # sys.exit(app.exec_())
 
-
-
-
-
 #    [print (r) for r in a]
 
     #printListOfListPerIteration(makeAverageListOutOfEndDifferencesList(b))
-
-
-
-
-def frexp_10(decimal):
-   import math
-   logdecimal = math.log10(decimal)
-   return 10 ** (logdecimal - int(logdecimal)), int(logdecimal)
-
-
-a=100.0000001
-b=1.000001235465
-
-
-import unittest
-
-def compare (a,b):
-    """
-    returns
-    1 (True), if a>b
-    else 0 (False)
-    Looking only at the exponent
-    """
-    def get_normalized_exp(x):
-        """
-        Получает экспоненту у нормализованного представления числа
-        2 этапа: если оно имеет порядок 1 и выше, то срабатывает первая часть,
-        до первого return (она уменьшает число последовательно)
-
-        Иначе к делу подключается вторая
-
-        """
-        i=0
-
-        while (int(x)):
-            x/=10
-            i+=1
-        if i:
-             return i
-        while not (round(x,i)):
-            i+=1
-        return -1*i
-    return get_normalized_exp(a)>get_normalized_exp(b)
-
 
 
 
@@ -511,10 +671,7 @@ def compare (a,b):
 
 #
 if __name__ == '__main__':
-    unittest.main()
-
-#     test()
-
+    test()
 
 
 
