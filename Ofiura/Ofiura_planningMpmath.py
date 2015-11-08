@@ -9,8 +9,8 @@ import numpy as np
 import mpmath as mpm
 
 #Установка точности для mpmath. В проекте принято 50
-mpm.mp.dps=50
-mpm.pretty = False
+# mpm.mp.dps=50
+# mpm.pretty = False
 
 
 """

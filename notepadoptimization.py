@@ -1,12 +1,11 @@
+mpm.mp.dps = 5
+#mpm.mp.prec = 50
 
-import mpmath as mpm
+#mpm.pretty = True
 
-mpm.dps = 50
-mpm.pretty = True
+a = mpm.mpf('1.123456789123456789123456789123456789')
 
-a = mpm.mpf("1.123456789123456789123456789123456789")
 b = mpm.mpf("1.123456789123456789123456789123456789")
-
 
 
 print (a)

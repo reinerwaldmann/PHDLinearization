@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+
 # устанавливаем стиль fantasy по умолчанию
 mpl.rcParams['font.family'] = 'fantasy'
 
@@ -544,12 +545,12 @@ def lstPerPercentil(lst, perc):
         groups.append(g)
         #print (k,g)
 
-    #print ('Порог', 'Число элементов > порога','Закрываемый процент', sep=',')
+    print ('Порог', 'Число элементов > порога','Закрываемый процент', sep=',')
     superdict={}
     for k in keys:
         ll=len([x for x in lst if x>=k])
         #print ([x for x in lst if x>=k])
-     #   print (k, ll , int(100*ll/len(lst)),sep=','  )
+        print (k, ll , int(100*ll/len(lst)),sep=','  )
         superdict[int(100*ll/len(lst))]=k
 
 
@@ -559,8 +560,6 @@ def lstPerPercentil(lst, perc):
 
 
 def test():
-
-    import os.path
 
     datafile = "resfiles/resdump205.dat"
     #datafile = "resfiles/resdump205.dat"
@@ -572,7 +571,7 @@ def test():
     #folder = "resfiles/hists_all_end_diffs/"
 
 
-    b = makeAllEndDiffs(datafile,2) # 0 - index of a variable, this case b0
+    b = makeAllEndDiffs(datafile,2) # second parameter - index of a variable
     a = makeListOfListPerIteration(b)
     a = list_to_exponents(a)
 
@@ -583,9 +582,11 @@ def test():
         print ('Iteration',i)
         ddd[i]=lstPerPercentil(d,90)
 
-    optperc=80
 
-    for k in range (1,i):
+    print ('optimal')
+    optperc=90
+
+    for k in range (1,i+1):
         srtk = sorted(list(ddd[k].keys()))
         for f in srtk:
             if (f>=optperc):

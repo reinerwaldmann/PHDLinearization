@@ -6,9 +6,10 @@ import mpmath as mpm
 
 
 
+
 #во всём проекте для матриц mpmath примем такую точность
-mpm.dps = 40
-mpm.pretty = True
+# mpm.dps = 40
+# mpm.pretty = True
 
 def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=False):
     """
@@ -31,10 +32,10 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
     numiter=0
     condition=True
 
-    def throwError (msg):
+    def throwError (msg, log):
         #global b, numiter, log, Sklist, Sk
         log+=msg
-        return b, numiter, log, Sklist, Sk
+        print ("Error, current state is",  b, numiter, log, Sklist, Sk, sep=';')
 
     while (condition):
         m=len(b) #число коэффициентов
@@ -48,7 +49,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
             jac=jacf(point['x'],b,c,point['y'])
 
             if jac is None:
-                 throwError ("Jac is None")
+                 throwError ("Jac is None", log)
 
             #G+=np.dot(jac.T,jac)
             G+=jac.T*jac
@@ -56,7 +57,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
             fxbc=funcf(point['x'],b,c)
 
             if fxbc is None:
-                throwError ("Funcf is None")
+                throwError ("Funcf is None", log)
             dif=point['y']-fxbc
 
             if B5 is None:
@@ -70,7 +71,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
         except BaseException as e:
             print('G=',G)
             print('B5=',B5)
-            throwError('Error in G:'+e.__str__())
+            throwError('Error in G:'+e.__str__(), log)
 
         #mu counting
         mu=mpm.mpf(4)
@@ -101,6 +102,6 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
                 condition=True
 
         if numiter>500: #max number of iterations
-            throwError("Break due to max number of iteration exceed")
+            throwError("Break due to max number of iteration exceed", log)
 
     return b, numiter, log, Sklist, Sk

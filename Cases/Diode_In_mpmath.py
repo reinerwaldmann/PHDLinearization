@@ -17,8 +17,8 @@ import Ofiura.Ofiura_EstimationMpmath as o_empm
 
 #Таблица переменных:
 #Установка точности для mpmath. В проекте принято 50
-mpm.mp.dps=40
-mpm.pretty = True
+# mpm.mp.dps=40
+# mpm.pretty = True
 
 #Описание стандартных функций приводятся в Методике программирования оценочных скриптов
 #Стандартные глобальные переменные:
@@ -151,22 +151,26 @@ def extraction_Diode_In_mpmath():
     bend=[mpm.mpf('1.5e-14'), mpm.mpf('1.5'), mpm.mpf('14')]
     #binit=[mpm.mpf('1.1e-14'), mpm.mpf('1.1'), mpm.mpf('11')]
 
-    binit=mpm.matrix([['1.1e-14', '1.1', '11.1']]).T
+    #binit=mpm.matrix([['1.1e-14', '1.1', '11.1']]).T
+    binit=btrue
 
     xstart=[mpm.mpf('0.0001')]
-    xend=[mpm.mpf('2')]
+    xend=[mpm.mpf('1.5')]
 
     N=100
     NAprior=20
 
     unifplan = o_pmpm.makeUniformExpPlan(xstart, xend, N)
     unifmeasdata = o_pmpm.makeMeasAccToPlan_lognorm(funcf, unifplan, btrue, c, Ve)
+    print (unifmeasdata)
     #print (unifmeasdata[0]['y'][0])
 
     gknux = o_empm.grandCountGN_UltraX1_mpmath(funcf, jacf, unifmeasdata, binit,c, NSIG=100,implicit=True, verbose=True)
     print (gknux)
 
 
+
+mpm.mp.dps=5
 extraction_Diode_In_mpmath()
 
 
