@@ -7,9 +7,13 @@ import mpmath as mpm
 
 
 
+
 #во всём проекте для матриц mpmath примем такую точность
 # mpm.dps = 40
 # mpm.pretty = True
+
+class CustomException (Exception):
+    pass
 
 def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=False):
     """
@@ -37,6 +41,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
         log+=msg
         print ("Error, current state is",  b, numiter, log, Sklist, Sk, sep=';')
 
+
     while (condition):
         m=len(b) #число коэффициентов
         #G=np.zeros((m,m))
@@ -50,6 +55,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
 
             if jac is None:
                  throwError ("Jac is None", log)
+                 raise CustomException
 
             #G+=np.dot(jac.T,jac)
             G+=jac.T*jac
@@ -58,6 +64,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
 
             if fxbc is None:
                 throwError ("Funcf is None", log)
+                raise CustomException
             dif=point['y']-fxbc
 
             if B5 is None:
@@ -72,6 +79,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
             print('G=',G)
             print('B5=',B5)
             throwError('Error in G:'+e.__str__(), log)
+            raise
 
         #mu counting
         mu=mpm.mpf(4)
@@ -81,6 +89,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
             Skmu=mpm.mpf(0)
             mu/=mpm.mpf(2)
             for point in measdata:
+                #print (b, deltab)
                 dif=point['y']-funcf(point['x'],b-deltab*mu,c) if implicit else point['y']-funcf(point['x'],b+deltab*mu,c)
                 Skmu+=(dif.T*dif)[0]
             it+=1
@@ -103,5 +112,6 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
 
         if numiter>500: #max number of iterations
             throwError("Break due to max number of iteration exceed", log)
+            raise CustomException
 
     return b, numiter, log, Sklist, Sk
