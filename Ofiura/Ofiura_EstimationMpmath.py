@@ -15,7 +15,7 @@ import mpmath as mpm
 class CustomException (Exception):
     pass
 
-def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=False):
+def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSIG=3, implicit=False, verbose=False, mantissa_list=None):
     """
     Производит оценку коэффициентов по методу Гаусса-Ньютона с переменным шагом
     В стандартный поток вывода выводит отладочную информацию по каждой итерации
@@ -30,6 +30,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
     РАБОЧАЯ GEPRUFT!
     """
 
+
     Sklist=list()
     b=binit
     log=""
@@ -43,6 +44,15 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
 
 
     while (condition):
+        #Вводим переменную мантиссу
+        if mantissa_list:
+            if numiter>=len(mantissa_list):
+                mpm.mp.dps=mantissa_list[-1]
+            else:
+                mpm.mp.dps = mantissa_list[numiter]
+
+
+
         m=len(b) #число коэффициентов
         #G=np.zeros((m,m))
         G=mpm.matrix(m)
@@ -74,7 +84,8 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
                 B5+=dif*jac
             Sk+=(dif.T*dif)[0]
         try:
-            deltab=(G**-1)*B5.T
+            with mpm.workdps(max(mpm.mp.dps,15)):
+                deltab=(G**-1)*B5.T
         except BaseException as e:
             print('G=',G)
             print('B5=',B5)
@@ -93,7 +104,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
                 dif=point['y']-funcf(point['x'],b-deltab*mu,c) if implicit else point['y']-funcf(point['x'],b+deltab*mu,c)
                 Skmu+=(dif.T*dif)[0]
             it+=1
-            if (it>100):
+            if (it>50):
                 log+="Mu counting: break due to max number of iteration exceed"
                 break
             cond2=Skmu>Sk
@@ -101,7 +112,7 @@ def grandCountGN_UltraX1_mpmath (funcf, jacf,  measdata:list, binit:list, c, NSI
         Sklist.append(Sk)
         if verbose:
             print ("Sk:",Sk)
-            print ("Iteration {0} mu={1} delta={2} deltamu={3} resb={4}".format(numiter, mu, deltab, deltab*mu, b))
+            print ("Iteration {0} mu={1} delta={2} deltamu={3} resb={4} mantissa={5}".format(numiter, mu, deltab, deltab*mu, b, mpm.mp.dps))
 
         numiter+=1
 

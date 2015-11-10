@@ -255,6 +255,7 @@ def makeMeasOneDot_lognorm(func, xdot, b:list, c:dict, Ve=[]):
 
         for k in range(len(y)):
                 #y[k]=random.normalvariate(y[k], math.sqrt(ydisps[k]))
+
                 y[k]=math.exp(  random.normalvariate(np.longdouble ( mpm.log(y[k])),   math.sqrt(ydisps[k])))
 
 

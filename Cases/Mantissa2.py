@@ -116,7 +116,7 @@ def main():
 
 
     import pickle
-    with open('resfiles/resdump205_DISP_.dat', 'wb') as f:
+    with open('resfiles/resdump205_DISP__.dat', 'wb') as f:
         pickle.dump(iiadumplist, f)
 
 

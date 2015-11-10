@@ -568,6 +568,15 @@ def test():
     folder = "resfiles/exponents/"
 
 
+    with open(datafile, 'rb') as f:
+        rl=pickle.load(f)
+
+    for r in rl:
+        for m in r:
+            print (m)
+    exit(0)
+
+
     #folder = "resfiles/hists_all_end_diffs/"
 
 
