@@ -217,10 +217,6 @@ def makeCharactOutOfEndDifferencesList(listdiffs, type=STAT_MEAN):
 
     return lst
 
-
-
-
-
 def makeHistsOutOfEndDifferences(listdiffs, mainfolder, limy=200):
     """
     limy - end value oy
@@ -269,8 +265,6 @@ def makeHistsOutOfEndDifferences(listdiffs, mainfolder, limy=200):
             imgpath = os.path.join(fldpath, "img_{0}.png".format(m))
             fig.savefig(imgpath)
             plt.close(fig)
-
-
 
 def makeHistsOutOfEndDifferences_simple(listdiffs, mainfolder, limy=200):
     """

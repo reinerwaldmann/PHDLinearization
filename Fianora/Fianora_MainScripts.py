@@ -69,17 +69,11 @@ class DiodeMainScript(AbstractMainScript):
         self.model = f_m.SimpleDiodeModel ('Diode_1N') # сделали модель
         self.ec.model = self.model
 
-
         self.measurer = f_me.ModelMeasurer(self.ec.Ve, self.model, self.ec.btrue) # сделали измерителя
         self.plan_measurer = f_me.PlanMeasurer(self.measurer) # сделали измеритель по плану
-
         #self.planner = f_p.DOptimalPlanner(self.ec)
         self.planner = f_p.UniformPlanner(self.ec)
-
-
         #self, ec, plancachefoldername='cache', verbose = False)
-
-
 
         self.measdata=None
 
