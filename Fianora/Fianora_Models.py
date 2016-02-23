@@ -1,11 +1,10 @@
-from abc import abstractmethod
-from abc import ABCMeta
-
 __author__ = 'vasilev_is'
 import math
+
 from scipy import optimize
 import numpy as np
 import sympy
+
 
 # абстракции из данного раздела можно раскрутить и для автоматизированного нахождения производных символьным методом
 
