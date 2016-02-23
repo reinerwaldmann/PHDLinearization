@@ -26,8 +26,8 @@ class DiodeMainScriptMantissaEx2(Fianora_MainScripts.DiodeMainScript):
 
         Fianora_MainScripts.DiodeMainScript.__init__(self)
 
-        #estimator = f_e.NGEEstimatorUnlimited()
-        estimator = f_e.NGEstimator()
+        estimator = f_e.NGEEstimatorUnlimited()
+        #estimator = f_e.NGEstimator()
         estimator.init_parameters(self.ec, self.model)
 
         self.estimator  = f_e.ConsoleEstimatorDecorator(estimator)
@@ -52,7 +52,8 @@ def main():
 
 
     rs=[]
-    nirc=205
+    nirc=205 # рассматриваемое число кейсов
+
 
     iiadumplist=[]
 
